@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Sword_Combo
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u9023\u65AC"
+  description: "\u901F\u30444\u6BB5\u30B3\u30F3\u30DC\u3002\u30AD\u30E3\u30F3\u30BB\u30EB\u3057\u3084\u3059\u304F\u3001\u3064\u306A\u304E\u306B\u4F7F\u3046\u3002"
+  slot: 0
+  weapon: 0
+  behavior: 0
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  steps:
+  - startupFrames: 6
+    activeFrames: 4
+    recoveryFrames: 14
+    chainFrame: 0
+    cancelFrame: 8
+    damage: 8
+    stagger: 12
+    armorBreak: 4
+    stylePoints: 18
+    knockback: 1.5
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 1.3}
+    hitboxRadius: 1.3
+    forwardMove: 0.6
+  - startupFrames: 6
+    activeFrames: 4
+    recoveryFrames: 14
+    chainFrame: 0
+    cancelFrame: 8
+    damage: 8
+    stagger: 12
+    armorBreak: 4
+    stylePoints: 18
+    knockback: 1.5
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 1.3}
+    hitboxRadius: 1.3
+    forwardMove: 0.6
+  - startupFrames: 7
+    activeFrames: 5
+    recoveryFrames: 16
+    chainFrame: 0
+    cancelFrame: 10
+    damage: 10
+    stagger: 15
+    armorBreak: 5
+    stylePoints: 22
+    knockback: 2
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 1.4}
+    hitboxRadius: 1.4
+    forwardMove: 0.7
+  - startupFrames: 10
+    activeFrames: 6
+    recoveryFrames: 26
+    chainFrame: 0
+    cancelFrame: 16
+    damage: 16
+    stagger: 30
+    armorBreak: 10
+    stylePoints: 32
+    knockback: 5
+    launch: 0
+    hitstop: 0.07
+    hitboxOffset: {x: 0, y: 1, z: 1.5}
+    hitboxRadius: 1.6
+    forwardMove: 1

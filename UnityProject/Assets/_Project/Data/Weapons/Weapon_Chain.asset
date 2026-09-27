@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98abc8104acedb24f96ca276fb71eca3, type: 3}
+  m_Name: Weapon_Chain
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.WeaponTypeData
+  weapon: 2
+  displayName: "\u9396"
+  color: {r: 0.75, g: 0.5, b: 1, a: 1}
+  headShape: 2
+  headScale: {x: 0.06, y: 1.2, z: 0.06}
+  headOffset: {x: 0, y: 0, z: 1.2}
+  headRotation: {x: 90, y: 0, z: 0}
+  handleLength: 0
+  masteryFinisher: {fileID: 11400000, guid: 4ae027f6b268e4441b851635f087c9e2, type: 2}
+  synergyStaggerBonus: 0.1
