@@ -68,6 +68,28 @@ namespace BattleFight
         [Tooltip("Grapple / Pull: 移動速度")]
         public float moveSpeed;
 
+        [Header("飛び道具(Projectile / TargetedStrike)")]
+        [Min(1)] public int projectileCount = 1;
+        [Tooltip("複数発のときの広がり(度)。360 で全方位")]
+        public float projectileSpread;
+        public float projectileSpeed = 25f;
+        public float projectileLifetime = 1.2f;
+        public float projectileRadius = 0.35f;
+        [Tooltip("敵を貫通する")]
+        public bool projectilePierce;
+        [Tooltip("0より大きいと、当たったとき(寿命が尽きたとき)にこの半径で爆発する")]
+        public float explosionRadius;
+        [Tooltip("ロックオン対象へ曲がる速さ(度/秒)")]
+        public float homing;
+        [Tooltip("TargetedStrike: 予告から攻撃までの秒数")]
+        public float strikeDelay = 0.35f;
+        [Tooltip("TargetedStrike: ロックオンしていないとき、前方のこの距離に落とす")]
+        public float strikeDistance = 8f;
+
+        [Header("ビーム(Beam)")]
+        public float beamLength = 14f;
+        public float beamRadius = 0.5f;
+
         public List<SkillStep> steps = new List<SkillStep> { new SkillStep() };
 
         public int StepCount => steps.Count;

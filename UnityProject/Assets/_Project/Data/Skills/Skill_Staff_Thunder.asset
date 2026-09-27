@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Staff_Thunder
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u843D\u96F7"
+  description: "\u30ED\u30C3\u30AF\u30AA\u30F3\u5BFE\u8C61(\u3044\u306A\u3051\u308C\u3070\u524D\u65B9)\u306E\u8DB3\u5143\u306B\u3001\u5C11\u3057\u9045\u308C\u3066\u96F7\u3092\u843D\u3068\u3059\u3002"
+  slot: 1
+  weapon: 3
+  behavior: 8
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 25
+  projectileLifetime: 1.2
+  projectileRadius: 0.35
+  projectilePierce: 0
+  explosionRadius: 2.6
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 9
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 14
+    activeFrames: 2
+    recoveryFrames: 24
+    chainFrame: 0
+    cancelFrame: 14
+    damage: 30
+    stagger: 50
+    armorBreak: 25
+    stylePoints: 45
+    knockback: 2
+    launch: 8
+    hitstop: 0.1
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

@@ -12,6 +12,7 @@ namespace BattleFight
 
         void Update()
         {
+            if (GamePause.IsPaused) return;
             if (input.Consume(PlayerAction.LockOn))
             {
                 Target = Target != null ? null : FindBest();

@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Gauntlet_Dash
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30ED\u30B1\u30C3\u30C8\u30C0\u30C3\u30B7\u30E5"
+  description: "\u62F3\u3092\u7A81\u304D\u51FA\u3057\u305F\u307E\u307E\u6025\u52A0\u901F\u3059\u308B\u3002\u3076\u3064\u304B\u3063\u305F\u6575\u3092\u5439\u304D\u98DB\u3070\u3059\u3002"
+  slot: 2
+  weapon: 5
+  behavior: 1
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 8
+  airGravityScale: 0
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 25
+  projectileLifetime: 1.2
+  projectileRadius: 0.35
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 3
+    activeFrames: 12
+    recoveryFrames: 12
+    chainFrame: 0
+    cancelFrame: 5
+    damage: 10
+    stagger: 35
+    armorBreak: 15
+    stylePoints: 20
+    knockback: 8
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 0.8}
+    hitboxRadius: 1.2
+    forwardMove: 7

@@ -7,7 +7,7 @@ namespace BattleFight.EditorTools
     /// 試作のたたき台の数値。アセットがまだ無いときだけ使われる。
     /// 調整は生成後のアセット(Assets/_Project/Data)で行う。
     /// </summary>
-    static class PrototypeDefaults
+    static partial class PrototypeDefaults
     {
         static SkillStep Step(int startup, int active, int recovery, float damage, float stagger, float armorBreak, float style,
             Vector3 offset, float radius, float forward = 0.5f, float knockback = 2f, float launch = 0f, float hitstop = 0.04f,

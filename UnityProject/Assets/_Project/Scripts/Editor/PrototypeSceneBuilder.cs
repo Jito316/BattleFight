@@ -77,10 +77,60 @@ namespace BattleFight.EditorTools
             var chainWire = Asset<SkillData>("Skills/Skill_Chain_Wire", resetData, PrototypeDefaults.ChainWire);
             var chainFinisher = Asset<SkillData>("Skills/Skill_Chain_Finisher", resetData, PrototypeDefaults.ChainFinisher);
 
+            // 追加の候補(剣・大槌・鎖)
+            var swordThrust = Asset<SkillData>("Skills/Skill_Sword_Thrust", resetData, PrototypeDefaults.SwordThrust);
+            var swordWave = Asset<SkillData>("Skills/Skill_Sword_Wave", resetData, PrototypeDefaults.SwordWave);
+            var swordPhantom = Asset<SkillData>("Skills/Skill_Sword_Phantom", resetData, PrototypeDefaults.SwordPhantom);
+            var hammerSpin = Asset<SkillData>("Skills/Skill_Hammer_Spin", resetData, PrototypeDefaults.HammerSpin);
+            var hammerMeteor = Asset<SkillData>("Skills/Skill_Hammer_Meteor", resetData, PrototypeDefaults.HammerMeteor);
+            var hammerCharge = Asset<SkillData>("Skills/Skill_Hammer_Charge", resetData, PrototypeDefaults.HammerCharge);
+            var chainRing = Asset<SkillData>("Skills/Skill_Chain_Ring", resetData, PrototypeDefaults.ChainRing);
+            var chainBind = Asset<SkillData>("Skills/Skill_Chain_Bind", resetData, PrototypeDefaults.ChainBind);
+
+            // 杖(魔法)
+            var staffBolt = Asset<SkillData>("Skills/Skill_Staff_Bolt", resetData, PrototypeDefaults.StaffBolt);
+            var staffMelee = Asset<SkillData>("Skills/Skill_Staff_Melee", resetData, PrototypeDefaults.StaffMelee);
+            var staffFireball = Asset<SkillData>("Skills/Skill_Staff_Fireball", resetData, PrototypeDefaults.StaffFireball);
+            var staffThunder = Asset<SkillData>("Skills/Skill_Staff_Thunder", resetData, PrototypeDefaults.StaffThunder);
+            var staffFrost = Asset<SkillData>("Skills/Skill_Staff_Frost", resetData, PrototypeDefaults.StaffFrost);
+            var staffBlink = Asset<SkillData>("Skills/Skill_Staff_Blink", resetData, PrototypeDefaults.StaffBlink);
+            var staffLevitate = Asset<SkillData>("Skills/Skill_Staff_Levitate", resetData, PrototypeDefaults.StaffLevitate);
+            var staffFinisher = Asset<SkillData>("Skills/Skill_Staff_Finisher", resetData, PrototypeDefaults.StaffFinisher);
+
+            // 銃(SF)
+            var gunRapid = Asset<SkillData>("Skills/Skill_Gun_Rapid", resetData, PrototypeDefaults.GunRapid);
+            var gunShotgun = Asset<SkillData>("Skills/Skill_Gun_Shotgun", resetData, PrototypeDefaults.GunShotgun);
+            var gunLaser = Asset<SkillData>("Skills/Skill_Gun_Laser", resetData, PrototypeDefaults.GunLaser);
+            var gunGrenade = Asset<SkillData>("Skills/Skill_Gun_Grenade", resetData, PrototypeDefaults.GunGrenade);
+            var gunJet = Asset<SkillData>("Skills/Skill_Gun_Jet", resetData, PrototypeDefaults.GunJet);
+            var gunSlide = Asset<SkillData>("Skills/Skill_Gun_Slide", resetData, PrototypeDefaults.GunSlide);
+            var gunFinisher = Asset<SkillData>("Skills/Skill_Gun_Finisher", resetData, PrototypeDefaults.GunFinisher);
+
+            // 拳
+            var gauntletRush = Asset<SkillData>("Skills/Skill_Gauntlet_Rush", resetData, PrototypeDefaults.GauntletRush);
+            var gauntletUppercut = Asset<SkillData>("Skills/Skill_Gauntlet_Uppercut", resetData, PrototypeDefaults.GauntletUppercut);
+            var gauntletRocket = Asset<SkillData>("Skills/Skill_Gauntlet_Rocket", resetData, PrototypeDefaults.GauntletRocket);
+            var gauntletDash = Asset<SkillData>("Skills/Skill_Gauntlet_Dash", resetData, PrototypeDefaults.GauntletDash);
+            var gauntletFinisher = Asset<SkillData>("Skills/Skill_Gauntlet_Finisher", resetData, PrototypeDefaults.GauntletFinisher);
+
             var sword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", resetData, w => PrototypeDefaults.Sword(w, swordFinisher));
             var hammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", resetData, w => PrototypeDefaults.Hammer(w, hammerFinisher));
             var chain = Asset<WeaponTypeData>("Weapons/Weapon_Chain", resetData, w => PrototypeDefaults.Chain(w, chainFinisher));
-            var weapons = new Object[] { sword, hammer, chain };
+            var staff = Asset<WeaponTypeData>("Weapons/Weapon_Staff", resetData, w => PrototypeDefaults.Staff(w, staffFinisher));
+            var gun = Asset<WeaponTypeData>("Weapons/Weapon_Gun", resetData, w => PrototypeDefaults.Gun(w, gunFinisher));
+            var gauntlet = Asset<WeaponTypeData>("Weapons/Weapon_Gauntlet", resetData, w => PrototypeDefaults.Gauntlet(w, gauntletFinisher));
+            var weapons = new Object[] { sword, hammer, chain, staff, gun, gauntlet };
+
+            // 編成画面で選べるスキル(フィニッシャーは除く)。常に最新の一覧で作り直す
+            var database = Asset<SkillDatabase>("SkillDatabase", true, db => db.skills = new System.Collections.Generic.List<SkillData>
+            {
+                swordCombo, swordThrust, swordIai, swordWave, swordStep, swordPhantom,
+                hammerCombo, hammerSpin, hammerQuake, hammerMeteor, hammerJump, hammerCharge,
+                chainCombo, chainRing, chainPull, chainBind, chainWire,
+                staffBolt, staffMelee, staffFireball, staffThunder, staffFrost, staffBlink, staffLevitate,
+                gunRapid, gunShotgun, gunLaser, gunGrenade, gunJet, gunSlide,
+                gauntletRush, gauntletUppercut, gauntletRocket, gauntletDash,
+            });
 
             var styleConfig = Asset<StyleRankConfig>("StyleRankConfig", resetData, _ => { });
 
@@ -147,6 +197,7 @@ namespace BattleFight.EditorTools
             var director = directorObject.AddComponent<ArenaDirector>();
             var feedback = directorObject.AddComponent<CombatFeedback>();
             var hud = directorObject.AddComponent<BattleHud>();
+            var loadoutEditor = directorObject.AddComponent<LoadoutEditorUI>();
 
             // ---------- 参照の設定 ----------
             Configure(damageable, so =>
@@ -160,6 +211,14 @@ namespace BattleFight.EditorTools
                 SetArray(so, "attackBRack", swordIai, hammerQuake, chainPull);
                 SetArray(so, "movementRack", swordStep, hammerJump, chainWire);
                 SetArray(so, "weaponDatabase", weapons);
+                so.FindProperty("database").objectReferenceValue = database;
+                // プリセット方式を試せるよう、最初からプリセット方式にしておく
+                so.FindProperty("mode").enumValueIndex = (int)SwapMode.Preset;
+                var presets = so.FindProperty("defaultPresets");
+                SetPreset(presets, 0, "剣士", swordCombo, swordIai, swordStep);
+                SetPreset(presets, 1, "魔導士", staffBolt, staffThunder, staffBlink);
+                SetPreset(presets, 2, "ガンナー", gunRapid, gunGrenade, gunJet);
+                SetPreset(presets, 3, "混成", gauntletRush, hammerQuake, chainWire);
             });
             Configure(weaponHolder, so =>
             {
@@ -216,6 +275,12 @@ namespace BattleFight.EditorTools
                 so.FindProperty("lockOn").objectReferenceValue = lockOn;
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("view").objectReferenceValue = camera;
+                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
+            });
+            Configure(loadoutEditor, so =>
+            {
+                so.FindProperty("slots").objectReferenceValue = slots;
+                so.FindProperty("input").objectReferenceValue = input;
                 so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
             Configure(director, so =>
@@ -357,6 +422,16 @@ namespace BattleFight.EditorTools
             var list = wave.FindPropertyRelative("enemies");
             list.arraySize = enemies.Length;
             for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
+        }
+
+        static void SetPreset(SerializedProperty presets, int index, string name, SkillData attackA, SkillData attackB, SkillData movement)
+        {
+            if (presets.arraySize <= index) presets.arraySize = index + 1;
+            var preset = presets.GetArrayElementAtIndex(index);
+            preset.FindPropertyRelative("name").stringValue = name;
+            preset.FindPropertyRelative("attackA").objectReferenceValue = attackA;
+            preset.FindPropertyRelative("attackB").objectReferenceValue = attackB;
+            preset.FindPropertyRelative("movement").objectReferenceValue = movement;
         }
 
         static void EnsureFolder(string parent, string name)

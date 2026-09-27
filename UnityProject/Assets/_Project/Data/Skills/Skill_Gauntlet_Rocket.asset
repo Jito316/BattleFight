@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Gauntlet_Rocket
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30ED\u30B1\u30C3\u30C8\u30D1\u30F3\u30C1"
+  description: "\u62F3\u3092\u6483\u3061\u51FA\u3059\u3002\u91CD\u304F\u3001\u3072\u308B\u307F\u3068\u30A2\u30FC\u30DE\u30FC\u524A\u308A\u306B\u512A\u308C\u308B\u3002"
+  slot: 1
+  weapon: 5
+  behavior: 6
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 34
+  projectileLifetime: 0.7
+  projectileRadius: 0.6
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 12
+    activeFrames: 2
+    recoveryFrames: 24
+    chainFrame: 0
+    cancelFrame: 14
+    damage: 22
+    stagger: 55
+    armorBreak: 35
+    stylePoints: 34
+    knockback: 10
+    launch: 0
+    hitstop: 0.08
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

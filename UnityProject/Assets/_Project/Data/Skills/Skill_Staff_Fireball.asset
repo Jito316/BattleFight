@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Staff_Fireball
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u706B\u7403"
+  description: "\u3086\u3063\u304F\u308A\u98DB\u3076\u706B\u306E\u7389\u3002\u5F53\u305F\u308B\u3068\u7206\u767A\u3057\u3066\u5468\u308A\u3082\u5DFB\u304D\u8FBC\u3080\u3002"
+  slot: 1
+  weapon: 3
+  behavior: 6
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 18
+  projectileLifetime: 1.4
+  projectileRadius: 0.5
+  projectilePierce: 0
+  explosionRadius: 3.2
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 16
+    activeFrames: 2
+    recoveryFrames: 26
+    chainFrame: 0
+    cancelFrame: 16
+    damage: 26
+    stagger: 40
+    armorBreak: 20
+    stylePoints: 40
+    knockback: 6
+    launch: 0
+    hitstop: 0.08
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

@@ -50,6 +50,9 @@ namespace BattleFight
 
         public void AddImpulse(Vector3 velocity) => impulseVelocity += velocity;
 
+        /// <summary>その場で移動する(ブリンク用)。壁などの当たり判定は効く。</summary>
+        public void Teleport(Vector3 delta) => controller.Move(delta);
+
         public void FaceDirection(Vector3 direction)
         {
             direction.y = 0f;

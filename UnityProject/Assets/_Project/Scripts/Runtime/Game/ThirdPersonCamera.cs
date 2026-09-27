@@ -35,11 +35,15 @@ namespace BattleFight
                 yaw = target.eulerAngles.y;
                 focus = target.position + Vector3.up * focusHeight;
             }
+#if !UNITY_WEBGL || UNITY_EDITOR
+            // ブラウザではユーザー操作なしのポインターロック要求が拒否されるので、クリック時だけ要求する
             SetCursorLocked(true);
+#endif
         }
 
         void Update()
         {
+            if (GamePause.IsPaused) return;
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) SetCursorLocked(false);
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
@@ -47,7 +51,7 @@ namespace BattleFight
             }
         }
 
-        static void SetCursorLocked(bool locked)
+        public static void SetCursorLocked(bool locked)
         {
             Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !locked;
@@ -57,7 +61,7 @@ namespace BattleFight
 
         void LateUpdate()
         {
-            if (target == null) return;
+            if (target == null || GamePause.IsPaused) return;
             float dt = Time.unscaledDeltaTime;
 
             Vector2 look = input.StickLook * (stickSensitivity * dt);

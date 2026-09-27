@@ -28,8 +28,10 @@ namespace BattleFight.Tests
             InputSystem.AddDevice<Mouse>();
         }
 
-        IEnumerator LoadArena()
+        IEnumerator LoadArena(SwapMode mode = SwapMode.Rack)
         {
+            // 前回保存した編成に左右されないようにする
+            LoadoutStorage.Clear();
             SceneManager.LoadScene(SceneName);
             yield return null;
             yield return null;
@@ -37,6 +39,31 @@ namespace BattleFight.Tests
             executor = Object.FindFirstObjectByType<SkillExecutor>();
             style = Object.FindFirstObjectByType<StyleRankSystem>();
             player = executor.transform;
+            slots.SetMode(mode);
+        }
+
+        public override void TearDown()
+        {
+            if (GamePause.IsPaused) GamePause.Set(false);
+            LoadoutStorage.Clear();
+            base.TearDown();
+        }
+
+        void MakePlayerSturdy() => player.GetComponent<Damageable>().Configure(Team.Player, 100000f, 0f, 0f);
+
+        /// <summary>ウェーブを止めて敵を消す(被弾で技が中断されると困るテスト用)</summary>
+        static void ClearEnemies()
+        {
+            Object.FindFirstObjectByType<ArenaDirector>().StopAllCoroutines();
+            foreach (var enemy in EnemyController.Active.ToArray()) Object.Destroy(enemy.gameObject);
+        }
+
+        IEnumerator UseSlot(SlotType slot, float timeout = 6f)
+        {
+            var keys = new[] { keyboard.jKey, keyboard.kKey, keyboard.lKey };
+            yield return WaitUntil(() => !executor.IsBusy && !executor.IsStunned && executor.GetComponent<PlayerMotor>().IsGrounded, timeout);
+            yield return Tap(keys[(int)slot]);
+            yield return WaitUntil(() => !executor.IsBusy, timeout);
         }
 
         IEnumerator Tap(ButtonControl key)
@@ -145,6 +172,120 @@ namespace BattleFight.Tests
             // ぶら下がり中は次の近いポイント(遠い方)が候補になる
             yield return null;
             Assert.AreSame(far, executor.GrapplePreview);
+        }
+
+        [UnityTest]
+        public IEnumerator PresetKeys_SwitchAllSlotsAtOnce()
+        {
+            yield return LoadArena(SwapMode.Preset);
+
+            Assert.AreEqual(0, slots.PresetIndex);
+            Assert.AreEqual("連斬", slots.GetCurrent(SlotType.AttackA).displayName);
+
+            yield return Tap(keyboard.digit2Key);
+            Assert.AreEqual(1, slots.PresetIndex);
+            Assert.AreEqual("魔弾", slots.GetCurrent(SlotType.AttackA).displayName);
+            Assert.AreEqual("落雷", slots.GetCurrent(SlotType.AttackB).displayName);
+            Assert.AreEqual("ブリンク", slots.GetCurrent(SlotType.Movement).displayName);
+            Assert.AreEqual(WeaponBonusKind.Mastery, slots.Bonus.Kind);
+            Assert.AreEqual(WeaponType.Staff, slots.Bonus.Weapon);
+            Assert.IsTrue(executor.SwapStrikeReady);
+
+            yield return Tap(keyboard.digit4Key);
+            Assert.AreEqual(3, slots.PresetIndex);
+            Assert.AreEqual(WeaponBonusKind.Arsenal, slots.Bonus.Kind);
+        }
+
+        [UnityTest]
+        public IEnumerator PresetSwitch_DuringRecovery_CancelsTheSkill()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            yield return WaitUntil(() => executor.GetComponent<PlayerMotor>().IsGrounded, 3f);
+
+            yield return Tap(keyboard.jKey);
+            Assert.AreEqual("連斬", executor.Current.displayName);
+            yield return WaitUntil(() => executor.DebugLabel.Contains("Recovery"), 3f);
+            Assert.IsTrue(executor.CanPresetCancel(2));
+
+            yield return Tap(keyboard.digit3Key);
+            Assert.IsFalse(executor.IsBusy, "プリセットの切り替えで技がキャンセルされていない");
+            Assert.IsTrue(style.Announcements.Exists(a => a.text == "SWAP CANCEL"));
+        }
+
+        [UnityTest]
+        public IEnumerator EveryDatabaseSkill_CanBeUsedWithoutErrors()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            MakePlayerSturdy();
+            yield return WaitUntil(() => EnemyController.Active.Count > 0, 5f);
+            yield return Tap(keyboard.tabKey);
+
+            foreach (var skill in slots.Database.skills)
+            {
+                Assert.IsTrue(slots.AssignPresetSkill(0, skill.slot, skill), skill.name);
+                yield return UseSlot(skill.slot);
+            }
+            // 弾や遅れて落ちる攻撃が消えるのを待つ
+            yield return new WaitForSeconds(1.5f);
+        }
+
+        [UnityTest]
+        public IEnumerator EveryMasteryFinisher_CanBeUsed()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            MakePlayerSturdy();
+            yield return WaitUntil(() => EnemyController.Active.Count > 0, 5f);
+            ClearEnemies();
+            yield return null;
+
+            foreach (var weapon in slots.Weapons)
+            {
+                if (weapon.masteryFinisher == null) continue;
+                for (int s = 0; s < 3; s++)
+                {
+                    SkillData pick = null;
+                    foreach (var skill in slots.Database.ForSlot((SlotType)s))
+                    {
+                        if (skill.weapon == weapon.weapon)
+                        {
+                            pick = skill;
+                            break;
+                        }
+                    }
+                    Assert.NotNull(pick, $"{weapon.displayName} の {(SlotType)s} スキルがない");
+                    slots.AssignPresetSkill(0, (SlotType)s, pick);
+                }
+                Assert.AreSame(weapon.masteryFinisher, slots.MasteryFinisher);
+
+                yield return WaitUntil(() => !executor.IsBusy && !executor.IsStunned, 6f);
+                yield return Tap(keyboard.fKey);
+                Assert.AreSame(weapon.masteryFinisher, executor.Current, $"{weapon.displayName} のフィニッシャーが出ない");
+                yield return WaitUntil(() => !executor.IsBusy, 8f);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator LoadoutEditor_PausesAndSaves()
+        {
+            yield return LoadArena(SwapMode.Preset);
+
+            yield return Tap(keyboard.pKey);
+            Assert.IsTrue(LoadoutEditorUI.IsOpen);
+            Assert.IsTrue(GamePause.IsPaused);
+            Assert.AreEqual(0f, Time.timeScale);
+
+            var fireball = slots.Database.Find("Skill_Staff_Fireball");
+            Assert.IsTrue(slots.AssignPresetSkill(0, SlotType.AttackB, fireball));
+            Assert.AreSame(fireball, slots.GetCurrent(SlotType.AttackB));
+
+            yield return Tap(keyboard.pKey);
+            Assert.IsFalse(LoadoutEditorUI.IsOpen);
+            Assert.IsFalse(GamePause.IsPaused);
+            Assert.AreEqual(1f, Time.timeScale);
+
+            Assert.IsTrue(LoadoutStorage.TryLoad(slots.Database, out var saved));
+            Assert.AreEqual(SwapMode.Preset, saved.mode);
+            Assert.AreSame(fireball, saved.presets[0].attackB);
         }
 
         [UnityTest]

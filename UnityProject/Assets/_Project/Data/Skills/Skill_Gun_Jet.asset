@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Gun_Jet
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30B8\u30A7\u30C3\u30C8\u30D6\u30FC\u30B9\u30C8"
+  description: "\u80CC\u4E2D\u306E\u30B8\u30A7\u30C3\u30C8\u3067\u659C\u3081\u4E0A\u3078\u52A0\u901F\u3059\u308B\u3002\u7A7A\u4E2D\u3067\u3082\u4F7F\u3048\u308B\u3002"
+  slot: 2
+  weapon: 4
+  behavior: 10
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 8
+  airGravityScale: 0.1
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 6
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 25
+  projectileLifetime: 1.2
+  projectileRadius: 0.35
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 2
+    activeFrames: 10
+    recoveryFrames: 10
+    chainFrame: 0
+    cancelFrame: 4
+    damage: 0
+    stagger: 0
+    armorBreak: 0
+    stylePoints: 0
+    knockback: 2
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 7

@@ -33,6 +33,20 @@ namespace BattleFight
             }
             var current = slots != null ? slots.GetCurrent(SlotType.AttackA) : null;
             SetMainWeapon(current != null ? current.weapon : WeaponType.Sword);
+            // 編成画面や方式の切り替えで攻撃Aが変わったときも持ち替える
+            if (slots != null) slots.SlotChanged += OnSlotChanged;
+        }
+
+        void OnDestroy()
+        {
+            if (slots != null) slots.SlotChanged -= OnSlotChanged;
+        }
+
+        void OnSlotChanged(SlotType slot)
+        {
+            if (slot != SlotType.AttackA) return;
+            var current = slots.GetCurrent(SlotType.AttackA);
+            if (current != null) SetMainWeapon(current.weapon);
         }
 
         GameObject BuildVisual(WeaponTypeData data)

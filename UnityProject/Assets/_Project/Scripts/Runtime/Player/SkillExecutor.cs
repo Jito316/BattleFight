@@ -61,6 +61,7 @@ namespace BattleFight
 
         static readonly Collider[] OverlapBuffer = new Collider[32];
         readonly HashSet<Damageable> hitThisStep = new HashSet<Damageable>();
+        readonly List<Damageable> targetBuffer = new List<Damageable>();
 
         SkillData current;
         int stepIndex;
@@ -78,6 +79,8 @@ namespace BattleFight
         float stunnedUntil = -1f;
         float extraInvulnerableUntil = -1f;
         float swapStrikeUntil = -1f;
+        /// <summary>切り替えるたびに増える。弾が「どの切り替えのスワップストライクか」を覚えておくのに使う</summary>
+        int swapStrikeId;
 
         EnemyController travelEnemy;
         Vector3 travelTarget;
@@ -109,6 +112,7 @@ namespace BattleFight
 
         void Update()
         {
+            if (GamePause.IsPaused) return;
             if (self.IsDead)
             {
                 motor.LocomotionEnabled = false;
@@ -139,11 +143,22 @@ namespace BattleFight
 
         void HandleSwaps()
         {
-            TrySwap(SlotType.AttackA, PlayerAction.SwapAttackA);
-            TrySwap(SlotType.AttackB, PlayerAction.SwapAttackB);
-            TrySwap(SlotType.Movement, PlayerAction.SwapMovement);
+            if (slots.Mode == SwapMode.Rack)
+            {
+                TrySwap(SlotType.AttackA, PlayerAction.Swap1);
+                TrySwap(SlotType.AttackB, PlayerAction.Swap2);
+                TrySwap(SlotType.Movement, PlayerAction.Swap3);
+                input.Consume(PlayerAction.Swap4);
+                return;
+            }
+
+            for (int i = 0; i < SkillSlotController.PresetCount; i++)
+            {
+                if (input.Consume(PlayerInputReader.SwapAction(i))) TrySelectPreset(i);
+            }
         }
 
+        /// <summary>ラック方式: 1スロットだけ切り替える</summary>
         void TrySwap(SlotType slot, PlayerAction action)
         {
             if (!input.Consume(action)) return;
@@ -151,26 +166,53 @@ namespace BattleFight
             bool cancel = CanSwapCancel(slot);
             if (!slots.Cycle(slot)) return;
 
+            OnSwapped(slots.GetCurrent(slot), slot == SlotType.AttackA);
+            if (cancel) SwapCancel(slot);
+        }
+
+        /// <summary>プリセット方式: 3スロットをまとめて切り替える</summary>
+        void TrySelectPreset(int index)
+        {
+            bool cancel = CanPresetCancel(index);
+            SlotType? cancelSlot = current != null ? current.slot : null;
+            if (!slots.SelectPreset(index)) return;
+
+            OnSwapped(slots.GetCurrent(SlotType.AttackA), true);
+            if (cancel && cancelSlot.HasValue) SwapCancel(cancelSlot.Value);
+        }
+
+        void OnSwapped(SkillData shown, bool updateMainWeapon)
+        {
             swapStrikeUntil = Time.time + swapStrikeWindow;
-            var swapped = slots.GetCurrent(slot);
-            if (slot == SlotType.AttackA) weapons.SetMainWeapon(swapped.weapon);
+            swapStrikeId++;
+            if (shown == null) return;
+            if (updateMainWeapon) weapons.SetMainWeapon(shown.weapon);
 
             // 切り替えた武器種の色で足元を光らせる
-            var weaponData = slots.GetWeaponData(swapped.weapon);
+            var weaponData = slots.GetWeaponData(shown.weapon);
             if (CombatFeedback.Instance != null && weaponData != null)
             {
                 CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, weaponData.color);
             }
+        }
 
-            if (cancel)
-            {
-                bool continuing = lastSwapCancelSlot == slot && Time.time - lastSwapCancelTime < swapCancelStreakReset;
-                swapCancelStreak = continuing ? swapCancelStreak + 1 : 1;
-                lastSwapCancelSlot = slot;
-                lastSwapCancelTime = Time.time;
-                EndSkill();
-                style.AddBonus(style.Config.swapCancelBonus, "SWAP CANCEL", new Color(0.4f, 0.9f, 1f));
-            }
+        void SwapCancel(SlotType slot)
+        {
+            bool continuing = lastSwapCancelSlot == slot && Time.time - lastSwapCancelTime < swapCancelStreakReset;
+            swapCancelStreak = continuing ? swapCancelStreak + 1 : 1;
+            lastSwapCancelSlot = slot;
+            lastSwapCancelTime = Time.time;
+            EndSkill();
+            style.AddBonus(style.Config.swapCancelBonus, "SWAP CANCEL", new Color(0.4f, 0.9f, 1f));
+        }
+
+        /// <summary>このプリセットに切り替えると、実行中の技のスロットの中身が変わってスワップキャンセルになるか</summary>
+        public bool CanPresetCancel(int index)
+        {
+            if (current == null || slots.Mode != SwapMode.Preset || index == slots.PresetIndex) return false;
+            if (index < 0 || index >= slots.Presets.Count) return false;
+            if (slots.Presets[index].Get(current.slot) == current) return false;
+            return CanSwapCancel(current.slot);
         }
 
         bool CanSwapCancel(SlotType slot)
@@ -241,7 +283,7 @@ namespace BattleFight
 
             var target = lockOn.Target;
             Vector3 desired = Flat(motor.DesiredDirection);
-            if (skill.behavior == SkillBehavior.DashStrike)
+            if (skill.behavior == SkillBehavior.DashStrike || skill.behavior == SkillBehavior.Blink)
                 moveDirection = desired.sqrMagnitude > 0.01f ? desired.normalized : transform.forward;
             else if (target != null)
                 moveDirection = DirectionTo(target.transform.position);
@@ -271,6 +313,15 @@ namespace BattleFight
                     break;
                 case SkillBehavior.Pull:
                     BeginPull();
+                    break;
+                case SkillBehavior.Blink:
+                    Blink();
+                    BeginStep(0);
+                    break;
+                case SkillBehavior.Boost:
+                    motor.GravityScale = skill.airGravityScale;
+                    motor.SetVerticalVelocity(skill.jumpVelocity);
+                    BeginStep(0);
                     break;
                 default:
                     BeginStep(0);
@@ -439,55 +490,112 @@ namespace BattleFight
         void OnActiveStart()
         {
             var step = Step;
-            if (step.hitboxRadius >= 2.5f)
+            var data = slots.GetWeaponData(current.weapon);
+            var color = data != null ? data.color : Color.white;
+
+            switch (current.behavior)
             {
-                var data = slots.GetWeaponData(current.weapon);
+                case SkillBehavior.Projectile:
+                    FireProjectiles(color);
+                    return;
+                case SkillBehavior.TargetedStrike:
+                    FireStrike(color);
+                    return;
+                case SkillBehavior.Beam:
+                    if (CombatFeedback.Instance != null)
+                    {
+                        GetBeam(out var from, out var to);
+                        CombatFeedback.Instance.SpawnBeam(from, to, current.beamRadius, color,
+                            Mathf.Max(0.05f, FrameTime.ToSeconds(step.activeFrames)));
+                    }
+                    break;
+            }
+
+            if (step.hitboxRadius >= 2.5f && current.behavior != SkillBehavior.Beam && CombatFeedback.Instance != null)
+            {
                 var center = transform.TransformPoint(step.hitboxOffset);
-                if (CombatFeedback.Instance != null)
-                {
-                    CombatFeedback.Instance.SpawnShockwave(new Vector3(center.x, transform.position.y + 0.05f, center.z),
-                        step.hitboxRadius, data != null ? data.color : Color.white);
-                }
+                CombatFeedback.Instance.SpawnShockwave(new Vector3(center.x, transform.position.y + 0.05f, center.z),
+                    step.hitboxRadius, color);
             }
             DoHitbox();
         }
 
+        SkillHitContext CurrentContext() => new SkillHitContext
+        {
+            skill = current,
+            stepIndex = stepIndex,
+            multiplier = damageMultiplier,
+            swapStrikeId = SwapStrikeReady ? swapStrikeId : -1,
+        };
+
         void DoHitbox()
         {
             var step = Step;
-            if (!hitsEnabled || step.hitboxRadius <= 0f) return;
+            if (!hitsEnabled) return;
+            if (current.behavior == SkillBehavior.Projectile || current.behavior == SkillBehavior.TargetedStrike) return;
 
-            Vector3 center = transform.TransformPoint(step.hitboxOffset);
-            int count = Physics.OverlapSphereNonAlloc(center, step.hitboxRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            int count;
+            if (current.behavior == SkillBehavior.Beam)
+            {
+                GetBeam(out var from, out var to);
+                count = Physics.OverlapCapsuleNonAlloc(from, to, current.beamRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            }
+            else
+            {
+                if (step.hitboxRadius <= 0f) return;
+                Vector3 center = transform.TransformPoint(step.hitboxOffset);
+                count = Physics.OverlapSphereNonAlloc(center, step.hitboxRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            }
 
-            bool swapStrike = SwapStrikeReady;
-            bool anyLanded = false;
-            float hitstop = 0f;
-            var bonus = slots.Bonus;
-            var weaponData = slots.GetWeaponData(current.weapon);
-
+            targetBuffer.Clear();
             for (int i = 0; i < count; i++)
             {
                 var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
                 if (target == null || target.Team == self.Team || target.IsDead || !hitThisStep.Add(target)) continue;
+                targetBuffer.Add(target);
+            }
+            if (targetBuffer.Count > 0) ResolveHits(CurrentContext(), targetBuffer, transform.position);
+        }
 
-                float damage = step.damage * damageMultiplier;
-                float stagger = step.stagger * damageMultiplier;
-                if (bonus.Boosts(current.weapon) && weaponData != null) stagger *= 1f + weaponData.synergyStaggerBonus;
+        /// <summary>
+        /// 技のヒットをまとめて処理する(近接の判定・弾・爆発のすべてがここを通る)。
+        /// ダメージ、武器種ボーナス、スワップストライク、スタイル、演出を反映する。
+        /// </summary>
+        public void ResolveHits(SkillHitContext context, List<Damageable> targets, Vector3 sourcePosition)
+        {
+            if (context.skill == null || targets.Count == 0) return;
+
+            var skill = context.skill;
+            var step = context.Step;
+            bool swapStrike = context.swapStrikeId >= 0 && context.swapStrikeId == swapStrikeId && SwapStrikeReady;
+            bool anyLanded = false;
+            bool styleRegistered = false;
+            float hitstop = 0f;
+            var bonus = slots.Bonus;
+            var weaponData = slots.GetWeaponData(skill.weapon);
+
+            foreach (var target in targets)
+            {
+                if (target == null || target.IsDead) continue;
+
+                float damage = step.damage * context.multiplier;
+                float stagger = step.stagger * context.multiplier;
+                if (bonus.Boosts(skill.weapon) && weaponData != null) stagger *= 1f + weaponData.synergyStaggerBonus;
                 if (swapStrike)
                 {
                     damage *= swapStrikeDamageMultiplier;
                     stagger *= swapStrikeStaggerMultiplier;
                 }
 
+                Vector3 direction = Flat(target.transform.position - sourcePosition);
                 var outcome = target.ApplyHit(new HitInfo
                 {
                     damage = damage,
                     stagger = stagger,
-                    armorBreak = step.armorBreak * damageMultiplier,
+                    armorBreak = step.armorBreak * context.multiplier,
                     knockback = step.knockback,
                     launch = step.launch,
-                    direction = DirectionTo(target.transform.position),
+                    direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
                     source = gameObject,
                 });
                 if (!outcome.Landed()) continue;
@@ -495,10 +603,13 @@ namespace BattleFight
                 anyLanded = true;
                 hitstop = Mathf.Max(hitstop, step.hitstop * (outcome == HitOutcome.ArmorBroken ? 2f : 1f));
 
-                if (!styleRegisteredThisStep)
+                // 近接の1段は1回だけ登録する。同じ段で複数の敵に当てた分は少しだけ加点
+                bool firstForStep = context.skill == current && context.stepIndex == stepIndex ? !styleRegisteredThisStep : !styleRegistered;
+                if (firstForStep)
                 {
-                    styleRegisteredThisStep = true;
-                    style.RegisterHit($"{current.name}#{stepIndex}", current.weapon, step.stylePoints * damageMultiplier,
+                    if (context.skill == current && context.stepIndex == stepIndex) styleRegisteredThisStep = true;
+                    styleRegistered = true;
+                    style.RegisterHit($"{skill.name}#{context.stepIndex}", skill.weapon, step.stylePoints * context.multiplier,
                         bonus.Kind == WeaponBonusKind.Arsenal);
                 }
                 else
@@ -527,6 +638,100 @@ namespace BattleFight
             {
                 CombatFeedback.Instance.HitStop(hitstop);
                 CombatFeedback.Instance.Shake(0.05f + hitstop);
+            }
+        }
+
+        // ---------- 飛び道具・ビーム ----------
+
+        /// <summary>弾を撃つ方向。ロックオン中は対象の胸へ、それ以外は向いている方向へ水平に。</summary>
+        Vector3 AimDirection(Vector3 origin)
+        {
+            var target = lockOn.Target;
+            if (target != null && !target.IsDead)
+            {
+                Vector3 to = target.CenterPoint - origin;
+                if (to.sqrMagnitude > 0.01f) return to.normalized;
+            }
+            return transform.forward;
+        }
+
+        Vector3 MuzzlePosition => transform.position + Vector3.up * 1.2f + transform.forward * 0.8f;
+
+        void FireProjectiles(Color color)
+        {
+            var context = CurrentContext();
+            Vector3 origin = MuzzlePosition;
+            Vector3 aim = AimDirection(origin);
+            int count = Mathf.Max(1, current.projectileCount);
+            bool fullCircle = current.projectileSpread >= 359f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle;
+                if (count == 1) angle = 0f;
+                else if (fullCircle) angle = 360f * i / count;
+                else angle = Mathf.Lerp(-current.projectileSpread * 0.5f, current.projectileSpread * 0.5f, i / (count - 1f));
+
+                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * aim;
+                Vector3 spawn = fullCircle ? transform.position + Vector3.up * 1.2f + direction * 0.6f : origin;
+                SkillProjectile.Spawn(this, context, spawn, direction * current.projectileSpeed, lockOn.Target, color);
+            }
+        }
+
+        void FireStrike(Color color)
+        {
+            var target = lockOn.Target;
+            Vector3 position;
+            if (target != null && !target.IsDead && Vector3.Distance(target.transform.position, transform.position) <= current.strikeDistance * 2f)
+            {
+                position = target.transform.position;
+            }
+            else
+            {
+                position = transform.position + transform.forward * current.strikeDistance;
+                // 地面の高さに合わせる
+                if (Physics.Raycast(position + Vector3.up * 5f, Vector3.down, out var ground, 20f, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    position = ground.point;
+                }
+            }
+            SkillProjectile.Spawn(this, CurrentContext(), position + Vector3.up * 0.1f, Vector3.zero, null, color, current.strikeDelay);
+        }
+
+        void GetBeam(out Vector3 from, out Vector3 to)
+        {
+            from = transform.position + Vector3.up * 1.2f + transform.forward * 0.5f;
+            Vector3 direction = AimDirection(from);
+            float length = current.beamLength;
+            if (Physics.Raycast(from, direction, out var wall, length, ~0, QueryTriggerInteraction.Ignore)
+                && wall.collider.GetComponentInParent<Damageable>() == null)
+            {
+                length = wall.distance;
+            }
+            to = from + direction * length;
+        }
+
+        // ---------- ブリンク ----------
+
+        void Blink()
+        {
+            Vector3 direction = moveDirection;
+            float distance = current.dashDistance;
+            Vector3 bottom = transform.position + Vector3.up * 0.5f;
+            Vector3 top = transform.position + Vector3.up * 1.5f;
+            if (Physics.CapsuleCast(bottom, top, 0.35f, direction, out var hit, distance, ~0, QueryTriggerInteraction.Ignore)
+                && !hit.collider.transform.IsChildOf(transform))
+            {
+                distance = Mathf.Max(0f, hit.distance - 0.2f);
+            }
+
+            var data = slots.GetWeaponData(current.weapon);
+            var color = data != null ? data.color : Color.white;
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, 1.2f, color);
+            motor.Teleport(direction * distance);
+            if (CombatFeedback.Instance != null)
+            {
+                CombatFeedback.Instance.SpawnShockwave(transform.position + direction * distance, 1.6f, color);
             }
         }
 

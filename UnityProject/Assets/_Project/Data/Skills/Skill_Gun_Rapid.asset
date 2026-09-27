@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Gun_Rapid
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30E9\u30D4\u30C3\u30C9\u30B7\u30E7\u30C3\u30C8"
+  description: "\u9AD8\u901F\u306E\u5F3E\u30924\u9023\u5C04\u3059\u308B\u30021\u767A\u306F\u8EFD\u3044\u304C\u9699\u304C\u5C0F\u3055\u3044\u3002"
+  slot: 0
+  weapon: 4
+  behavior: 6
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 55
+  projectileLifetime: 0.6
+  projectileRadius: 0.2
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 4
+    activeFrames: 1
+    recoveryFrames: 6
+    chainFrame: 0
+    cancelFrame: 4
+    damage: 5
+    stagger: 6
+    armorBreak: 2
+    stylePoints: 12
+    knockback: 0.5
+    launch: 0
+    hitstop: 0.02
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 4
+    activeFrames: 1
+    recoveryFrames: 6
+    chainFrame: 0
+    cancelFrame: 4
+    damage: 5
+    stagger: 6
+    armorBreak: 2
+    stylePoints: 12
+    knockback: 0.5
+    launch: 0
+    hitstop: 0.02
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 4
+    activeFrames: 1
+    recoveryFrames: 6
+    chainFrame: 0
+    cancelFrame: 4
+    damage: 5
+    stagger: 6
+    armorBreak: 2
+    stylePoints: 12
+    knockback: 0.5
+    launch: 0
+    hitstop: 0.02
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 6
+    activeFrames: 1
+    recoveryFrames: 16
+    chainFrame: 0
+    cancelFrame: 10
+    damage: 8
+    stagger: 14
+    armorBreak: 3
+    stylePoints: 16
+    knockback: 2
+    launch: 0
+    hitstop: 0.03
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

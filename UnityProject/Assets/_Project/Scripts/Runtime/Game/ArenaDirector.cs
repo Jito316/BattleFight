@@ -133,12 +133,13 @@ namespace BattleFight
         void Update()
         {
             if (State == GameState.Fighting || State == GameState.Intermission) ElapsedTime += Time.deltaTime;
+            if (GamePause.IsPaused) return;
             if (input != null && input.Consume(PlayerAction.Restart)) Restart();
         }
 
         void Restart()
         {
-            Time.timeScale = 1f;
+            GamePause.Set(false);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }

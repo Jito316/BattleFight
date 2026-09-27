@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Staff_Bolt
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u9B54\u5F3E"
+  description: "\u30ED\u30C3\u30AF\u30AA\u30F3\u5BFE\u8C61\u3092\u8FFD\u3046\u9B54\u529B\u306E\u5F3E\u30923\u9023\u5C04\u3059\u308B\u3002"
+  slot: 0
+  weapon: 3
+  behavior: 6
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 32
+  projectileLifetime: 1
+  projectileRadius: 0.3
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 200
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 6
+    activeFrames: 2
+    recoveryFrames: 10
+    chainFrame: 0
+    cancelFrame: 6
+    damage: 7
+    stagger: 10
+    armorBreak: 2
+    stylePoints: 16
+    knockback: 1
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 6
+    activeFrames: 2
+    recoveryFrames: 10
+    chainFrame: 0
+    cancelFrame: 6
+    damage: 7
+    stagger: 10
+    armorBreak: 2
+    stylePoints: 16
+    knockback: 1
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 8
+    activeFrames: 2
+    recoveryFrames: 20
+    chainFrame: 0
+    cancelFrame: 12
+    damage: 12
+    stagger: 20
+    armorBreak: 4
+    stylePoints: 22
+    knockback: 3
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

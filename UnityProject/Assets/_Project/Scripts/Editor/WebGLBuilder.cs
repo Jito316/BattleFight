@@ -35,7 +35,14 @@ namespace BattleFight.EditorTools
             // Firebase Hosting が配信時に圧縮するので、Unity 側では圧縮しない
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
             PlayerSettings.WebGL.decompressionFallback = false;
+            // クラッシュ時のスタックトレースに関数名が出るようにする(原因調査用)
+            PlayerSettings.WebGL.debugSymbolMode = WebGLDebugSymbolMode.Embedded;
             PlayerSettings.productName = "BattleFight";
+            // ウィンドウいっぱいに表示する専用テンプレート(Assets/WebGLTemplates/BattleFight)
+            PlayerSettings.WebGL.template = "PROJECT:BattleFight";
+            // メモリの拡張回数を減らすため、最初から多めに確保する
+            PlayerSettings.WebGL.initialMemorySize = 256;
+            UseDesktopQualityForWebGL();
 
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
@@ -48,6 +55,35 @@ namespace BattleFight.EditorTools
             var summary = report.summary;
             Debug.Log($"[BattleFight] WebGL ビルド: {summary.result} / {summary.totalSize / (1024f * 1024f):0.0} MB / {summary.totalTime}");
             return summary.result == BuildResult.Succeeded;
+        }
+
+        /// <summary>
+        /// WebGL の既定の画質を「PC」にする。既定の「Mobile」は描画解像度が 80% なので、ブラウザでぼやけて見える。
+        /// </summary>
+        static void UseDesktopQualityForWebGL()
+        {
+            var qualityAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset");
+            if (qualityAsset == null || qualityAsset.Length == 0) return;
+
+            var so = new SerializedObject(qualityAsset[0]);
+            var levels = so.FindProperty("m_QualitySettings");
+            int pcIndex = -1;
+            for (int i = 0; i < levels.arraySize; i++)
+            {
+                if (levels.GetArrayElementAtIndex(i).FindPropertyRelative("name").stringValue == "PC") pcIndex = i;
+            }
+            if (pcIndex < 0) return;
+
+            var defaults = so.FindProperty("m_PerPlatformDefaultQuality");
+            for (int i = 0; i < defaults.arraySize; i++)
+            {
+                var pair = defaults.GetArrayElementAtIndex(i);
+                if (pair.FindPropertyRelative("first").stringValue == "WebGL")
+                {
+                    pair.FindPropertyRelative("second").intValue = pcIndex;
+                }
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

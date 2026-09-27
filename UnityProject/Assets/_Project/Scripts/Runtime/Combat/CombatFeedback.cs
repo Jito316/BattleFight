@@ -24,6 +24,8 @@ namespace BattleFight
         float hitStopEnd;
 
         public static CombatFeedback Instance { get; private set; }
+        /// <summary>実行時に作るエフェクトや弾に使うマテリアル(シェーダーがビルドに残るようシーンから参照)</summary>
+        public Material EffectMaterial => effectMaterial;
         public List<DamageNumber> DamageNumbers { get; } = new List<DamageNumber>();
 
         void Awake()
@@ -35,18 +37,36 @@ namespace BattleFight
         void OnDestroy()
         {
             if (Instance == this) Instance = null;
+            if (GamePause.IsPaused) GamePause.Set(false);
             Time.timeScale = 1f;
+        }
+
+        /// <summary>ビームの見た目。from から to へ伸びる細い円柱を、duration 秒だけ出す。</summary>
+        public void SpawnBeam(Vector3 from, Vector3 to, float radius, Color color, float duration)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = "Beam";
+            DestroyImmediate(go.GetComponent<Collider>());
+            var renderer = go.GetComponent<Renderer>();
+            if (effectMaterial != null) renderer.sharedMaterial = effectMaterial;
+            renderer.material.color = color;
+
+            Vector3 direction = to - from;
+            go.transform.position = from + direction * 0.5f;
+            go.transform.rotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
+            go.transform.localScale = new Vector3(radius * 2f, direction.magnitude * 0.5f, radius * 2f);
+            Destroy(go, duration);
         }
 
         void Update()
         {
-            if (Time.timeScale < 1f && Time.unscaledTime >= hitStopEnd) Time.timeScale = 1f;
+            if (!GamePause.IsPaused && Time.timeScale < 1f && Time.unscaledTime >= hitStopEnd) Time.timeScale = 1f;
             DamageNumbers.RemoveAll(n => Time.unscaledTime - n.time > DamageNumberLifetime);
         }
 
         public void HitStop(float duration)
         {
-            if (duration <= 0f) return;
+            if (duration <= 0f || GamePause.IsPaused) return;
             hitStopEnd = Mathf.Max(hitStopEnd, Time.unscaledTime + Mathf.Min(duration, maxHitStop));
             Time.timeScale = hitStopTimeScale;
         }

@@ -13,7 +13,7 @@ namespace BattleFight
         const float RefHeight = 1080f;
 
         static readonly string[] SlotLabels = { "攻撃A", "攻撃B", "移動" };
-        static readonly string[] SlotKeys = { "←/1", "→/2", "↓/3" };
+        static readonly string[] SlotKeys = { "←/1", "→/2", "↓/3", "↑/4" };
         static readonly Color[] RankColors =
         {
             new Color(0.6f, 0.6f, 0.6f),
@@ -59,6 +59,7 @@ namespace BattleFight
 
         void OnGUI()
         {
+            if (LoadoutEditorUI.IsOpen) return;
             if (labelStyle == null)
             {
                 labelStyle = new GUIStyle(GUI.skin.label) { richText = true, wordWrap = false };
@@ -84,6 +85,9 @@ namespace BattleFight
             Text(new Rect(40, 30, 400, 30), "HP", 22, Color.white);
             Bar(new Rect(80, 36, 400, 22), player.Health / player.MaxHealth, new Color(0.3f, 0.9f, 0.4f));
             Text(new Rect(40, 64, 440, 30), $"刻片 {director.Shards}", 22, new Color(0.8f, 0.9f, 1f));
+            string mode = slots.Mode == SwapMode.Preset ? "プリセット方式" : "ラック方式";
+            Text(new Rect(40, 92, 440, 30), $"切り替え: {mode}   <color=#AAAAAA>[P] 編成</color>", 18, new Color(1f, 1f, 1f, 0.8f),
+                TextAnchor.UpperLeft, FontStyle.Normal);
         }
 
         void DrawWave()
@@ -161,6 +165,44 @@ namespace BattleFight
             {
                 DrawSlot((SlotType)i, new Rect(x0 + (width + gap) * i, y, width, height));
             }
+
+            if (slots.Mode == SwapMode.Preset)
+            {
+                // 左側に置く余白がなければ、スロットの上に横一列で並べる
+                bool roomOnLeft = x0 - 300f >= 20f;
+                if (roomOnLeft) DrawPresetBar(x0 - 300f, RefHeight - 30f, false);
+                else DrawPresetBar(x0, y - 176f, true);
+            }
+        }
+
+        /// <summary>プリセット方式: 4つのプリセットと切り替えキー。今切り替えるとキャンセルになるものは点滅させる。</summary>
+        void DrawPresetBar(float x, float anchorY, bool horizontal)
+        {
+            const float width = 250f;
+            const float height = 40f;
+            int count = slots.Presets.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var rect = horizontal
+                    ? new Rect(x + i * (width + 8f), anchorY, width, height)
+                    : new Rect(x, anchorY - (count - i) * (height + 6f), width, height);
+                var preset = slots.Presets[i];
+                bool current = i == slots.PresetIndex;
+                var a = preset.attackA;
+                var data = a != null ? slots.GetWeaponData(a.weapon) : null;
+                var color = data != null ? data.color : Color.white;
+
+                Box(rect, new Color(0f, 0f, 0f, current ? 0.75f : 0.45f));
+                Box(new Rect(rect.x, rect.y, 6, rect.height), color);
+                if (current) Outline(rect, color, 3f);
+                else if (executor.CanPresetCancel(i))
+                {
+                    float blink = Mathf.PingPong(Time.unscaledTime * 8f, 1f);
+                    Outline(rect, Color.Lerp(new Color(0.4f, 0.9f, 1f), Color.white, blink), 3f);
+                }
+                Text(new Rect(rect.x + 14, rect.y + 7, rect.width - 20, rect.height), $"<color=#AAAAAA>[{SlotKeys[i]}]</color>  {preset.name}",
+                    20, current ? Color.white : new Color(1f, 1f, 1f, 0.7f));
+            }
         }
 
         void DrawSlot(SlotType slot, Rect rect)
@@ -170,7 +212,8 @@ namespace BattleFight
             var weaponData = current != null ? slots.GetWeaponData(current.weapon) : null;
             var weaponColor = weaponData != null ? weaponData.color : Color.white;
             bool active = executor.Current != null && executor.Current == current && !executor.IsFinisherActive;
-            bool cancelReady = executor.CanSwapCancelNow(slot);
+            bool rackMode = slots.Mode == SwapMode.Rack;
+            bool cancelReady = rackMode && executor.CanSwapCancelNow(slot);
             int i = (int)slot;
             float sinceSwap = Time.unscaledTime - swappedAt[i];
 
@@ -197,8 +240,8 @@ namespace BattleFight
             }
             Box(new Rect(rect.x, rect.y, 8, rect.height), weaponColor);
 
-            Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 30, 26), $"{SlotLabels[i]}   <color=#AAAAAA>[{SlotKeys[i]}]</color>", 20,
-                Color.white);
+            string keyHint = rackMode ? $"   <color=#AAAAAA>[{SlotKeys[i]}]</color>" : "";
+            Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 30, 26), $"{SlotLabels[i]}{keyHint}", 20, Color.white);
             if (cancelReady)
             {
                 Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 34, 26), "今なら切替でキャンセル", 18, new Color(0.4f, 0.9f, 1f),
@@ -223,6 +266,14 @@ namespace BattleFight
                     new Color(1f, 1f, 1f, 0.7f), TextAnchor.UpperRight);
             }
 
+            if (!rackMode)
+            {
+                // プリセット方式: 次に切り替わる候補の代わりに、技の種類を出す
+                Text(new Rect(rect.x + 20, rect.y + 88, rect.width - 30, 30), DescribeShort(current), 18,
+                    new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperLeft, FontStyle.Normal);
+                return;
+            }
+
             // ラックの中身。現在の候補を強調し、次の候補に矢印を付ける
             builder.Clear();
             for (int j = 0; j < rack.Count; j++)
@@ -237,6 +288,15 @@ namespace BattleFight
             }
             Text(new Rect(rect.x + 20, rect.y + 88, rect.width - 30, 30), builder.ToString(), 18, Color.white, TextAnchor.UpperLeft,
                 FontStyle.Normal);
+        }
+
+        static string DescribeShort(SkillData skill)
+        {
+            if (skill == null) return "";
+            string description = skill.description ?? "";
+            int end = description.IndexOf('。');
+            if (end > 0) description = description.Substring(0, end);
+            return description.Length > 18 ? description.Substring(0, 18) + "…" : description;
         }
 
         void DrawBonusLine(float x, float y, float width)
@@ -349,8 +409,10 @@ namespace BattleFight
                 "移動スキル      Shift・L / ○\n" +
                 "ジャンプ        Space / ×\n" +
                 "ロックオン      Tab・中クリック / L1\n" +
-                "スロット切替    1 / 2 / 3  ・  十字 ← → ↓\n" +
+                "切り替え        1〜4  ・  十字キー\n" +
+                "  ラック方式: 1/2/3 で各スロット  プリセット方式: 1〜4 で一括\n" +
                 "フィニッシャー  F / R1(マスタリー時)\n" +
+                "スキル編成      P / Select(切り替え方式もここで)\n" +
                 "リスタート      R / Start\n" +
                 "\n" +
                 "<b>コツ</b>\n" +
@@ -361,8 +423,8 @@ namespace BattleFight
                 "   ワイヤーで次へ / Space でジャンプ / 攻撃で空中攻撃)\n" +
                 "・[F1] でこの説明を閉じる";
 
-            Box(new Rect(x - 10, y - 8, 560, 520), new Color(0f, 0f, 0f, 0.45f));
-            Text(new Rect(x, y, 540, 510), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
+            Box(new Rect(x - 10, y - 8, 600, 580), new Color(0f, 0f, 0f, 0.45f));
+            Text(new Rect(x, y, 580, 570), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
         }
 
         void DrawCenterMessage()
