@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "public": "UnityProject/Builds/WebGL",
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
+    "headers": [
+      {
+        "source": "**/*.wasm",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/wasm"
+          }
+        ]
+      }
+    ]
+  }
+}

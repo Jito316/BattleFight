@@ -17,7 +17,8 @@ namespace BattleFight.EditorTools
     {
         const string Root = "Assets/_Project";
         const string DataRoot = Root + "/Data";
-        const string ScenePath = Root + "/Scenes/Prototype_Arena.unity";
+        public const string ScenePath = Root + "/Scenes/Prototype_Arena.unity";
+        const string HudFontPath = Root + "/Fonts/NotoSansJP-Bold.otf";
 
         [MenuItem("BattleFight/Build Prototype Arena")]
         public static void BuildFromMenu()
@@ -164,6 +165,7 @@ namespace BattleFight.EditorTools
             {
                 so.FindProperty("handAnchor").objectReferenceValue = hand;
                 so.FindProperty("slots").objectReferenceValue = slots;
+                so.FindProperty("surfaceMaterial").objectReferenceValue = Mat("Surface", Color.white);
                 SetArray(so, "weaponDatabase", weapons);
             });
             Configure(lockOn, so =>
@@ -197,7 +199,13 @@ namespace BattleFight.EditorTools
                 so.FindProperty("input").objectReferenceValue = input;
                 so.FindProperty("lockOn").objectReferenceValue = lockOn;
             });
-            Configure(feedback, so => so.FindProperty("cameraRig").objectReferenceValue = cameraRig);
+            // 実行時に生成する仮モデル用。シーンから参照してシェーダーがビルドに残るようにする
+            var surface = Mat("Surface", Color.white);
+            Configure(feedback, so =>
+            {
+                so.FindProperty("cameraRig").objectReferenceValue = cameraRig;
+                so.FindProperty("effectMaterial").objectReferenceValue = surface;
+            });
             Configure(hud, so =>
             {
                 so.FindProperty("slots").objectReferenceValue = slots;
@@ -207,12 +215,14 @@ namespace BattleFight.EditorTools
                 so.FindProperty("lockOn").objectReferenceValue = lockOn;
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("view").objectReferenceValue = camera;
+                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
             Configure(director, so =>
             {
                 so.FindProperty("player").objectReferenceValue = player.transform;
                 so.FindProperty("input").objectReferenceValue = input;
                 so.FindProperty("style").objectReferenceValue = style;
+                so.FindProperty("enemyMaterial").objectReferenceValue = surface;
                 var waves = so.FindProperty("waves");
                 SetWave(waves, 0, "WAVE 1", grunt, grunt, grunt);
                 SetWave(waves, 1, "WAVE 2", grunt, grunt, armored, grunt);

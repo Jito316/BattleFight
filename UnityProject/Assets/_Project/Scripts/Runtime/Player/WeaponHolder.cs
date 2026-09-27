@@ -14,6 +14,7 @@ namespace BattleFight
         [SerializeField] Transform handAnchor;
         [SerializeField] WeaponTypeData[] weaponDatabase;
         [SerializeField] SkillSlotController slots;
+        [SerializeField, Tooltip("武器の仮モデルに使うマテリアル(色は武器種ごとに変える)")] Material surfaceMaterial;
 
         readonly Dictionary<WeaponType, GameObject> visuals = new Dictionary<WeaponType, GameObject>();
         WeaponType mainWeapon;
@@ -55,12 +56,14 @@ namespace BattleFight
             return root;
         }
 
-        static Transform CreatePart(PrimitiveType shape, Transform parent, Color color)
+        Transform CreatePart(PrimitiveType shape, Transform parent, Color color)
         {
             var part = GameObject.CreatePrimitive(shape);
             Destroy(part.GetComponent<Collider>());
             part.transform.SetParent(parent, false);
-            part.GetComponent<Renderer>().material.color = color;
+            var renderer = part.GetComponent<Renderer>();
+            if (surfaceMaterial != null) renderer.sharedMaterial = surfaceMaterial;
+            renderer.material.color = color;
             return part.transform;
         }
 

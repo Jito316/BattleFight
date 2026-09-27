@@ -32,6 +32,7 @@ namespace BattleFight
         [SerializeField] LockOnSystem lockOn;
         [SerializeField] ArenaDirector director;
         [SerializeField] Camera view;
+        [SerializeField, Tooltip("WebGL ではOSのフォントを使えないため、日本語を含むフォントを指定する")] Font font;
 
         GUIStyle labelStyle;
         float scale;
@@ -53,7 +54,11 @@ namespace BattleFight
 
         void OnGUI()
         {
-            if (labelStyle == null) labelStyle = new GUIStyle(GUI.skin.label) { richText = true, wordWrap = false };
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(GUI.skin.label) { richText = true, wordWrap = false };
+                if (font != null) labelStyle.font = font;
+            }
             scale = Screen.height / RefHeight;
             virtualWidth = Screen.width / scale;
 

@@ -29,6 +29,7 @@ namespace BattleFight
         [SerializeField] Transform player;
         [SerializeField] PlayerInputReader input;
         [SerializeField] StyleRankSystem style;
+        [SerializeField, Tooltip("敵の仮モデルに使うマテリアル(色は敵ごとに変える)")] Material enemyMaterial;
         [SerializeField] Vector3 arenaCenter;
         [SerializeField] float spawnRadius = 14f;
         [SerializeField] float firstWaveDelay = 1.5f;
@@ -110,7 +111,7 @@ namespace BattleFight
                 Vector3 look = arenaCenter - position;
                 look.y = 0f;
 
-                var enemy = EnemyFactory.Create(profile, position, Quaternion.LookRotation(look), player);
+                var enemy = EnemyFactory.Create(profile, position, Quaternion.LookRotation(look), player, enemyMaterial);
                 alive.Add(enemy);
                 enemy.Damageable.Died += () => OnEnemyDied(enemy);
             }

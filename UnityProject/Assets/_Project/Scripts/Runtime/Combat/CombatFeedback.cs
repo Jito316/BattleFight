@@ -17,6 +17,7 @@ namespace BattleFight
         public const float DamageNumberLifetime = 0.8f;
 
         [SerializeField] ThirdPersonCamera cameraRig;
+        [SerializeField, Tooltip("衝撃波に使うマテリアル")] Material effectMaterial;
         [SerializeField] float hitStopTimeScale = 0.05f;
         [SerializeField] float maxHitStop = 0.15f;
 
@@ -71,6 +72,7 @@ namespace BattleFight
             var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             go.name = "Shockwave";
             DestroyImmediate(go.GetComponent<Collider>());
+            if (effectMaterial != null) go.GetComponent<Renderer>().sharedMaterial = effectMaterial;
             go.transform.position = new Vector3(position.x, Mathf.Max(0.05f, position.y), position.z);
             go.AddComponent<ShockwaveFx>().Play(radius, color);
         }
