@@ -94,6 +94,15 @@ namespace BattleFight
             }
         }
 
+        /// <summary>攻撃によらず倒れる(自爆など)</summary>
+        public void Kill()
+        {
+            if (IsDead) return;
+            Health = 0f;
+            IsDead = true;
+            Died?.Invoke();
+        }
+
         public HitOutcome ApplyHit(HitInfo hit)
         {
             if (IsDead) return HitOutcome.Ignored;

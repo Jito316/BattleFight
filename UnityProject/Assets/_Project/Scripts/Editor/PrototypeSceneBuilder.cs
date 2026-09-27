@@ -137,6 +137,26 @@ namespace BattleFight.EditorTools
             var grunt = Asset<EnemyProfile>("Enemies/Enemy_Grunt", resetData, PrototypeDefaults.Grunt);
             var armored = Asset<EnemyProfile>("Enemies/Enemy_Armored", resetData, PrototypeDefaults.Armored);
             var boss = Asset<EnemyProfile>("Enemies/Enemy_Boss", resetData, PrototypeDefaults.Boss);
+            var shooter = Asset<EnemyProfile>("Enemies/Enemy_Shooter", resetData, PrototypeDefaults.Shooter);
+            var dasher = Asset<EnemyProfile>("Enemies/Enemy_Dasher", resetData, PrototypeDefaults.Dasher);
+            var flyer = Asset<EnemyProfile>("Enemies/Enemy_Flyer", resetData, PrototypeDefaults.Flyer);
+            var bomber = Asset<EnemyProfile>("Enemies/Enemy_Bomber", resetData, PrototypeDefaults.Bomber);
+            var dummy = Asset<EnemyProfile>("Enemies/Enemy_Dummy", resetData, PrototypeDefaults.Dummy);
+            var armoredDummy = Asset<EnemyProfile>("Enemies/Enemy_ArmoredDummy", resetData, PrototypeDefaults.ArmoredDummy);
+            var flyingDummy = Asset<EnemyProfile>("Enemies/Enemy_FlyingDummy", resetData, PrototypeDefaults.FlyingDummy);
+            var magus = Asset<EnemyProfile>("Enemies/Enemy_Magus", resetData, p => PrototypeDefaults.Magus(p, flyer));
+
+            EnsureFolder(DataRoot, "Stages");
+            var stages = new Object[]
+            {
+                Asset<StageData>("Stages/Stage_0_Training", resetData, s => PrototypeDefaults.TrainingStage(s, dummy, armoredDummy, flyingDummy)),
+                Asset<StageData>("Stages/Stage_1_Beast", resetData, s => PrototypeDefaults.Act1(s, grunt, armored, boss)),
+                Asset<StageData>("Stages/Stage_2_Skyfire", resetData, s => PrototypeDefaults.Act2(s, grunt, shooter, dasher, flyer, armored, magus)),
+                Asset<StageData>("Stages/Stage_3_Inferno", resetData,
+                    s => PrototypeDefaults.Act3(s, bomber, dasher, shooter, armored, flyer, boss, magus)),
+                Asset<StageData>("Stages/Stage_9_Endless", resetData,
+                    s => PrototypeDefaults.Endless(s, grunt, dasher, shooter, bomber, flyer, armored, boss, magus)),
+            };
 
             AssetDatabase.SaveAssets();
 
@@ -198,6 +218,7 @@ namespace BattleFight.EditorTools
             var feedback = directorObject.AddComponent<CombatFeedback>();
             var hud = directorObject.AddComponent<BattleHud>();
             var loadoutEditor = directorObject.AddComponent<LoadoutEditorUI>();
+            var stageSelect = directorObject.AddComponent<StageSelectUI>();
 
             // ---------- 参照の設定 ----------
             Configure(damageable, so =>
@@ -289,11 +310,13 @@ namespace BattleFight.EditorTools
                 so.FindProperty("input").objectReferenceValue = input;
                 so.FindProperty("style").objectReferenceValue = style;
                 so.FindProperty("enemyMaterial").objectReferenceValue = surface;
-                var waves = so.FindProperty("waves");
-                SetWave(waves, 0, "WAVE 1", grunt, grunt, grunt);
-                SetWave(waves, 1, "WAVE 2", grunt, grunt, armored, grunt);
-                SetWave(waves, 2, "WAVE 3", armored, grunt, armored, grunt);
-                SetWave(waves, 3, "BOSS", boss);
+                SetArray(so, "stages", stages);
+            });
+            Configure(stageSelect, so =>
+            {
+                so.FindProperty("director").objectReferenceValue = director;
+                so.FindProperty("rankConfig").objectReferenceValue = styleConfig;
+                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -412,16 +435,6 @@ namespace BattleFight.EditorTools
             var property = so.FindProperty(field);
             property.arraySize = values.Length;
             for (int i = 0; i < values.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
-        }
-
-        static void SetWave(SerializedProperty waves, int index, string label, params EnemyProfile[] enemies)
-        {
-            if (waves.arraySize <= index) waves.arraySize = index + 1;
-            var wave = waves.GetArrayElementAtIndex(index);
-            wave.FindPropertyRelative("label").stringValue = label;
-            var list = wave.FindPropertyRelative("enemies");
-            list.arraySize = enemies.Length;
-            for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
         }
 
         static void SetPreset(SerializedProperty presets, int index, string name, SkillData attackA, SkillData attackB, SkillData movement)

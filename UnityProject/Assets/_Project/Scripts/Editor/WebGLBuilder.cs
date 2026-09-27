@@ -35,6 +35,9 @@ namespace BattleFight.EditorTools
             // Firebase Hosting が配信時に圧縮するので、Unity 側では圧縮しない
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
             PlayerSettings.WebGL.decompressionFallback = false;
+            // ビルドごとにファイル名を変える。同じ名前だと、ブラウザに残った古い .js と新しい .wasm が
+            // 組み合わさって起動できなくなる(LinkError)
+            PlayerSettings.WebGL.nameFilesAsHashes = true;
             // クラッシュ時のスタックトレースに関数名が出るようにする(原因調査用)
             PlayerSettings.WebGL.debugSymbolMode = WebGLDebugSymbolMode.Embedded;
             PlayerSettings.productName = "BattleFight";
@@ -43,6 +46,9 @@ namespace BattleFight.EditorTools
             // メモリの拡張回数を減らすため、最初から多めに確保する
             PlayerSettings.WebGL.initialMemorySize = 256;
             UseDesktopQualityForWebGL();
+
+            // ファイル名が毎回変わるので、前回の出力を消してから作る(古いファイルをデプロイしない)
+            if (System.IO.Directory.Exists(OutputPath)) System.IO.Directory.Delete(OutputPath, true);
 
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
+  m_Name: Stage_1_Beast
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
+  displayName: "\u7B2C1\u5E55  \u9244\u7363"
+  description: "\u96D1\u5175\u3068\u91CD\u88C5\u5175\u3092\u9000\u3051\u3001\u9244\u306E\u7363\u3092\u5012\u305B\u3002\u30A2\u30FC\u30DE\u30FC\u306F\u5927\u69CC\u3084\u91CD\u3044\u6280\u3067\u524A\u308D\u3046\u3002"
+  kind: 0
+  waves:
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+  - label: BOSS
+    enemies:
+    - {fileID: 11400000, guid: 64ab056a54ee0464aaf7cd0d861aa694, type: 2}
+  trainingDummies: []
+  endlessPool: []
+  endlessBosses: []
+  bossEvery: 5

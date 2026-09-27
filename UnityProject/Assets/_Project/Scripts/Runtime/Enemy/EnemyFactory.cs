@@ -19,8 +19,16 @@ namespace BattleFight
             controller.radius = 0.5f;
             controller.stepOffset = 0.3f;
 
-            var body = CreatePart(PrimitiveType.Capsule, root.transform, surfaceMaterial, profile.color);
+            var body = CreatePart(profile.bodyShape, root.transform, surfaceMaterial, profile.color);
             body.localPosition = new Vector3(0f, 1f, 0f);
+            if (profile.bodyShape != PrimitiveType.Capsule) body.localScale = new Vector3(1.2f, 1.2f, 1.2f);
+            if (profile.flying)
+            {
+                // 飛ぶ敵には羽を付ける
+                var wings = CreatePart(PrimitiveType.Cube, root.transform, surfaceMaterial, Color.Lerp(profile.color, Color.white, 0.4f));
+                wings.localPosition = new Vector3(0f, 1.2f, -0.1f);
+                wings.localScale = new Vector3(2.4f, 0.08f, 0.6f);
+            }
 
             // 向きがわかるように顔を付ける
             var visor = CreatePart(PrimitiveType.Cube, root.transform, surfaceMaterial, new Color(0.1f, 0.1f, 0.1f));

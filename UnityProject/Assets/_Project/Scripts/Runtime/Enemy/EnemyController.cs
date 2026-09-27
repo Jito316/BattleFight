@@ -54,6 +54,7 @@ namespace BattleFight
         float flashTimer;
         float strafeSign = 1f;
         Vector3 slamDestination;
+        Vector3 attackDirection;
         Vector3 pullDestination;
         float pullSpeed;
 
@@ -139,14 +140,30 @@ namespace BattleFight
                     if (stateTime >= attack.recovery) EnterChase();
                     break;
                 case State.Stagger:
-                    if (stateTime >= stateDuration && grounded) EnterChase();
+                    if (stateTime >= stateDuration && (grounded || profile.flying))
+                    {
+                        juggled = false;
+                        EnterChase();
+                    }
                     break;
                 case State.Pulled:
                     planar = TickPulled(dt);
                     break;
             }
 
-            if (state != State.Pulled) verticalVelocity += (juggled ? juggleGravity : gravity) * dt;
+            // 自爆などでこのフレームに倒れた
+            if (state == State.Dead) return;
+
+            if (profile.flying && !juggled && state != State.Pulled)
+            {
+                // 地面から一定の高さに浮く。急降下中は高さを保たない
+                float targetY = GroundHeight() + profile.hoverHeight;
+                verticalVelocity = state == State.Attack ? 0f : Mathf.Clamp((targetY - transform.position.y) * 3f, -6f, 6f);
+            }
+            else if (state != State.Pulled)
+            {
+                verticalVelocity += (juggled ? juggleGravity : gravity) * dt;
+            }
             knockback = Vector3.Lerp(knockback, Vector3.zero, 1f - Mathf.Exp(-6f * dt));
 
             var flags = controller.Move((planar + knockback + Vector3.up * verticalVelocity) * dt);
@@ -171,6 +188,9 @@ namespace BattleFight
             if (attack == null) attack = PickAttack();
             Face(to, dt);
 
+            // 攻撃を持たない敵(訓練用の人形など)は向きを変えるだけ
+            if (attack == null) return Separation() * profile.moveSpeed * 0.6f;
+
             if (cooldown <= 0f && distance <= attack.range && TryTakeToken())
             {
                 EnterWindup();
@@ -179,7 +199,9 @@ namespace BattleFight
 
             Vector3 direction = distance > 0.01f ? to / distance : transform.forward;
             Vector3 move;
-            if (distance > attack.range * 0.85f)
+            if (profile.preferredDistance > 0f && distance < profile.preferredDistance * 0.7f)
+                move = -direction * (profile.moveSpeed * 0.8f);
+            else if (distance > attack.range * 0.85f)
                 move = direction * profile.moveSpeed;
             else if (!hasToken)
                 move = Vector3.Cross(Vector3.up, direction) * (strafeSign * profile.moveSpeed * 0.4f);
@@ -217,25 +239,86 @@ namespace BattleFight
             {
                 state = State.Attack;
                 stateTime = 0f;
-                if (attack.jumpSlam || attack.radius * profile.scale >= 3f)
-                {
-                    var center = transform.TransformPoint(attack.offset);
-                    if (CombatFeedback.Instance != null)
-                    {
-                        CombatFeedback.Instance.SpawnShockwave(new Vector3(center.x, transform.position.y, center.z),
-                            attack.radius * profile.scale, profile.telegraphColor);
-                        CombatFeedback.Instance.Shake(0.2f);
-                    }
-                }
+                OnAttackStart();
             }
             return planar;
+        }
+
+        void OnAttackStart()
+        {
+            // 飛んでいる敵はプレイヤーへ向かって斜めに急降下する
+            attackDirection = transform.forward;
+            if (profile.flying && target != null)
+            {
+                Vector3 to = target.position + Vector3.up - CenterPoint;
+                if (to.sqrMagnitude > 0.01f) attackDirection = to.normalized;
+            }
+
+            if (attack.ranged)
+            {
+                FireProjectiles();
+                attackLanded = true;
+            }
+            else if (attack.targetedStrike)
+            {
+                if (target != null)
+                {
+                    EnemyProjectile.Spawn(gameObject, target.position + Vector3.up * 0.05f, Vector3.zero, attack.radius, attack.damage,
+                        attack.knockback, profile.telegraphColor, delay: attack.strikeDelay);
+                }
+                attackLanded = true;
+            }
+            else if (attack.summon != null && attack.summonCount > 0)
+            {
+                for (int i = 0; i < attack.summonCount; i++)
+                {
+                    float angle = 360f * i / attack.summonCount;
+                    Vector3 offset = Quaternion.Euler(0f, angle, 0f) * Vector3.forward * (Radius + 2f);
+                    if (ArenaDirector.Instance != null) ArenaDirector.Instance.SpawnExtra(attack.summon, transform.position + offset);
+                }
+                if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 2f, profile.telegraphColor);
+                attackLanded = true;
+            }
+
+            if (attack.jumpSlam || attack.selfDestruct || attack.radius * profile.scale >= 3f)
+            {
+                var center = transform.TransformPoint(attack.offset);
+                if (CombatFeedback.Instance != null && !attack.ranged && !attack.targetedStrike)
+                {
+                    CombatFeedback.Instance.SpawnShockwave(new Vector3(center.x, transform.position.y, center.z),
+                        attack.radius * profile.scale, profile.telegraphColor);
+                    CombatFeedback.Instance.Shake(0.2f);
+                }
+            }
+        }
+
+        void FireProjectiles()
+        {
+            if (target == null) return;
+            Vector3 origin = CenterPoint + transform.forward * (Radius + 0.3f);
+            Vector3 aim = target.position + Vector3.up * 1.1f - origin;
+            aim = aim.sqrMagnitude > 0.01f ? aim.normalized : transform.forward;
+            int count = Mathf.Max(1, attack.projectileCount);
+            for (int i = 0; i < count; i++)
+            {
+                float angle = count == 1 ? 0f : Mathf.Lerp(-attack.projectileSpread * 0.5f, attack.projectileSpread * 0.5f, i / (count - 1f));
+                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * aim;
+                EnemyProjectile.Spawn(gameObject, origin, direction * attack.projectileSpeed, attack.projectileRadius, attack.damage,
+                    attack.knockback, profile.telegraphColor);
+            }
         }
 
         Vector3 TickAttack()
         {
             DoAttackHit();
+            if (attack.selfDestruct && !IsDead)
+            {
+                damageable.Kill();
+                return Vector3.zero;
+            }
+
             Vector3 planar = attack.lunge > 0f && attack.active > 0f
-                ? transform.forward * (attack.lunge / attack.active)
+                ? attackDirection * (attack.lunge / attack.active)
                 : Vector3.zero;
 
             if (stateTime >= attack.active)
@@ -362,8 +445,18 @@ namespace BattleFight
 
         // ---------- 補助 ----------
 
+        float GroundHeight()
+        {
+            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var hit, 60f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                return hit.point.y;
+            }
+            return 0f;
+        }
+
         EnemyAttack PickAttack()
         {
+            if (profile.attacks == null || profile.attacks.Count == 0) return null;
             float total = 0f;
             foreach (var a in profile.attacks) total += Mathf.Max(0f, a.weight);
             float roll = Random.value * total;

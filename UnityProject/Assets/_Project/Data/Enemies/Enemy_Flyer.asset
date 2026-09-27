@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
+  m_Name: Enemy_Flyer
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
+  displayName: "\u98DB\u87F2"
+  isBoss: 0
+  heavy: 0
+  maxHealth: 55
+  maxArmor: 0
+  armorRegenDelay: 6
+  staggerThreshold: 4
+  staggerDuration: 0.45
+  armorBreakStagger: 1.4
+  moveSpeed: 5
+  turnSpeed: 360
+  preferredDistance: 0
+  flying: 1
+  hoverHeight: 3.5
+  attackCooldown: 1.3
+  attacks:
+  - name: "\u6025\u964D\u4E0B"
+    range: 9
+    windup: 0.7
+    active: 0.4
+    recovery: 1
+    damage: 10
+    radius: 1
+    offset: {x: 0, y: 1, z: 0.6}
+    knockback: 6
+    lunge: 10
+    jumpSlam: 0
+    weight: 2
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  - name: "\u6BD2\u6DB2"
+    range: 12
+    windup: 0.7
+    active: 0.1
+    recovery: 1.1
+    damage: 7
+    radius: 1.2
+    offset: {x: 0, y: 1, z: 1.2}
+    knockback: 3
+    lunge: 0
+    jumpSlam: 0
+    weight: 1
+    ranged: 1
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 14
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  bodyShape: 0
+  scale: 0.85
+  color: {r: 0.6, g: 0.35, b: 0.8, a: 1}
+  telegraphColor: {r: 1, g: 0.3, b: 0.1, a: 1}
+  shardValue: 1.5

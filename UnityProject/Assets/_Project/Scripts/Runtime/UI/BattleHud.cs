@@ -68,6 +68,18 @@ namespace BattleFight
             scale = Screen.height / RefHeight;
             virtualWidth = Screen.width / scale;
 
+            // 文字は 1080p 基準の決まったサイズで描き、画面全体を拡大縮小する。
+            // 文字サイズを画面や演出で変え続けると、動的フォントのテクスチャがあふれて
+            // 再構築が無限に続き、WebGL でスタックオーバーフローになる。
+            var previousMatrix = GUI.matrix;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+
+            if (director.State == ArenaDirector.GameState.StageSelect)
+            {
+                GUI.matrix = previousMatrix;
+                return;
+            }
+
             DrawWorldOverlays();
             DrawHealth();
             DrawWave();
@@ -76,6 +88,8 @@ namespace BattleFight
             DrawSlots();
             DrawHelp();
             DrawCenterMessage();
+
+            GUI.matrix = previousMatrix;
         }
 
         // ---------- 画面上部 ----------
@@ -92,9 +106,14 @@ namespace BattleFight
 
         void DrawWave()
         {
-            if (director.WaveNumber <= 0) return;
-            Text(new Rect(0, 24, virtualWidth, 40), $"{director.WaveLabel}   {director.WaveNumber} / {director.WaveCount}", 28,
-                Color.white, TextAnchor.UpperCenter);
+            var stage = director.CurrentStage;
+            if (stage == null) return;
+            string text;
+            if (stage.kind == StageKind.Training) text = stage.displayName;
+            else if (director.WaveNumber <= 0) text = stage.displayName;
+            else if (stage.kind == StageKind.Endless) text = $"{stage.displayName}   {director.WaveLabel} {director.WaveNumber}";
+            else text = $"{stage.displayName}   {director.WaveLabel}  {director.WaveNumber} / {director.WaveCount}";
+            Text(new Rect(0, 24, virtualWidth, 40), text, 28, Color.white, TextAnchor.UpperCenter);
         }
 
         void DrawBoss()
@@ -120,10 +139,13 @@ namespace BattleFight
             float right = virtualWidth - 50f;
             float width = 320f;
             var color = RankColors[Mathf.Min(meter.RankIndex, RankColors.Length - 1)];
-            int size = Mathf.RoundToInt(110f * (1f + 0.35f * rankPulse));
 
             Text(new Rect(right - width, 150, width, 30), "STYLE", 22, new Color(1f, 1f, 1f, 0.7f), TextAnchor.UpperRight);
-            Text(new Rect(right - width, 170, width, 150), meter.RankName, size, color, TextAnchor.UpperRight);
+            // ランクアップの演出は文字サイズではなく拡大表示で行う(文字サイズは固定)
+            var matrix = GUI.matrix;
+            GUIUtility.ScaleAroundPivot(Vector2.one * (1f + 0.35f * rankPulse), new Vector2(right, 240f) * scale);
+            Text(new Rect(right - width, 170, width, 150), meter.RankName, 110, color, TextAnchor.UpperRight);
+            GUI.matrix = matrix;
             Bar(new Rect(right - width, 320, width, 10), meter.RankProgress, color);
 
             float y = 345f;
@@ -356,8 +378,11 @@ namespace BattleFight
             if (grapple != null && WorldToGui(grapple.transform.position, out var grapplePoint))
             {
                 float pulse = 1f + 0.15f * Mathf.Sin(Time.unscaledTime * 10f);
-                Text(new Rect(grapplePoint.x - 40, grapplePoint.y - 26, 80, 52), "◎", Mathf.RoundToInt(44 * pulse),
-                    new Color(0.8f, 0.55f, 1f), TextAnchor.MiddleCenter);
+                var matrix = GUI.matrix;
+                GUIUtility.ScaleAroundPivot(Vector2.one * pulse, grapplePoint * scale);
+                Text(new Rect(grapplePoint.x - 40, grapplePoint.y - 26, 80, 52), "◎", 44, new Color(0.8f, 0.55f, 1f),
+                    TextAnchor.MiddleCenter);
+                GUI.matrix = matrix;
                 Text(new Rect(grapplePoint.x - 80, grapplePoint.y + 18, 160, 30), "Shift / ○", 16, new Color(0.9f, 0.8f, 1f),
                     TextAnchor.UpperCenter, FontStyle.Normal);
             }
@@ -413,7 +438,7 @@ namespace BattleFight
                 "  ラック方式: 1/2/3 で各スロット  プリセット方式: 1〜4 で一括\n" +
                 "フィニッシャー  F / R1(マスタリー時)\n" +
                 "スキル編成      P / Select(切り替え方式もここで)\n" +
-                "リスタート      R / Start\n" +
+                "もう一度 / 選択に戻る  R / T\n" +
                 "\n" +
                 "<b>コツ</b>\n" +
                 "・技の硬直中にそのスロットを切り替えると硬直をキャンセル\n" +
@@ -438,26 +463,61 @@ namespace BattleFight
                     break;
                 case ArenaDirector.GameState.Cleared:
                     string best = style.Config.rankNames[Mathf.Min(style.HighestRank, style.Config.rankNames.Length - 1)];
-                    message = $"ARENA CLEAR\n<size={Mathf.RoundToInt(30 * scale)}>タイム {director.ElapsedTime:0.0}秒   最高ランク {best}   刻片 {director.Shards}\n[R / Start] でリスタート</size>";
+                    string record = director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "";
+                    message = $"STAGE CLEAR\n<size=30>タイム {director.ElapsedTime:0.0}秒   最高ランク {best}   刻片 {director.Shards}{record}</size>";
                     color = new Color(1f, 0.9f, 0.4f);
                     break;
                 case ArenaDirector.GameState.GameOver:
-                    message = $"GAME OVER\n<size={Mathf.RoundToInt(30 * scale)}>[R / Start] でリスタート</size>";
+                    bool endless = director.CurrentStage != null && director.CurrentStage.kind == StageKind.Endless;
+                    string reached = endless ? $"到達 WAVE {director.WaveNumber}{(director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "")}" : "";
+                    message = $"GAME OVER\n<size=30>{reached}</size>";
                     color = new Color(1f, 0.35f, 0.35f);
                     break;
             }
             if (message == null) return;
-            Text(new Rect(0, RefHeight * 0.3f, virtualWidth, 300), message, 72, color, TextAnchor.UpperCenter);
+            Text(new Rect(0, RefHeight * 0.28f, virtualWidth, 300), message, 72, color, TextAnchor.UpperCenter);
+
+            if (director.State == ArenaDirector.GameState.Cleared || director.State == ArenaDirector.GameState.GameOver)
+            {
+                DrawResultButtons(RefHeight * 0.28f + 190f);
+            }
+        }
+
+        void DrawResultButtons(float y)
+        {
+            bool next = director.State == ArenaDirector.GameState.Cleared && director.HasNextStage;
+            int count = next ? 3 : 2;
+            const float width = 260f;
+            const float gap = 20f;
+            float x = (virtualWidth - (width * count + gap * (count - 1))) * 0.5f;
+
+            if (next)
+            {
+                if (ResultButton(new Rect(x, y, width, 56), "次のステージ [N]", new Color(0.2f, 0.55f, 0.9f))) director.NextStage();
+                x += width + gap;
+            }
+            if (ResultButton(new Rect(x, y, width, 56), "もう一度 [R]", new Color(0.3f, 0.45f, 0.3f))) director.Retry();
+            x += width + gap;
+            if (ResultButton(new Rect(x, y, width, 56), "ステージ選択 [T]", new Color(0.3f, 0.3f, 0.36f))) director.BackToStageSelect();
+        }
+
+        bool ResultButton(Rect rect, string text, Color color)
+        {
+            bool hover = rect.Contains(Event.current.mousePosition);
+            Box(rect, hover ? Color.Lerp(color, Color.white, 0.2f) : color);
+            Text(rect, text, 24, Color.white, TextAnchor.MiddleCenter);
+            return GUI.Button(rect, GUIContent.none, GUIStyle.none);
         }
 
         // ---------- 描画の補助 ----------
 
-        Rect Scaled(Rect r) => new Rect(r.x * scale, r.y * scale, r.width * scale, r.height * scale);
+        // GUI.matrix で拡大縮小しているので、座標は 1080p 基準のまま使う
+        static Rect Scaled(Rect r) => r;
 
         void Text(Rect rect, string text, int size, Color color, TextAnchor anchor = TextAnchor.UpperLeft,
             FontStyle fontStyle = FontStyle.Bold)
         {
-            labelStyle.fontSize = Mathf.Max(8, Mathf.RoundToInt(size * scale));
+            labelStyle.fontSize = size;
             labelStyle.alignment = anchor;
             labelStyle.fontStyle = fontStyle;
 

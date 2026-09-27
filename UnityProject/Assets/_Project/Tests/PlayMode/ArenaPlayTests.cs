@@ -28,7 +28,12 @@ namespace BattleFight.Tests
             InputSystem.AddDevice<Mouse>();
         }
 
-        IEnumerator LoadArena(SwapMode mode = SwapMode.Rack)
+        /// <summary>第1幕(ステージ番号 1)</summary>
+        const int DefaultStage = 1;
+
+        ArenaDirector director;
+
+        IEnumerator LoadArena(SwapMode mode = SwapMode.Rack, int stage = DefaultStage)
         {
             // 前回保存した編成に左右されないようにする
             LoadoutStorage.Clear();
@@ -38,8 +43,10 @@ namespace BattleFight.Tests
             slots = Object.FindFirstObjectByType<SkillSlotController>();
             executor = Object.FindFirstObjectByType<SkillExecutor>();
             style = Object.FindFirstObjectByType<StyleRankSystem>();
+            director = Object.FindFirstObjectByType<ArenaDirector>();
             player = executor.transform;
             slots.SetMode(mode);
+            if (stage >= 0) director.StartStage(stage);
         }
 
         public override void TearDown()
@@ -286,6 +293,90 @@ namespace BattleFight.Tests
             Assert.IsTrue(LoadoutStorage.TryLoad(slots.Database, out var saved));
             Assert.AreEqual(SwapMode.Preset, saved.mode);
             Assert.AreSame(fireball, saved.presets[0].attackB);
+        }
+
+        [UnityTest]
+        public IEnumerator Arena_StartsOnStageSelect()
+        {
+            yield return LoadArena(stage: -1);
+            Assert.AreEqual(ArenaDirector.GameState.StageSelect, director.State);
+            Assert.GreaterOrEqual(director.Stages.Count, 5);
+            yield return new WaitForSeconds(2f);
+            Assert.AreEqual(0, EnemyController.Active.Count, "ステージ選択中に敵が出ている");
+        }
+
+        [UnityTest]
+        public IEnumerator EveryStage_StartsAndSpawnsEnemies()
+        {
+            yield return LoadArena(stage: -1);
+            int count = director.Stages.Count;
+            for (int i = 0; i < count; i++)
+            {
+                yield return LoadArena(SwapMode.Preset, i);
+                MakePlayerSturdy();
+                yield return WaitUntil(() => EnemyController.Active.Count > 0, 6f);
+                Assert.AreEqual(director.Stages[i], director.CurrentStage);
+                yield return new WaitForSeconds(1f);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator EveryEnemyType_ActsWithoutErrors()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            MakePlayerSturdy();
+            yield return WaitUntil(() => EnemyController.Active.Count > 0, 5f);
+            ClearEnemies();
+            yield return null;
+
+            var profiles = new System.Collections.Generic.HashSet<EnemyProfile>();
+            foreach (var stage in director.Stages)
+            {
+                if (stage.waves != null) foreach (var wave in stage.waves) foreach (var e in wave.enemies) profiles.Add(e);
+                if (stage.trainingDummies != null) foreach (var e in stage.trainingDummies) profiles.Add(e);
+                if (stage.endlessBosses != null) foreach (var e in stage.endlessBosses) profiles.Add(e);
+                foreach (var entry in stage.endlessPool) profiles.Add(entry.profile);
+            }
+            Assert.GreaterOrEqual(profiles.Count, 11);
+
+            // 1種類ずつ目の前に出して、しばらく戦わせる(遠距離・自爆・召喚・飛行などの処理を通す)
+            foreach (var profile in profiles)
+            {
+                var enemy = director.SpawnExtra(profile, player.position + player.forward * 6f);
+                Assert.NotNull(enemy, profile.displayName);
+                yield return new WaitForSeconds(2.5f);
+                ClearEnemies();
+                yield return null;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator ClearingStage_RecordsAndMovesToNextStage()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            var stageName = director.CurrentStage.name;
+            StageRecords.Clear(stageName);
+            MakePlayerSturdy();
+
+            // 出てきた敵を倒し続けてクリアまで進める
+            float start = Time.realtimeSinceStartup;
+            while (director.State != ArenaDirector.GameState.Cleared)
+            {
+                foreach (var enemy in EnemyController.Active.ToArray()) enemy.Damageable.Kill();
+                if (Time.realtimeSinceStartup - start > 40f) Assert.Fail("クリアまで進まない");
+                yield return null;
+            }
+
+            Assert.IsTrue(StageRecords.IsCleared(stageName));
+            Assert.IsTrue(director.NewRecord);
+            Assert.IsTrue(director.HasNextStage);
+
+            yield return Tap(keyboard.nKey);
+            yield return null;
+            yield return null;
+            var next = Object.FindFirstObjectByType<ArenaDirector>();
+            Assert.AreEqual(DefaultStage + 1, next.StageIndex, "次のステージが始まっていない");
+            StageRecords.Clear(stageName);
         }
 
         [UnityTest]

@@ -45,7 +45,12 @@ namespace BattleFight
         {
             if (GamePause.IsPaused) return;
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) SetCursorLocked(false);
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
+            // メニュー(ステージ選択・リザルト)を出している間はクリックでカーソルを奪わない
+            var director = ArenaDirector.Instance;
+            bool inMenu = director != null && (director.State == ArenaDirector.GameState.StageSelect
+                                              || director.State == ArenaDirector.GameState.Cleared
+                                              || director.State == ArenaDirector.GameState.GameOver);
+            if (!inMenu && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
             {
                 SetCursorLocked(true);
             }
