@@ -183,6 +183,7 @@ namespace BattleFight.EditorTools
                 so.FindProperty("lockOn").objectReferenceValue = lockOn;
                 so.FindProperty("style").objectReferenceValue = style;
                 so.FindProperty("self").objectReferenceValue = damageable;
+                so.FindProperty("view").objectReferenceValue = camera;
             });
             Configure(playerController, so =>
             {
@@ -264,10 +265,21 @@ namespace BattleFight.EditorTools
             Part(PrimitiveType.Cube, "Platform_W", arena, new Vector3(-22f, 1.5f, 0f), new Vector3(8f, 3f, 10f), platformMat, true);
             Part(PrimitiveType.Cube, "Platform_E", arena, new Vector3(22f, 1.5f, 0f), new Vector3(8f, 3f, 10f), platformMat, true);
 
+            // ワイヤーで立体的に移動できるよう、高さと位置をばらして置く
             Vector3[] grapplePoints =
             {
+                // 高台の上
                 new Vector3(-22f, 8f, 0f), new Vector3(22f, 8f, 0f),
+                // 南北の中央上空
                 new Vector3(0f, 9f, 18f), new Vector3(0f, 9f, -18f),
+                // 柱の上
+                new Vector3(-12f, 8.5f, 8f), new Vector3(12f, 8.5f, 8f),
+                new Vector3(-12f, 8.5f, -8f), new Vector3(12f, 8.5f, -8f),
+                // 四隅の高所
+                new Vector3(-24f, 11f, 22f), new Vector3(24f, 11f, 22f),
+                new Vector3(-24f, 11f, -22f), new Vector3(24f, 11f, -22f),
+                // アリーナ中央の上空
+                new Vector3(0f, 12f, 0f),
             };
             for (int i = 0; i < grapplePoints.Length; i++)
             {

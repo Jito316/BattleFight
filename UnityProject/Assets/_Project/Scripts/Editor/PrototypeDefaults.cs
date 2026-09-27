@@ -139,7 +139,9 @@ namespace BattleFight.EditorTools
 
         public static void ChainWire(SkillData s)
         {
-            Setup(s, "ワイヤー", "ロックオン中の敵かグラップルポイントへ飛ぶ。対象がなければ空中ダッシュ。", SlotType.Movement,
+            Setup(s, "ワイヤー",
+                "視界内で一番近いグラップルポイントへ飛び、少しの間ぶら下がる。ぶら下がり中は次のワイヤー・ジャンプ・空中攻撃につなげられる。" +
+                "ポイントがなければロックオン中の敵へ、それもなければ空中ダッシュ。", SlotType.Movement,
                 WeaponType.Chain, SkillBehavior.Grapple,
                 Step(0, 4, 12, 5, 15, 3, 20, new Vector3(0, 1, 1.0f), 1.4f, 0f, 1f, cancel: 4));
             s.range = 18f;

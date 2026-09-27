@@ -22,6 +22,7 @@ namespace BattleFight
             Airborne,
             Travel,
             PullWait,
+            Hang,
         }
 
         [SerializeField] PlayerInputReader input;
@@ -31,6 +32,7 @@ namespace BattleFight
         [SerializeField] LockOnSystem lockOn;
         [SerializeField] StyleRankSystem style;
         [SerializeField] Damageable self;
+        [SerializeField, Tooltip("ワイヤーの対象を「視界内」で選ぶためのカメラ")] Camera view;
 
         [Header("スワップ")]
         [SerializeField] float swapStrikeWindow = 1f;
@@ -47,9 +49,15 @@ namespace BattleFight
         [SerializeField] float counterInvulnerableTime = 0.5f;
 
         [Header("移動系")]
-        [SerializeField] float maxTravelTime = 0.8f;
-        [SerializeField] float grapplePointPopVelocity = 7f;
+        [SerializeField, Tooltip("移動が壁などで止まったときに打ち切るまでの余裕(秒)")] float travelTimeMargin = 0.3f;
         [SerializeField, Tooltip("ロックオン対象にこれ以上近いと前進しない")] float stopDistance = 1.4f;
+
+        [Header("ワイヤー")]
+        [SerializeField, Tooltip("ポイントに着いてからぶら下がる秒数")] float grappleHangTime = 0.6f;
+        [SerializeField] float grappleJumpVelocity = 11f;
+        [SerializeField] float grappleJumpForward = 6f;
+        [SerializeField, Tooltip("画面端のこの割合はポイントの対象から外す")] float grappleViewMargin = 0.05f;
+        [SerializeField, Tooltip("これより近いポイントは「今ぶら下がっているポイント」とみなして対象から外す")] float grappleMinDistance = 2.5f;
 
         static readonly Collider[] OverlapBuffer = new Collider[32];
         readonly HashSet<Damageable> hitThisStep = new HashSet<Damageable>();
@@ -74,6 +82,7 @@ namespace BattleFight
         EnemyController travelEnemy;
         Vector3 travelTarget;
         bool travelToPoint;
+        float travelTimeout;
 
         SlotType lastSwapCancelSlot;
         int swapCancelStreak;
@@ -84,6 +93,13 @@ namespace BattleFight
         public bool IsFinisherActive => current != null && isFinisher;
         public bool IsStunned => Time.time < stunnedUntil;
         public bool SwapStrikeReady => Time.time <= swapStrikeUntil;
+        /// <summary>スワップストライクの残り時間(1 → 0)</summary>
+        public float SwapStrikeRemaining => swapStrikeWindow <= 0f ? 0f : Mathf.Clamp01((swapStrikeUntil - Time.time) / swapStrikeWindow);
+        /// <summary>移動スロットがワイヤーのとき、今押したら飛ぶポイント(HUD の表示用)</summary>
+        public GrapplePoint GrapplePreview { get; private set; }
+
+        /// <summary>今このスロットを切り替えるとスワップキャンセルになるか(HUD の表示用)</summary>
+        public bool CanSwapCancelNow(SlotType slot) => CanSwapCancel(slot);
 
         public string DebugLabel => current == null
             ? (IsStunned ? "被弾" : "待機")
@@ -114,6 +130,9 @@ namespace BattleFight
 
             if (current == null) self.Invulnerable = Time.time < extraInvulnerableUntil;
             UpdateWeaponPose();
+
+            var movement = slots.GetCurrent(SlotType.Movement);
+            GrapplePreview = movement != null && movement.behavior == SkillBehavior.Grapple ? FindGrapplePoint(movement.range) : null;
         }
 
         // ---------- 切り替え ----------
@@ -133,7 +152,15 @@ namespace BattleFight
             if (!slots.Cycle(slot)) return;
 
             swapStrikeUntil = Time.time + swapStrikeWindow;
-            if (slot == SlotType.AttackA) weapons.SetMainWeapon(slots.GetCurrent(slot).weapon);
+            var swapped = slots.GetCurrent(slot);
+            if (slot == SlotType.AttackA) weapons.SetMainWeapon(swapped.weapon);
+
+            // 切り替えた武器種の色で足元を光らせる
+            var weaponData = slots.GetWeaponData(swapped.weapon);
+            if (CombatFeedback.Instance != null && weaponData != null)
+            {
+                CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, weaponData.color);
+            }
 
             if (cancel)
             {
@@ -347,7 +374,30 @@ namespace BattleFight
                 case Phase.PullWait:
                     if (travelEnemy == null || !travelEnemy.IsBeingPulled || phaseTime > 0.5f) BeginStep(0);
                     break;
+                case Phase.Hang:
+                    TickHang();
+                    break;
             }
+        }
+
+        /// <summary>ポイントにぶら下がっている間。次のワイヤー・ジャンプ・空中攻撃につなげられる。</summary>
+        void TickHang()
+        {
+            motor.GravityScale = 0f;
+            motor.SetVerticalVelocity(0f);
+
+            if (input.Consume(PlayerAction.Jump))
+            {
+                Vector3 forward = Flat(motor.DesiredDirection);
+                if (forward.sqrMagnitude < 0.01f) forward = transform.forward;
+                EndSkill();
+                motor.SetVerticalVelocity(grappleJumpVelocity);
+                motor.AddImpulse(forward.normalized * grappleJumpForward);
+                return;
+            }
+
+            if (TryStartFromInput()) return;
+            if (phaseTime >= grappleHangTime) EndSkill();
         }
 
         void TickRecovery()
@@ -518,45 +568,69 @@ namespace BattleFight
             motor.GravityScale = 0f;
             motor.SetVerticalVelocity(0f);
 
+            // 優先順: 視界内で一番近いポイント → ロックオン中の敵 → 空中ダッシュ
+            var point = FindGrapplePoint(current.range);
             var target = lockOn.Target;
-            if (target != null && Vector3.Distance(target.transform.position, transform.position) <= current.range)
-            {
-                travelEnemy = target;
-            }
-            else if (TryFindGrapplePoint(out var point))
+            if (point != null)
             {
                 travelToPoint = true;
-                travelTarget = point - Vector3.up * 1.8f;
+                travelTarget = point.transform.position - Vector3.up * 1.8f;
+            }
+            else if (target != null && Vector3.Distance(target.transform.position, transform.position) <= current.range)
+            {
+                travelEnemy = target;
             }
             else
             {
                 travelTarget = transform.position + moveDirection * current.dashDistance + Vector3.up * 0.8f;
             }
 
+            Vector3 destination = travelEnemy != null ? travelEnemy.transform.position : travelTarget;
+            BeginTravel(destination);
             hitsEnabled = travelEnemy != null;
-            phase = Phase.Travel;
-            phaseTime = 0f;
         }
 
-        bool TryFindGrapplePoint(out Vector3 position)
+        /// <summary>
+        /// 視界内(カメラに映っていて、途中に遮るものがない)にあるグラップルポイントのうち、一番近いもの。
+        /// 今ぶら下がっているポイントは除く。
+        /// </summary>
+        GrapplePoint FindGrapplePoint(float range)
         {
-            position = default;
-            float bestScore = float.MaxValue;
+            Vector3 chest = transform.position + Vector3.up;
+            GrapplePoint best = null;
+            float bestDistance = float.MaxValue;
             foreach (var point in GrapplePoint.All)
             {
-                Vector3 to = point.transform.position - transform.position;
-                float distance = to.magnitude;
-                if (distance > current.range || distance < 1f) continue;
-                float facing = Vector3.Dot(Flat(to).normalized, moveDirection);
-                // 向いている方向にあるポイントを優先する
-                float score = distance * (facing > 0.3f ? 1f : 4f);
-                if (score < bestScore)
+                Vector3 position = point.transform.position;
+                float distance = Vector3.Distance(chest, position);
+                if (distance > range || distance < grappleMinDistance || distance >= bestDistance) continue;
+                if (!IsInView(position)) continue;
+                if (Physics.Linecast(chest, position, out var hit, ~0, QueryTriggerInteraction.Ignore)
+                    && !hit.collider.transform.IsChildOf(transform))
                 {
-                    bestScore = score;
-                    position = point.transform.position;
+                    continue;
                 }
+                best = point;
+                bestDistance = distance;
             }
-            return bestScore < float.MaxValue;
+            return best;
+        }
+
+        bool IsInView(Vector3 position)
+        {
+            if (view == null) return Vector3.Dot(Flat(position - transform.position).normalized, transform.forward) > 0.3f;
+            Vector3 viewport = view.WorldToViewportPoint(position);
+            return viewport.z > 0f
+                   && viewport.x >= grappleViewMargin && viewport.x <= 1f - grappleViewMargin
+                   && viewport.y >= grappleViewMargin && viewport.y <= 1f - grappleViewMargin;
+        }
+
+        void BeginTravel(Vector3 destination)
+        {
+            phase = Phase.Travel;
+            phaseTime = 0f;
+            float speed = Mathf.Max(1f, current.moveSpeed);
+            travelTimeout = Vector3.Distance(transform.position, destination) / speed + travelTimeMargin;
         }
 
         void BeginPull()
@@ -582,8 +656,7 @@ namespace BattleFight
                 // 重い敵には自分が飛びつく
                 motor.GravityScale = 0f;
                 motor.SetVerticalVelocity(0f);
-                phase = Phase.Travel;
-                phaseTime = 0f;
+                BeginTravel(target.transform.position);
                 return;
             }
 
@@ -616,7 +689,7 @@ namespace BattleFight
                 motor.FaceDirection(moveDirection);
             }
 
-            if (to.magnitude <= stepLength + 0.3f || phaseTime >= maxTravelTime)
+            if (to.magnitude <= stepLength + 0.3f || phaseTime >= travelTimeout)
             {
                 motor.Displace(Vector3.ClampMagnitude(to, stepLength));
                 ArriveTravel();
@@ -629,7 +702,13 @@ namespace BattleFight
 
         void ArriveTravel()
         {
-            if (travelToPoint) motor.SetVerticalVelocity(grapplePointPopVelocity);
+            if (travelToPoint)
+            {
+                phase = Phase.Hang;
+                phaseTime = 0f;
+                return;
+            }
+
             motor.GravityScale = current.airGravityScale;
             if (travelEnemy != null) motor.FaceDirection(DirectionTo(travelEnemy.transform.position));
             BeginStep(0);

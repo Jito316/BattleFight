@@ -118,6 +118,36 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator Wire_ZipsToNearestVisiblePoint_AndHangs()
+        {
+            yield return LoadArena();
+            yield return WaitUntil(() => executor.GetComponent<PlayerMotor>().IsGrounded, 3f);
+
+            // 目の前の近いポイントと、同じ方向の遠いポイントを置く
+            var near = new GameObject("TestPoint_Near").AddComponent<GrapplePoint>();
+            near.transform.position = player.position + player.forward * 7f + Vector3.up * 4f;
+            var far = new GameObject("TestPoint_Far").AddComponent<GrapplePoint>();
+            far.transform.position = player.position + player.forward * 14f + Vector3.up * 5f;
+
+            // 移動スロットをワイヤーにする(ステップ斬り → ハンマージャンプ → ワイヤー)
+            yield return Tap(keyboard.digit3Key);
+            yield return Tap(keyboard.digit3Key);
+            Assert.AreEqual("ワイヤー", slots.GetCurrent(SlotType.Movement).displayName);
+            yield return null;
+            Assert.AreSame(near, executor.GrapplePreview, "視界内で一番近いポイントが選ばれていない");
+
+            yield return Tap(keyboard.lKey);
+            yield return WaitUntil(() => executor.DebugLabel.Contains("Hang"), 3f);
+
+            float distance = Vector3.Distance(player.position + Vector3.up * 1.8f, near.transform.position);
+            Assert.Less(distance, 1.5f, "ポイントの下にぶら下がっていない");
+
+            // ぶら下がり中は次の近いポイント(遠い方)が候補になる
+            yield return null;
+            Assert.AreSame(far, executor.GrapplePreview);
+        }
+
+        [UnityTest]
         public IEnumerator EveryRackSkill_CanBeUsedWithoutErrors()
         {
             yield return LoadArena();

@@ -40,7 +40,12 @@ namespace BattleFight
         bool showHelp = true;
         int lastRank;
         float rankPulse;
+        readonly float[] swappedAt = { -99f, -99f, -99f };
         readonly StringBuilder builder = new StringBuilder();
+
+        void OnEnable() => slots.SlotChanged += OnSlotChanged;
+        void OnDisable() => slots.SlotChanged -= OnSlotChanged;
+        void OnSlotChanged(SlotType slot) => swappedAt[(int)slot] = Time.unscaledTime;
 
         void Update()
         {
@@ -143,11 +148,13 @@ namespace BattleFight
             float x0 = (virtualWidth - total) * 0.5f;
             float y = RefHeight - height - 30f;
 
-            DrawBonusLine(x0, y - 44f, total);
+            DrawBonusLine(x0, y - 78f, total);
 
             if (executor.SwapStrikeReady)
             {
-                Text(new Rect(x0, y - 84f, total, 36), "SWAP STRIKE READY", 26, new Color(1f, 0.9f, 0.2f), TextAnchor.UpperCenter);
+                var strikeColor = new Color(1f, 0.9f, 0.2f);
+                Text(new Rect(x0, y - 124f, total, 36), "SWAP STRIKE READY", 26, strikeColor, TextAnchor.UpperCenter);
+                Bar(new Rect(x0 + total * 0.5f - 150f, y - 88f, 300f, 6f), executor.SwapStrikeRemaining, strikeColor);
             }
 
             for (int i = 0; i < 3; i++)
@@ -163,14 +170,50 @@ namespace BattleFight
             var weaponData = current != null ? slots.GetWeaponData(current.weapon) : null;
             var weaponColor = weaponData != null ? weaponData.color : Color.white;
             bool active = executor.Current != null && executor.Current == current && !executor.IsFinisherActive;
+            bool cancelReady = executor.CanSwapCancelNow(slot);
+            int i = (int)slot;
+            float sinceSwap = Time.unscaledTime - swappedAt[i];
+
+            // 切り替えた直後は枠が外へ広がって光る
+            if (sinceSwap < 0.3f)
+            {
+                float t = sinceSwap / 0.3f;
+                float grow = 14f * t;
+                var glow = weaponColor;
+                glow.a = 1f - t;
+                Outline(new Rect(rect.x - grow, rect.y - grow, rect.width + grow * 2f, rect.height + grow * 2f), glow, 4f);
+            }
 
             Box(rect, new Color(0f, 0f, 0f, active ? 0.75f : 0.5f));
-            if (active) Outline(rect, weaponColor, 3f);
+            if (cancelReady)
+            {
+                // 今切り替えるとスワップキャンセルになる
+                float blink = Mathf.PingPong(Time.unscaledTime * 8f, 1f);
+                Outline(rect, Color.Lerp(new Color(0.4f, 0.9f, 1f), Color.white, blink), 4f);
+            }
+            else if (active)
+            {
+                Outline(rect, weaponColor, 3f);
+            }
             Box(new Rect(rect.x, rect.y, 8, rect.height), weaponColor);
 
-            int i = (int)slot;
             Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 30, 26), $"{SlotLabels[i]}   <color=#AAAAAA>[{SlotKeys[i]}]</color>", 20,
                 Color.white);
+            if (cancelReady)
+            {
+                Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 34, 26), "今なら切替でキャンセル", 18, new Color(0.4f, 0.9f, 1f),
+                    TextAnchor.UpperRight);
+            }
+
+            // 切り替えた直後は、新しいスキル名をパネルの上に出す
+            if (sinceSwap < 0.8f && current != null)
+            {
+                var labelColor = weaponColor;
+                labelColor.a = Mathf.Clamp01(1f - (sinceSwap - 0.4f) / 0.4f);
+                float rise = 10f * Mathf.Clamp01(sinceSwap / 0.2f);
+                Text(new Rect(rect.x, rect.y - 26 - rise, rect.width, 34), $"⇒ {current.displayName}", 26, labelColor,
+                    TextAnchor.UpperCenter);
+            }
 
             if (current == null) return;
             Text(new Rect(rect.x + 20, rect.y + 36, rect.width - 30, 44), current.displayName, 34, weaponColor);
@@ -248,6 +291,17 @@ namespace BattleFight
                 }
             }
 
+            // ワイヤーで飛ぶ先のポイント
+            var grapple = executor.GrapplePreview;
+            if (grapple != null && WorldToGui(grapple.transform.position, out var grapplePoint))
+            {
+                float pulse = 1f + 0.15f * Mathf.Sin(Time.unscaledTime * 10f);
+                Text(new Rect(grapplePoint.x - 40, grapplePoint.y - 26, 80, 52), "◎", Mathf.RoundToInt(44 * pulse),
+                    new Color(0.8f, 0.55f, 1f), TextAnchor.MiddleCenter);
+                Text(new Rect(grapplePoint.x - 80, grapplePoint.y + 18, 160, 30), "Shift / ○", 16, new Color(0.9f, 0.8f, 1f),
+                    TextAnchor.UpperCenter, FontStyle.Normal);
+            }
+
             var target = lockOn.Target;
             if (target != null && WorldToGui(target.CenterPoint, out var lockPoint))
             {
@@ -303,10 +357,12 @@ namespace BattleFight
                 "・技の硬直中にそのスロットを切り替えると硬直をキャンセル\n" +
                 "・切り替えた直後の一撃は強化(SWAP STRIKE)\n" +
                 "・同じ技の連発はスタイルが伸びない\n" +
+                "・ワイヤーは視界内で一番近い ◎ へ飛ぶ(ぶら下がり中に\n" +
+                "   ワイヤーで次へ / Space でジャンプ / 攻撃で空中攻撃)\n" +
                 "・[F1] でこの説明を閉じる";
 
-            Box(new Rect(x - 10, y - 8, 560, 470), new Color(0f, 0f, 0f, 0.45f));
-            Text(new Rect(x, y, 540, 460), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
+            Box(new Rect(x - 10, y - 8, 560, 520), new Color(0f, 0f, 0f, 0.45f));
+            Text(new Rect(x, y, 540, 510), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
         }
 
         void DrawCenterMessage()
