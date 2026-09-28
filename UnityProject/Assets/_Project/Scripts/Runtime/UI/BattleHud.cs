@@ -123,7 +123,9 @@ namespace BattleFight
             float width = 800f;
             float x = (virtualWidth - width) * 0.5f;
             var damageable = boss.Damageable;
-            Text(new Rect(x, 64, width, 30), boss.Profile.displayName, 24, new Color(1f, 0.5f, 0.5f), TextAnchor.UpperCenter);
+            string weakness = WeaknessText(boss.Profile);
+            Text(new Rect(x, 64, width, 30), boss.Profile.displayName + (weakness.Length > 0 ? $"   <size=20>弱点 {weakness}</size>" : ""), 24,
+                new Color(1f, 0.5f, 0.5f), TextAnchor.UpperCenter);
             Bar(new Rect(x, 96, width, 18), damageable.Health / damageable.MaxHealth, new Color(0.9f, 0.2f, 0.2f));
             if (damageable.MaxArmor > 0f)
             {
@@ -159,8 +161,42 @@ namespace BattleFight
                 y += 38f;
             }
 
-            Text(new Rect(right - width - 100, 560, width + 100, 30), executor.DebugLabel, 18, new Color(1f, 1f, 1f, 0.6f),
+            DrawChain(right, width);
+
+            Text(new Rect(right - width - 100, 690, width + 100, 30), executor.DebugLabel, 18, new Color(1f, 1f, 1f, 0.6f),
                 TextAnchor.UpperRight, FontStyle.Normal);
+        }
+
+        /// <summary>チェンジチェイン(切り替え → ヒットで上がり、ダメージが増える)</summary>
+        void DrawChain(float right, float width)
+        {
+            var chain = executor.SwapChain;
+            var color = new Color(0.55f, 1f, 0.9f);
+            if (chain.Chain <= 0)
+            {
+                Text(new Rect(right - width, 580, width, 30), "CHAIN  切り替え → ヒットでつながる", 16, new Color(1f, 1f, 1f, 0.45f),
+                    TextAnchor.UpperRight, FontStyle.Normal);
+                return;
+            }
+            int bonus = Mathf.RoundToInt((chain.DamageMultiplier - 1f) * 100f);
+            string max = chain.Chain >= chain.MaxChain ? "  MAX" : "";
+            Text(new Rect(right - width, 575, width, 50), $"CHAIN ×{chain.Chain}{max}", 38, color, TextAnchor.UpperRight);
+            Text(new Rect(right - width, 622, width, 26), $"ダメージ +{bonus}%", 20, color, TextAnchor.UpperRight);
+            Bar(new Rect(right - width, 652, width, 6), chain.Remaining(Time.time), color);
+        }
+
+        string WeaknessText(EnemyProfile profile)
+        {
+            if (profile == null || profile.weaknesses == null || profile.weaknesses.Length == 0) return "";
+            builder.Clear();
+            foreach (var weapon in profile.weaknesses)
+            {
+                var data = slots.GetWeaponData(weapon);
+                if (data == null) continue;
+                if (builder.Length > 0) builder.Append(' ');
+                builder.Append($"<color=#{ColorUtility.ToHtmlStringRGB(data.color)}>{data.displayName}</color>");
+            }
+            return builder.ToString();
         }
 
         // ---------- スロット(下部) ----------
@@ -175,6 +211,7 @@ namespace BattleFight
             float y = RefHeight - height - 30f;
 
             DrawBonusLine(x0, y - 78f, total);
+            DrawChangeAttack(x0 + total - 260f, y - 124f);
 
             if (executor.SwapStrikeReady)
             {
@@ -230,7 +267,7 @@ namespace BattleFight
         void DrawSlot(SlotType slot, Rect rect)
         {
             var rack = slots.GetRack(slot);
-            var current = rack.Current;
+            var current = ShownSkill(slot);
             var weaponData = current != null ? slots.GetWeaponData(current.weapon) : null;
             var weaponColor = weaponData != null ? weaponData.color : Color.white;
             bool active = executor.Current != null && executor.Current == current && !executor.IsFinisherActive;
@@ -312,6 +349,21 @@ namespace BattleFight
                 FontStyle.Normal);
         }
 
+        /// <summary>
+        /// スロットのパネルに出すスキル。実際に使われるもの(プリセット方式ではプリセットの中身)を出す。
+        /// 以前はラックの候補を出していたため、プリセットを変えても表示が変わらなかった。
+        /// </summary>
+        public SkillData ShownSkill(SlotType slot) => slots.GetCurrent(slot);
+
+        /// <summary>チェンジアタック(切り替えた瞬間の周囲攻撃)の準備</summary>
+        void DrawChangeAttack(float x, float y)
+        {
+            bool ready = executor.ChangeAttackReady;
+            var color = ready ? new Color(0.55f, 1f, 0.9f) : new Color(1f, 1f, 1f, 0.5f);
+            Text(new Rect(x, y, 260, 30), ready ? "CHANGE ATTACK 準備OK" : "CHANGE ATTACK", 18, color, TextAnchor.UpperRight);
+            Bar(new Rect(x + 60, y + 28, 200, 5), executor.ChangeAttackCharge, color);
+        }
+
         static string DescribeShort(SkillData skill)
         {
             if (skill == null) return "";
@@ -366,6 +418,15 @@ namespace BattleFight
                 if (damageable.MaxArmor > 0f)
                 {
                     Bar(new Rect(rect.x, rect.y + 9, rect.width, 5), damageable.Armor / damageable.MaxArmor, new Color(1f, 0.7f, 0.2f));
+                }
+                // 弱点の武器種(今の攻撃Aの武器が弱点なら強調する)
+                string weakness = WeaknessText(enemy.Profile);
+                if (weakness.Length > 0)
+                {
+                    var attackA = slots.GetCurrent(SlotType.AttackA);
+                    bool weakNow = attackA != null && enemy.Profile.IsWeakTo(attackA.weapon);
+                    Text(new Rect(point.x - 70, point.y - 24, 140, 24), (weakNow ? "<b>弱点</b> " : "弱 ") + weakness, weakNow ? 17 : 15,
+                        weakNow ? new Color(1f, 0.6f, 0.2f) : new Color(1f, 1f, 1f, 0.75f), TextAnchor.UpperCenter);
                 }
                 if (enemy.IsTelegraphing)
                 {
@@ -444,12 +505,15 @@ namespace BattleFight
                 "・技の硬直中にそのスロットを切り替えると硬直をキャンセル\n" +
                 "・切り替えた直後の一撃は強化(SWAP STRIKE)\n" +
                 "・同じ技の連発はスタイルが伸びない\n" +
+                "・敵の頭上の「弱」の武器で攻撃すると 1.5倍\n" +
+                "・切り替え → ヒットでCHAIN(最大×5、ダメージ +50%)\n" +
+                "・切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)\n" +
                 "・ワイヤーは視界内で一番近い ◎ へ飛ぶ(ぶら下がり中に\n" +
                 "   ワイヤーで次へ / Space でジャンプ / 攻撃で空中攻撃)\n" +
                 "・[F1] でこの説明を閉じる";
 
-            Box(new Rect(x - 10, y - 8, 600, 580), new Color(0f, 0f, 0f, 0.45f));
-            Text(new Rect(x, y, 580, 570), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
+            Box(new Rect(x - 10, y - 8, 600, 650), new Color(0f, 0f, 0f, 0.45f));
+            Text(new Rect(x, y, 580, 640), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
         }
 
         void DrawCenterMessage()

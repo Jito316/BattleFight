@@ -15,6 +15,7 @@ MonoBehaviour:
   displayName: "\u96D1\u5175"
   isBoss: 0
   heavy: 0
+  weaknesses: 0000000005000000
   maxHealth: 90
   maxArmor: 0
   armorRegenDelay: 6
@@ -23,6 +24,9 @@ MonoBehaviour:
   armorBreakStagger: 1.4
   moveSpeed: 3.5
   turnSpeed: 360
+  preferredDistance: 0
+  flying: 0
+  hoverHeight: 3.5
   attackCooldown: 1.4
   attacks:
   - name: "\u65AC\u308A\u304B\u304B\u308A"
@@ -37,6 +41,17 @@ MonoBehaviour:
     lunge: 1.5
     jumpSlam: 0
     weight: 1
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  bodyShape: 1
   scale: 1
   color: {r: 0.45, g: 0.5, b: 0.6, a: 1}
   telegraphColor: {r: 1, g: 0.3, b: 0.1, a: 1}

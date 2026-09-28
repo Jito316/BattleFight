@@ -38,6 +38,9 @@ def collect_characters() -> set[str]:
         for path in scan_root.rglob("*"):
             if path.suffix not in (".cs", ".asset"):
                 continue
+            # テストのメッセージは画面に出ないので対象外(FontCoverageTests と同じ)
+            if "Tests" in path.parts:
+                continue
             text = path.read_text(encoding="utf-8", errors="ignore")
             chars |= set(text)
             chars |= {chr(int(code, 16)) for code in ESCAPE.findall(text)}
