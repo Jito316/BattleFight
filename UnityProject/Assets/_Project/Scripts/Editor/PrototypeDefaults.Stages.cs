@@ -161,6 +161,53 @@ namespace BattleFight.EditorTools
             };
         }
 
+        /// <summary>
+        /// 3体目のボス「影刃」。素早い人型の剣士。
+        /// 三連斬・影走り(長い突進)・背後取り(消えて背後に現れる)。体力が半分を切ると第二形態になり、
+        /// 速くなって攻撃の間隔が縮み、旋風刃(周囲)と飛刃(扇状の飛び道具)が増える。
+        /// </summary>
+        public static void Shadow(EnemyProfile p)
+        {
+            p.displayName = "影刃";
+            p.isBoss = true;
+            p.heavy = true;
+            p.weaknesses = new[] { WeaponType.Chain, WeaponType.Staff };
+            p.maxHealth = 1100f;
+            p.maxArmor = 100f;
+            p.armorRegenDelay = 8f;
+            p.staggerThreshold = 55f;
+            p.staggerDuration = 0.5f;
+            p.armorBreakStagger = 2.2f;
+            p.moveSpeed = 5.5f;
+            p.turnSpeed = 540f;
+            p.attackCooldown = 0.9f;
+            p.scale = 1.5f;
+            p.color = new Color(0.15f, 0.15f, 0.22f);
+            p.telegraphColor = new Color(0.8f, 0.3f, 1f);
+            p.shardValue = 30f;
+            p.attacks = new List<EnemyAttack>
+            {
+                new EnemyAttack { name = "三連斬", range = 3.2f, windup = 0.55f, active = 0.15f, recovery = 0.9f, damage = 10f,
+                    radius = 1.0f, offset = new Vector3(0, 0.8f, 0.9f), knockback = 4f, lunge = 1.5f, repeat = 2, repeatWindup = 0.3f,
+                    weight = 2f },
+                new EnemyAttack { name = "影走り", range = 12f, windup = 0.7f, active = 0.3f, recovery = 1.0f, damage = 14f,
+                    radius = 0.8f, offset = new Vector3(0, 0.6f, 0.5f), knockback = 9f, lunge = 11f },
+                new EnemyAttack { name = "背後取り", teleportBehind = true, range = 20f, windup = 1.1f, active = 0.15f, recovery = 1.0f,
+                    damage = 18f, radius = 1.0f, offset = new Vector3(0, 0.7f, 0.8f), knockback = 10f, weight = 0.8f },
+            };
+            p.phase2HealthRatio = 0.5f;
+            p.phase2SpeedMultiplier = 1.3f;
+            p.phase2CooldownMultiplier = 0.6f;
+            p.phase2Message = "影がさらに速くなる……!";
+            p.phase2Attacks = new List<EnemyAttack>
+            {
+                new EnemyAttack { name = "旋風刃", range = 4f, windup = 0.7f, active = 0.2f, recovery = 1.0f, damage = 16f,
+                    radius = 1.5f, offset = new Vector3(0, 0.7f, 0), knockback = 12f },
+                new EnemyAttack { name = "飛刃", ranged = true, range = 16f, windup = 0.8f, active = 0.1f, recovery = 1.1f, damage = 8f,
+                    knockback = 4f, projectileSpeed = 20f, projectileRadius = 0.35f, projectileCount = 5, projectileSpread = 60f },
+            };
+        }
+
         // ---------- ステージ ----------
 
         static StageWave Wave(string label, params EnemyProfile[] enemies) => new StageWave { label = label, enemies = enemies };
@@ -219,11 +266,26 @@ namespace BattleFight.EditorTools
             };
         }
 
+        public static void Act4(StageData s, EnemyProfile dasher, EnemyProfile shooter, EnemyProfile flyer, EnemyProfile armored,
+            EnemyProfile bomber, EnemyProfile shadow)
+        {
+            s.displayName = "第4幕  影の剣聖";
+            s.description = "素早い敵が続き、最後は背後に回り込む剣士「影刃」。体力が半分を切ると第二形態になる。弱点は鎖と杖。";
+            s.kind = StageKind.Waves;
+            s.waves = new[]
+            {
+                Wave("WAVE", dasher, dasher, dasher, shooter),
+                Wave("WAVE", flyer, flyer, dasher, dasher, armored),
+                Wave("WAVE", bomber, bomber, bomber, shooter, shooter),
+                Wave("BOSS", shadow),
+            };
+        }
+
         public static void Endless(StageData s, EnemyProfile grunt, EnemyProfile dasher, EnemyProfile shooter, EnemyProfile bomber,
             EnemyProfile flyer, EnemyProfile armored, EnemyProfile boss, EnemyProfile magus)
         {
             s.displayName = "エンドレス";
-            s.description = "敵が際限なく押し寄せる。5ウェーブごとにボスが出る。どこまで行けるか。";
+            s.description = "敵が際限なく押し寄せる。5ウェーブごとにボス(鉄獣 → 魔導機 → 影刃)が出る。どこまで行けるか。";
             s.kind = StageKind.Endless;
             s.bossEvery = 5;
             s.endlessBosses = new[] { boss, magus };

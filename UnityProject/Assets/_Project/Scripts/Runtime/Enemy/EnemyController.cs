@@ -50,6 +50,9 @@ namespace BattleFight
         bool grounded;
         bool juggled;
         bool hasToken;
+        bool teleported;
+        int repeatsLeft;
+        readonly List<EnemyAttack> availableAttacks = new List<EnemyAttack>();
         bool attackLanded;
         float flashTimer;
         float strafeSign = 1f;
@@ -63,6 +66,7 @@ namespace BattleFight
         {
             Active.Clear();
             attackTokensInUse = 0;
+            PhaseChanged = null;
         }
 
         public EnemyProfile Profile => profile;
@@ -71,6 +75,11 @@ namespace BattleFight
         public bool IsHeavy => profile != null && profile.heavy;
         public bool IsBeingPulled => state == State.Pulled;
         public bool IsTelegraphing => state == State.Windup;
+        public bool IsPhase2 { get; private set; }
+        float MoveSpeed => profile.moveSpeed * (IsPhase2 ? profile.phase2SpeedMultiplier : 1f);
+
+        /// <summary>ボスが第二形態になった(HUD の告知用)</summary>
+        public static event System.Action<EnemyController> PhaseChanged;
         public float Height => controller.height * transform.lossyScale.y;
         public float Radius => controller.radius * transform.lossyScale.x;
         public Vector3 CenterPoint => transform.position + Vector3.up * (Height * 0.5f);
@@ -189,7 +198,7 @@ namespace BattleFight
             Face(to, dt);
 
             // 攻撃を持たない敵(訓練用の人形など)は向きを変えるだけ
-            if (attack == null) return Separation() * profile.moveSpeed * 0.6f;
+            if (attack == null) return Separation() * MoveSpeed * 0.6f;
 
             if (cooldown <= 0f && distance <= attack.range && TryTakeToken())
             {
@@ -200,15 +209,15 @@ namespace BattleFight
             Vector3 direction = distance > 0.01f ? to / distance : transform.forward;
             Vector3 move;
             if (profile.preferredDistance > 0f && distance < profile.preferredDistance * 0.7f)
-                move = -direction * (profile.moveSpeed * 0.8f);
+                move = -direction * (MoveSpeed * 0.8f);
             else if (distance > attack.range * 0.85f)
-                move = direction * profile.moveSpeed;
+                move = direction * MoveSpeed;
             else if (!hasToken)
-                move = Vector3.Cross(Vector3.up, direction) * (strafeSign * profile.moveSpeed * 0.4f);
+                move = Vector3.Cross(Vector3.up, direction) * (strafeSign * MoveSpeed * 0.4f);
             else
                 move = Vector3.zero;
 
-            return move + Separation() * profile.moveSpeed * 0.6f;
+            return move + Separation() * MoveSpeed * 0.6f;
         }
 
         void EnterWindup()
@@ -216,6 +225,8 @@ namespace BattleFight
             state = State.Windup;
             stateTime = 0f;
             attackLanded = false;
+            teleported = false;
+            repeatsLeft = attack.repeat;
             if (attack.jumpSlam)
             {
                 verticalVelocity = 12f;
@@ -223,8 +234,39 @@ namespace BattleFight
             }
         }
 
+        /// <summary>連続攻撃の2発目以降。予備動作を短くしてもう一度出す</summary>
+        void EnterRepeatWindup()
+        {
+            repeatsLeft--;
+            state = State.Windup;
+            stateTime = Mathf.Max(0f, attack.windup - attack.repeatWindup);
+            attackLanded = false;
+        }
+
+        /// <summary>予備動作の途中で消え、プレイヤーの背後に現れる(残りの予備動作は背後で見せる)</summary>
+        void TeleportBehindTarget()
+        {
+            teleported = true;
+            if (target == null) return;
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, profile.telegraphColor);
+
+            Vector3 behind = target.position - Flat(target.forward).normalized * (Radius + 1.8f);
+            // アリーナの外に出ないようにする
+            Vector3 flat = Flat(behind);
+            if (flat.magnitude > 27f) behind = flat.normalized * 27f + Vector3.up * behind.y;
+            behind.y = target.position.y + 0.1f;
+
+            controller.enabled = false;
+            transform.position = behind;
+            controller.enabled = true;
+            Vector3 look = Flat(target.position - transform.position);
+            if (look.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(look);
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, profile.telegraphColor);
+        }
+
         Vector3 TickWindup(float dt)
         {
+            if (attack.teleportBehind && !teleported && stateTime >= attack.windup * 0.5f) TeleportBehindTarget();
             if (stateTime < attack.windup * 0.6f && target != null) Face(Flat(target.position - transform.position), dt);
 
             Vector3 planar = Vector3.zero;
@@ -323,6 +365,11 @@ namespace BattleFight
 
             if (stateTime >= attack.active)
             {
+                if (repeatsLeft > 0 && !IsDead)
+                {
+                    EnterRepeatWindup();
+                    return planar;
+                }
                 state = State.Recovery;
                 stateTime = 0f;
                 ReleaseToken();
@@ -360,7 +407,7 @@ namespace BattleFight
             state = State.Chase;
             stateTime = 0f;
             attack = null;
-            cooldown = profile.attackCooldown * Random.Range(0.7f, 1.3f);
+            cooldown = profile.attackCooldown * Random.Range(0.7f, 1.3f) * (IsPhase2 ? profile.phase2CooldownMultiplier : 1f);
         }
 
         void EnterStagger(float duration)
@@ -408,6 +455,9 @@ namespace BattleFight
             if (profile.isBoss) knockScale *= 0.3f;
             knockback += hit.direction * (hit.knockback * knockScale);
 
+            // 第二形態になったときは、そのひるみ(長め)を普通のひるみで上書きしない
+            if (outcome != HitOutcome.Killed && CheckPhase2()) return;
+
             switch (outcome)
             {
                 case HitOutcome.Killed:
@@ -454,18 +504,58 @@ namespace BattleFight
             return 0f;
         }
 
+        /// <summary>今使える攻撃(第二形態では増える)</summary>
+        List<EnemyAttack> AvailableAttacks()
+        {
+            availableAttacks.Clear();
+            if (profile.attacks != null) availableAttacks.AddRange(profile.attacks);
+            if (IsPhase2 && profile.phase2Attacks != null) availableAttacks.AddRange(profile.phase2Attacks);
+            return availableAttacks;
+        }
+
         EnemyAttack PickAttack()
         {
-            if (profile.attacks == null || profile.attacks.Count == 0) return null;
+            var attacks = AvailableAttacks();
+            if (attacks.Count == 0) return null;
             float total = 0f;
-            foreach (var a in profile.attacks) total += Mathf.Max(0f, a.weight);
+            foreach (var a in attacks) total += Mathf.Max(0f, a.weight);
             float roll = Random.value * total;
-            foreach (var a in profile.attacks)
+            foreach (var a in attacks)
             {
                 roll -= Mathf.Max(0f, a.weight);
                 if (roll <= 0f) return a;
             }
-            return profile.attacks[0];
+            return attacks[0];
+        }
+
+        /// <summary>指定した攻撃をすぐに始める(テストやデバッグ用)。使える攻撃の番号で指定する</summary>
+        public bool ForceAttack(int index)
+        {
+            var attacks = AvailableAttacks();
+            if (IsDead || index < 0 || index >= attacks.Count || target == null) return false;
+            ReleaseToken();
+            attack = attacks[index];
+            TryTakeToken();
+            EnterWindup();
+            return true;
+        }
+
+        /// <summary>体力が一定を下回ったら第二形態になる。少しひるんで、アーマーが戻る</summary>
+        bool CheckPhase2()
+        {
+            if (IsPhase2 || profile.phase2HealthRatio <= 0f || IsDead) return false;
+            if (damageable.Health > damageable.MaxHealth * profile.phase2HealthRatio) return false;
+
+            IsPhase2 = true;
+            damageable.RestoreArmor();
+            EnterStagger(1.2f);
+            if (CombatFeedback.Instance != null)
+            {
+                CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 4f, profile.telegraphColor);
+                CombatFeedback.Instance.Shake(0.4f);
+            }
+            PhaseChanged?.Invoke(this);
+            return true;
         }
 
         bool TryTakeToken()

@@ -39,4 +39,5 @@ MonoBehaviour:
   endlessBosses:
   - {fileID: 11400000, guid: 64ab056a54ee0464aaf7cd0d861aa694, type: 2}
   - {fileID: 11400000, guid: 8609d7d905b0e424f837190f4eb5abed, type: 2}
+  - {fileID: 11400000, guid: 6da8d7d4d0acb324085dbf79ff3a14aa, type: 2}
   bossEvery: 5

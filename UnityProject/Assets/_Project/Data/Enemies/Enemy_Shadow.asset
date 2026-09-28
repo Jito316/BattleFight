@@ -1,0 +1,166 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
+  m_Name: Enemy_Shadow
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
+  displayName: "\u5F71\u5203"
+  isBoss: 1
+  heavy: 1
+  weaknesses: 0200000003000000
+  maxHealth: 1100
+  maxArmor: 100
+  armorRegenDelay: 8
+  staggerThreshold: 55
+  staggerDuration: 0.5
+  armorBreakStagger: 2.2
+  moveSpeed: 5.5
+  turnSpeed: 540
+  preferredDistance: 0
+  flying: 0
+  hoverHeight: 3.5
+  attackCooldown: 0.9
+  attacks:
+  - name: "\u4E09\u9023\u65AC"
+    range: 3.2
+    windup: 0.55
+    active: 0.15
+    recovery: 0.9
+    damage: 10
+    radius: 1
+    offset: {x: 0, y: 0.8, z: 0.9}
+    knockback: 4
+    lunge: 1.5
+    jumpSlam: 0
+    weight: 2
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+    teleportBehind: 0
+    repeat: 2
+    repeatWindup: 0.3
+  - name: "\u5F71\u8D70\u308A"
+    range: 12
+    windup: 0.7
+    active: 0.3
+    recovery: 1
+    damage: 14
+    radius: 0.8
+    offset: {x: 0, y: 0.6, z: 0.5}
+    knockback: 9
+    lunge: 11
+    jumpSlam: 0
+    weight: 1
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+  - name: "\u80CC\u5F8C\u53D6\u308A"
+    range: 20
+    windup: 1.1
+    active: 0.15
+    recovery: 1
+    damage: 18
+    radius: 1
+    offset: {x: 0, y: 0.7, z: 0.8}
+    knockback: 10
+    lunge: 0
+    jumpSlam: 0
+    weight: 0.8
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+    teleportBehind: 1
+    repeat: 0
+    repeatWindup: 0.3
+  phase2HealthRatio: 0.5
+  phase2SpeedMultiplier: 1.3
+  phase2CooldownMultiplier: 0.6
+  phase2Attacks:
+  - name: "\u65CB\u98A8\u5203"
+    range: 4
+    windup: 0.7
+    active: 0.2
+    recovery: 1
+    damage: 16
+    radius: 1.5
+    offset: {x: 0, y: 0.7, z: 0}
+    knockback: 12
+    lunge: 0
+    jumpSlam: 0
+    weight: 1
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+  - name: "\u98DB\u5203"
+    range: 16
+    windup: 0.8
+    active: 0.1
+    recovery: 1.1
+    damage: 8
+    radius: 1.2
+    offset: {x: 0, y: 1, z: 1.2}
+    knockback: 4
+    lunge: 0
+    jumpSlam: 0
+    weight: 1
+    ranged: 1
+    projectileCount: 5
+    projectileSpread: 60
+    projectileSpeed: 20
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+  phase2Message: "\u5F71\u304C\u3055\u3089\u306B\u901F\u304F\u306A\u308B\u2026\u2026!"
+  bodyShape: 1
+  scale: 1.5
+  color: {r: 0.15, g: 0.15, b: 0.22, a: 1}
+  telegraphColor: {r: 0.8, g: 0.3, b: 1, a: 1}
+  shardValue: 30

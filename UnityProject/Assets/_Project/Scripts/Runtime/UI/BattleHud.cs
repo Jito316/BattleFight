@@ -43,8 +43,26 @@ namespace BattleFight
         readonly float[] swappedAt = { -99f, -99f, -99f };
         readonly StringBuilder builder = new StringBuilder();
 
-        void OnEnable() => slots.SlotChanged += OnSlotChanged;
-        void OnDisable() => slots.SlotChanged -= OnSlotChanged;
+        EnemyController phaseEnemy;
+        float phaseAnnouncedAt = -99f;
+
+        void OnEnable()
+        {
+            slots.SlotChanged += OnSlotChanged;
+            EnemyController.PhaseChanged += OnPhaseChanged;
+        }
+
+        void OnDisable()
+        {
+            slots.SlotChanged -= OnSlotChanged;
+            EnemyController.PhaseChanged -= OnPhaseChanged;
+        }
+
+        void OnPhaseChanged(EnemyController enemy)
+        {
+            phaseEnemy = enemy;
+            phaseAnnouncedAt = Time.unscaledTime;
+        }
         void OnSlotChanged(SlotType slot) => swappedAt[(int)slot] = Time.unscaledTime;
 
         void Update()
@@ -124,7 +142,8 @@ namespace BattleFight
             float x = (virtualWidth - width) * 0.5f;
             var damageable = boss.Damageable;
             string weakness = WeaknessText(boss.Profile);
-            Text(new Rect(x, 64, width, 30), boss.Profile.displayName + (weakness.Length > 0 ? $"   <size=20>弱点 {weakness}</size>" : ""), 24,
+            string phase = boss.IsPhase2 ? "  <color=#FF6666>第二形態</color>" : "";
+            Text(new Rect(x, 64, width, 30), boss.Profile.displayName + phase + (weakness.Length > 0 ? $"   <size=20>弱点 {weakness}</size>" : ""), 24,
                 new Color(1f, 0.5f, 0.5f), TextAnchor.UpperCenter);
             Bar(new Rect(x, 96, width, 18), damageable.Health / damageable.MaxHealth, new Color(0.9f, 0.2f, 0.2f));
             if (damageable.MaxArmor > 0f)
@@ -538,6 +557,16 @@ namespace BattleFight
                     color = new Color(1f, 0.35f, 0.35f);
                     break;
             }
+            // ボスの第二形態の告知(2秒)
+            float sincePhase = Time.unscaledTime - phaseAnnouncedAt;
+            if (message == null && phaseEnemy != null && sincePhase < 2f)
+            {
+                var c = phaseEnemy.Profile.telegraphColor;
+                c.a = Mathf.Clamp01((2f - sincePhase) / 0.5f);
+                Text(new Rect(0, RefHeight * 0.3f, virtualWidth, 200),
+                    $"{phaseEnemy.Profile.displayName}  第二形態\n<size=30>{phaseEnemy.Profile.phase2Message}</size>", 64, c, TextAnchor.UpperCenter);
+            }
+
             if (message == null) return;
             Text(new Rect(0, RefHeight * 0.28f, virtualWidth, 300), message, 72, color, TextAnchor.UpperCenter);
 
