@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #111418; }
+      /* ウィンドウいっぱいに表示する(固定サイズを引き伸ばさない) */
+      #unity-canvas { display: block; width: 100%; height: 100%; background: #111418; outline: none; }
+      #loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+                 color: #c8d0dc; font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif; text-align: center; }
+      #bar { width: 320px; height: 8px; margin-top: 14px; background: #2a2f38; border-radius: 4px; overflow: hidden; }
+      #fill { width: 0; height: 100%; background: #4aa8ff; }
+      #error { display: none; position: absolute; left: 0; right: 0; top: 0; z-index: 10; max-height: 50%; overflow: auto;
+               padding: 10px 14px; background: rgba(150, 30, 30, 0.95); color: #fff;
+               font: 13px/1.4 Consolas, monospace; white-space: pre-wrap; user-select: text; }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loading">{{{ PRODUCT_NAME }}} を読み込み中…<div id="bar"><div id="fill"></div></div></div>
+    <div id="error"></div>
+    <script>
+      const canvas = document.querySelector("#unity-canvas");
+
+      // エラーはアラートではなく画面上部に全文を出す(コピーして報告できるように)
+      function showError(message) {
+        const panel = document.querySelector("#error");
+        panel.style.display = "block";
+        panel.textContent += message + "\n";
+      }
+
+      const buildUrl = "Build";
+      const config = {
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_THREADS
+        workerUrl: buildUrl + "/{{{ WORKER_FILENAME }}}",
+#endif
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        // キャンバスの表示サイズに描画解像度を合わせる。高解像度ディスプレイは 1.5 倍まで(2 倍だと 4K 相当になり重い)
+        matchWebGLToCanvasSize: true,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+        showBanner: (message, type) => {
+          if (type === "error") showError(message);
+          else console.warn(message);
+        },
+      };
+
+      window.addEventListener("error", (e) => showError(String(e.message || e)));
+      window.addEventListener("unhandledrejection", (e) => {
+        const reason = String(e.reason && (e.reason.stack || e.reason.message) || e.reason);
+        // ポインターロックの拒否はゲームには影響しないので出さない
+        if (!/pointer lock/i.test(reason)) showError(reason);
+      });
+
+      const script = document.createElement("script");
+      script.src = buildUrl + "/{{{ LOADER_FILENAME }}}";
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#fill").style.width = (100 * progress) + "%";
+        }).then(() => {
+          document.querySelector("#loading").remove();
+          canvas.focus();
+        }).catch((message) => showError(String(message)));
+      };
+      document.body.appendChild(script);
+      canvas.addEventListener("pointerdown", () => canvas.focus());
+    </script>
+  </body>
+</html>

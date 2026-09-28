@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
+  m_Name: Stage_9_Endless
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
+  displayName: "\u30A8\u30F3\u30C9\u30EC\u30B9"
+  description: "\u6575\u304C\u969B\u9650\u306A\u304F\u62BC\u3057\u5BC4\u305B\u308B\u30025\u30A6\u30A7\u30FC\u30D6\u3054\u3068\u306B\u30DC\u30B9\u304C\u51FA\u308B\u3002\u3069\u3053\u307E\u3067\u884C\u3051\u308B\u304B\u3002"
+  kind: 2
+  waves: []
+  trainingDummies: []
+  endlessPool:
+  - profile: {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    cost: 1
+    minWave: 1
+  - profile: {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+    cost: 1.5
+    minWave: 2
+  - profile: {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+    cost: 2
+    minWave: 2
+  - profile: {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    cost: 1.5
+    minWave: 3
+  - profile: {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
+    cost: 2
+    minWave: 3
+  - profile: {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    cost: 3
+    minWave: 4
+  endlessBosses:
+  - {fileID: 11400000, guid: 64ab056a54ee0464aaf7cd0d861aa694, type: 2}
+  - {fileID: 11400000, guid: 8609d7d905b0e424f837190f4eb5abed, type: 2}
+  bossEvery: 5

@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Chain_Ring
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u9396\u65AC\u8F2A"
+  description: "\u9396\u3092\u5927\u304D\u304F\u56DE\u3057\u3066\u3001\u5468\u56F2\u3092\u5E83\u304F2\u56DE\u65AC\u308B\u3002"
+  slot: 0
+  weapon: 2
+  behavior: 0
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 25
+  projectileLifetime: 1.2
+  projectileRadius: 0.35
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 9
+    activeFrames: 6
+    recoveryFrames: 12
+    chainFrame: 0
+    cancelFrame: 7
+    damage: 8
+    stagger: 14
+    armorBreak: 4
+    stylePoints: 20
+    knockback: 2
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 0}
+    hitboxRadius: 3.4
+    forwardMove: 0.2
+  - startupFrames: 10
+    activeFrames: 8
+    recoveryFrames: 24
+    chainFrame: 0
+    cancelFrame: 14
+    damage: 14
+    stagger: 28
+    armorBreak: 8
+    stylePoints: 28
+    knockback: 5
+    launch: 0
+    hitstop: 0.06
+    hitboxOffset: {x: 0, y: 1, z: 0}
+    hitboxRadius: 3.4
+    forwardMove: 0.2

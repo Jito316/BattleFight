@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Staff_Blink
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30D6\u30EA\u30F3\u30AF"
+  description: "\u5165\u529B\u65B9\u5411\u3078\u9577\u3044\u8DDD\u96E2\u3092\u77AC\u9593\u79FB\u52D5\u3059\u308B\u3002"
+  slot: 2
+  weapon: 3
+  behavior: 9
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 10
+  airGravityScale: 0
+  range: 0
+  dashDistance: 8
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 1
+  projectileSpread: 0
+  projectileSpeed: 25
+  projectileLifetime: 1.2
+  projectileRadius: 0.35
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 0
+    activeFrames: 2
+    recoveryFrames: 8
+    chainFrame: 0
+    cancelFrame: 3
+    damage: 0
+    stagger: 0
+    armorBreak: 0
+    stylePoints: 0
+    knockback: 2
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
+  m_Name: Enemy_Magus
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
+  displayName: "\u9B54\u5C0E\u6A5F"
+  isBoss: 1
+  heavy: 1
+  maxHealth: 1000
+  maxArmor: 120
+  armorRegenDelay: 10
+  staggerThreshold: 60
+  staggerDuration: 0.6
+  armorBreakStagger: 2.5
+  moveSpeed: 3
+  turnSpeed: 200
+  preferredDistance: 8
+  flying: 1
+  hoverHeight: 2.5
+  attackCooldown: 1.1
+  attacks:
+  - name: "\u9B54\u5F3E\u5E55"
+    range: 22
+    windup: 0.9
+    active: 0.1
+    recovery: 1
+    damage: 10
+    radius: 1.2
+    offset: {x: 0, y: 1, z: 1.2}
+    knockback: 5
+    lunge: 0
+    jumpSlam: 0
+    weight: 2
+    ranged: 1
+    projectileCount: 7
+    projectileSpread: 70
+    projectileSpeed: 15
+    projectileRadius: 0.4
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  - name: "\u96F7\u6483"
+    range: 25
+    windup: 0.6
+    active: 0.1
+    recovery: 0.8
+    damage: 18
+    radius: 2.8
+    offset: {x: 0, y: 1, z: 1.2}
+    knockback: 8
+    lunge: 0
+    jumpSlam: 0
+    weight: 1.5
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 1
+    strikeDelay: 0.9
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  - name: "\u53EC\u559A"
+    range: 30
+    windup: 1.2
+    active: 0.1
+    recovery: 1.5
+    damage: 10
+    radius: 1.2
+    offset: {x: 0, y: 1, z: 1.2}
+    knockback: 5
+    lunge: 0
+    jumpSlam: 0
+    weight: 0.6
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
+    summonCount: 2
+  - name: "\u885D\u6483"
+    range: 4
+    windup: 0.8
+    active: 0.15
+    recovery: 1
+    damage: 16
+    radius: 1.8
+    offset: {x: 0, y: 0.5, z: 0}
+    knockback: 14
+    lunge: 0
+    jumpSlam: 0
+    weight: 1
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  bodyShape: 0
+  scale: 2
+  color: {r: 0.25, g: 0.3, b: 0.8, a: 1}
+  telegraphColor: {r: 0.5, g: 0.9, b: 1, a: 1}
+  shardValue: 25

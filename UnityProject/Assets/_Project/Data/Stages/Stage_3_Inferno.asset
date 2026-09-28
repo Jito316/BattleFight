@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
+  m_Name: Stage_3_Inferno
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
+  displayName: "\u7B2C3\u5E55  \u7206\u708E\u306E\u56DE\u5ECA"
+  description: "\u8FD1\u3065\u3044\u3066\u81EA\u7206\u3059\u308B\u7206\u5F3E\u5175\u304C\u7FA4\u308C\u3067\u6765\u308B\u3002\u6700\u5F8C\u306F2\u4F53\u306E\u30DC\u30B9\u304C\u540C\u6642\u306B\u8972\u3044\u304B\u304B\u308B\u3002"
+  kind: 0
+  waves:
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+    - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+    - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    - {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
+    - {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+    - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+    - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+    - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+    - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+    - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+  - label: BOSS
+    enemies:
+    - {fileID: 11400000, guid: 64ab056a54ee0464aaf7cd0d861aa694, type: 2}
+    - {fileID: 11400000, guid: 8609d7d905b0e424f837190f4eb5abed, type: 2}
+  trainingDummies: []
+  endlessPool: []
+  endlessBosses: []
+  bossEvery: 5

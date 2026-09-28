@@ -126,3 +126,11 @@ $RECYCLE.BIN/
 
 # Built Visual Studio Code Extensions
 *.vsix
+### Firebase
+.firebase/
+firebase-debug.log*
+UnityProject/Assets/Resources/PerformanceTestRun*
+
+# Unity のパッケージ一覧は共有する(上の NuGet 用の Packages 除外に巻き込まれないように)
+!UnityProject/Packages/manifest.json
+!UnityProject/Packages/packages-lock.json

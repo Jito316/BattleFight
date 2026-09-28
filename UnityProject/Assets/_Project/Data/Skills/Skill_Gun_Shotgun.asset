@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Gun_Shotgun
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30B7\u30E7\u30C3\u30C8\u30AC\u30F3"
+  description: "\u6247\u72B6\u306B\u6563\u5F3E\u3092\u6483\u3064\u3002\u8FD1\u3044\u307B\u3069\u591A\u304F\u5F53\u305F\u308B\u3002"
+  slot: 0
+  weapon: 4
+  behavior: 6
+  usableInAir: 1
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 0
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  projectileCount: 7
+  projectileSpread: 30
+  projectileSpeed: 40
+  projectileLifetime: 0.3
+  projectileRadius: 0.3
+  projectilePierce: 0
+  explosionRadius: 0
+  homing: 0
+  strikeDelay: 0.35
+  strikeDistance: 8
+  beamLength: 14
+  beamRadius: 0.5
+  steps:
+  - startupFrames: 8
+    activeFrames: 1
+    recoveryFrames: 20
+    chainFrame: 0
+    cancelFrame: 12
+    damage: 6
+    stagger: 10
+    armorBreak: 4
+    stylePoints: 12
+    knockback: 3
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 10
+    activeFrames: 1
+    recoveryFrames: 26
+    chainFrame: 0
+    cancelFrame: 16
+    damage: 7
+    stagger: 12
+    armorBreak: 5
+    stylePoints: 14
+    knockback: 6
+    launch: 0
+    hitstop: 0.05
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0

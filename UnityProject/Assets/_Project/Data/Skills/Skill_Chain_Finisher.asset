@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Chain_Finisher
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u7E1B\u9396\u9663"
+  description: "\u9396\u30DE\u30B9\u30BF\u30EA\u30FC\u306E\u30D5\u30A3\u30CB\u30C3\u30B7\u30E3\u30FC\u3002\u5468\u56F2\u3092\u9396\u3067\u8599\u304E\u6255\u3044\u7D9A\u3051\u308B\u3002"
+  slot: 0
+  weapon: 2
+  behavior: 0
+  usableInAir: 1
+  autoChain: 1
+  swapCancelFrame: 0
+  invulnerableFrames: 50
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 0
+  jumpVelocity: 0
+  chargeFrames: 0
+  moveSpeed: 0
+  steps:
+  - startupFrames: 10
+    activeFrames: 4
+    recoveryFrames: 3
+    chainFrame: 0
+    cancelFrame: 2
+    damage: 12
+    stagger: 25
+    armorBreak: 10
+    stylePoints: 22
+    knockback: 1
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 0}
+    hitboxRadius: 4.5
+    forwardMove: 0
+  - startupFrames: 0
+    activeFrames: 4
+    recoveryFrames: 3
+    chainFrame: 0
+    cancelFrame: 2
+    damage: 12
+    stagger: 25
+    armorBreak: 10
+    stylePoints: 22
+    knockback: 1
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 0}
+    hitboxRadius: 4.5
+    forwardMove: 0
+  - startupFrames: 0
+    activeFrames: 4
+    recoveryFrames: 3
+    chainFrame: 0
+    cancelFrame: 2
+    damage: 12
+    stagger: 25
+    armorBreak: 10
+    stylePoints: 22
+    knockback: 1
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 1, z: 0}
+    hitboxRadius: 4.5
+    forwardMove: 0
+  - startupFrames: 4
+    activeFrames: 6
+    recoveryFrames: 30
+    chainFrame: 0
+    cancelFrame: 18
+    damage: 25
+    stagger: 60
+    armorBreak: 30
+    stylePoints: 50
+    knockback: 6
+    launch: 9
+    hitstop: 0.12
+    hitboxOffset: {x: 0, y: 1, z: 0}
+    hitboxRadius: 5
+    forwardMove: 0

@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Hammer_Jump
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  displayName: "\u30CF\u30F3\u30DE\u30FC\u30B8\u30E3\u30F3\u30D7"
+  description: "\u5730\u9762\u3092\u53E9\u3044\u3066\u9AD8\u304F\u8DF3\u3073\u3001\u7740\u5730\u3067\u885D\u6483\u6CE2\u3092\u51FA\u3059\u3002"
+  slot: 2
+  weapon: 1
+  behavior: 3
+  usableInAir: 0
+  autoChain: 0
+  swapCancelFrame: 0
+  invulnerableFrames: 8
+  airGravityScale: 0.15
+  range: 0
+  dashDistance: 3.5
+  jumpVelocity: 15
+  chargeFrames: 0
+  moveSpeed: 0
+  steps:
+  - startupFrames: 5
+    activeFrames: 1
+    recoveryFrames: 0
+    chainFrame: 0
+    cancelFrame: 0
+    damage: 0
+    stagger: 0
+    armorBreak: 0
+    stylePoints: 0
+    knockback: 2
+    launch: 0
+    hitstop: 0.04
+    hitboxOffset: {x: 0, y: 0, z: 0}
+    hitboxRadius: 0
+    forwardMove: 0
+  - startupFrames: 0
+    activeFrames: 4
+    recoveryFrames: 16
+    chainFrame: 0
+    cancelFrame: 6
+    damage: 12
+    stagger: 30
+    armorBreak: 15
+    stylePoints: 25
+    knockback: 3
+    launch: 7
+    hitstop: 0.06
+    hitboxOffset: {x: 0, y: 0.3, z: 0}
+    hitboxRadius: 3
+    forwardMove: 0
