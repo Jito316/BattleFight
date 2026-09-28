@@ -295,6 +295,90 @@ namespace BattleFight.Tests
             Assert.AreSame(fireball, saved.presets[0].attackB);
         }
 
+        EnemyProfile TrainingDummy() => director.Stages[0].trainingDummies[0];
+
+        /// <summary>ウェーブを止めて、目の前に訓練用の人形を1体置く</summary>
+        IEnumerator PlaceDummy(EnemyProfile profile, float distance)
+        {
+            MakePlayerSturdy();
+            yield return WaitUntil(() => EnemyController.Active.Count > 0, 5f);
+            ClearEnemies();
+            yield return null;
+            var enemy = director.SpawnExtra(profile, player.position + player.forward * distance);
+            yield return null;
+            enemy.transform.position = player.position + player.forward * distance;
+            Physics.SyncTransforms();
+            yield return null;
+            dummy = enemy;
+        }
+
+        EnemyController dummy;
+
+        [UnityTest]
+        public IEnumerator Hud_ShowsPresetSkills_AfterSwitchAndEdit()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            var hud = Object.FindFirstObjectByType<BattleHud>();
+
+            yield return Tap(keyboard.digit2Key);
+            Assert.AreEqual("魔弾", hud.ShownSkill(SlotType.AttackA).displayName, "プリセットを切り替えても表示が変わらない");
+
+            var fireball = slots.Database.Find("Skill_Staff_Fireball");
+            slots.AssignPresetSkill(1, SlotType.AttackB, fireball);
+            Assert.AreSame(fireball, hud.ShownSkill(SlotType.AttackB), "編成を変えても表示が変わらない");
+        }
+
+        [UnityTest]
+        public IEnumerator Weakness_MultipliesDamage()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            yield return WaitUntil(() => executor.GetComponent<PlayerMotor>().IsGrounded, 3f);
+
+            // 同じ人形を、弱点あり(剣)となしで用意して、連斬の1段目のダメージを比べる
+            var weakProfile = Object.Instantiate(TrainingDummy());
+            weakProfile.weaknesses = new[] { WeaponType.Sword };
+            var plainProfile = Object.Instantiate(TrainingDummy());
+            plainProfile.weaknesses = new WeaponType[0];
+
+            yield return PlaceDummy(plainProfile, 1.6f);
+            float before = dummy.Damageable.Health;
+            yield return Tap(keyboard.jKey);
+            yield return WaitUntil(() => dummy.Damageable.Health < before, 2f);
+            float plainDamage = dummy.Damageable.LastDamage;
+            yield return WaitUntil(() => !executor.IsBusy, 3f);
+
+            yield return PlaceDummy(weakProfile, 1.6f);
+            before = dummy.Damageable.Health;
+            yield return Tap(keyboard.jKey);
+            yield return WaitUntil(() => dummy.Damageable.Health < before, 2f);
+            float weakDamage = dummy.Damageable.LastDamage;
+
+            Assert.AreEqual(plainDamage * 1.5f, weakDamage, 0.01f, "弱点のダメージが 1.5 倍になっていない");
+        }
+
+        [UnityTest]
+        public IEnumerator SwapThenHit_BuildsChain_AndChangeAttackHitsNearbyEnemy()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            yield return WaitUntil(() => executor.GetComponent<PlayerMotor>().IsGrounded, 3f);
+            yield return PlaceDummy(TrainingDummy(), 1.2f);
+            Assert.AreEqual(0, executor.SwapChain.Chain);
+            Assert.IsTrue(executor.ChangeAttackReady);
+
+            // 切り替えた瞬間のチェンジアタックが、そばの人形に当たる
+            float before = dummy.Damageable.Health;
+            yield return Tap(keyboard.digit4Key);
+            Assert.Less(dummy.Damageable.Health, before, "チェンジアタックが当たっていない");
+            Assert.IsFalse(executor.ChangeAttackReady, "チェンジアタックにクールダウンがない");
+            Assert.AreEqual(0, executor.SwapChain.Chain, "チェンジアタックだけでチェインが上がった");
+
+            // 切り替えてから技を当てるとチェインが上がる(混成: 連打)
+            yield return Tap(keyboard.jKey);
+            yield return WaitUntil(() => executor.SwapChain.Chain == 1, 2f);
+            Assert.AreEqual(1.1f, executor.SwapChain.DamageMultiplier, 1e-4f);
+            Assert.IsTrue(style.Announcements.Exists(a => a.text.StartsWith("CHAIN")));
+        }
+
         [UnityTest]
         public IEnumerator Arena_StartsOnStageSelect()
         {

@@ -42,6 +42,28 @@ namespace BattleFight
         float swapCancelStreakPenalty = 0.35f;
         [SerializeField] float swapCancelStreakReset = 1.5f;
 
+        [Header("切り替えのメリット: 弱点")]
+        [SerializeField] float weaknessDamageMultiplier = 1.5f;
+        [SerializeField] float weaknessStaggerMultiplier = 1.5f;
+        [SerializeField] float weaknessStyleBonus = 10f;
+
+        [Header("切り替えのメリット: チェンジチェイン")]
+        [SerializeField, Tooltip("切り替えてから何秒以内に当てるとチェインがつながるか")] float chainLinkWindow = 2.5f;
+        [SerializeField, Tooltip("最後につないでから何秒で途切れるか")] float chainKeepTime = 4f;
+        [SerializeField] int maxChain = 5;
+        [SerializeField, Tooltip("1段ごとのダメージ増加")] float chainBonusPerStep = 0.1f;
+        [SerializeField] float chainStyleBonusPerStep = 12f;
+
+        [Header("切り替えのメリット: チェンジアタック")]
+        [SerializeField, Tooltip("切り替えた瞬間に、新しい武器で周りを攻撃する")] bool changeAttackEnabled = true;
+        [SerializeField] float changeAttackCooldown = 3f;
+        [SerializeField] float changeAttackRadius = 2.6f;
+        [SerializeField] float changeAttackDamage = 10f;
+        [SerializeField] float changeAttackStagger = 30f;
+        [SerializeField] float changeAttackArmorBreak = 10f;
+        [SerializeField] float changeAttackKnockback = 6f;
+        [SerializeField] float changeAttackStylePoints = 20f;
+
         [Header("溜め・カウンター")]
         [SerializeField] float minChargeMultiplier = 0.6f;
         [SerializeField] float maxChargeMultiplier = 1.5f;
@@ -81,6 +103,9 @@ namespace BattleFight
         float swapStrikeUntil = -1f;
         /// <summary>切り替えるたびに増える。弾が「どの切り替えのスワップストライクか」を覚えておくのに使う</summary>
         int swapStrikeId;
+        SwapChainMeter chain;
+        float changeAttackReadyAt;
+        float lastWeakAnnounce = -99f;
 
         EnemyController travelEnemy;
         Vector3 travelTarget;
@@ -100,6 +125,13 @@ namespace BattleFight
         public float SwapStrikeRemaining => swapStrikeWindow <= 0f ? 0f : Mathf.Clamp01((swapStrikeUntil - Time.time) / swapStrikeWindow);
         /// <summary>移動スロットがワイヤーのとき、今押したら飛ぶポイント(HUD の表示用)</summary>
         public GrapplePoint GrapplePreview { get; private set; }
+
+        public SwapChainMeter SwapChain => chain ??= new SwapChainMeter(chainLinkWindow, chainKeepTime, maxChain, chainBonusPerStep);
+        public bool ChangeAttackReady => changeAttackEnabled && Time.time >= changeAttackReadyAt;
+        /// <summary>チェンジアタックの準備(0 → 1 で使える)</summary>
+        public float ChangeAttackCharge => !changeAttackEnabled || changeAttackCooldown <= 0f
+            ? 1f
+            : Mathf.Clamp01(1f - (changeAttackReadyAt - Time.time) / changeAttackCooldown);
 
         /// <summary>今このスロットを切り替えるとスワップキャンセルになるか(HUD の表示用)</summary>
         public bool CanSwapCancelNow(SlotType slot) => CanSwapCancel(slot);
@@ -122,6 +154,7 @@ namespace BattleFight
                 return;
             }
 
+            SwapChain.Tick(Time.time);
             HandleSwaps();
 
             if (IsStunned)
@@ -188,6 +221,7 @@ namespace BattleFight
         {
             swapStrikeUntil = Time.time + swapStrikeWindow;
             swapStrikeId++;
+            SwapChain.OnSwap(Time.time);
             if (shown == null) return;
             if (updateMainWeapon) weapons.SetMainWeapon(shown.weapon);
 
@@ -197,6 +231,81 @@ namespace BattleFight
             {
                 CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, weaponData.color);
             }
+
+            TryChangeAttack(shown.weapon);
+        }
+
+        /// <summary>
+        /// チェンジアタック: 切り替えた瞬間、新しい武器で周りを一撃する(クールダウンあり)。
+        /// 囲まれたときに切り替えで押し返せるようにする。これ自体はチェインを上げない。
+        /// </summary>
+        void TryChangeAttack(WeaponType weapon)
+        {
+            if (!ChangeAttackReady) return;
+            changeAttackReadyAt = Time.time + changeAttackCooldown;
+
+            var data = slots.GetWeaponData(weapon);
+            var color = data != null ? data.color : Color.white;
+            Vector3 center = transform.position + Vector3.up;
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, changeAttackRadius, color);
+
+            int count = Physics.OverlapSphereNonAlloc(center, changeAttackRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            bool anyLanded = false;
+            bool anyWeak = false;
+            targetBuffer.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
+                if (target == null || target.Team == self.Team || target.IsDead || targetBuffer.Contains(target)) continue;
+                targetBuffer.Add(target);
+
+                bool weak = IsWeak(target, weapon);
+                float damage = changeAttackDamage * SwapChain.DamageMultiplier * (weak ? weaknessDamageMultiplier : 1f);
+                float stagger = changeAttackStagger * (weak ? weaknessStaggerMultiplier : 1f);
+                Vector3 direction = Flat(target.transform.position - transform.position);
+                var outcome = target.ApplyHit(new HitInfo
+                {
+                    damage = damage,
+                    stagger = stagger,
+                    armorBreak = changeAttackArmorBreak,
+                    knockback = changeAttackKnockback,
+                    direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
+                    source = gameObject,
+                });
+                if (!outcome.Landed()) continue;
+                anyLanded = true;
+                anyWeak |= weak;
+                if (CombatFeedback.Instance != null)
+                {
+                    CombatFeedback.Instance.SpawnDamageNumber(target.transform.position + Vector3.up * 2.2f, target.LastDamage,
+                        weak ? WeakColor : color);
+                }
+            }
+
+            if (!anyLanded) return;
+            style.RegisterHit($"change#{weapon}", weapon, changeAttackStylePoints, slots.Bonus.Kind == WeaponBonusKind.Arsenal);
+            style.Announce("CHANGE ATTACK", color);
+            if (anyWeak) AnnounceWeak();
+            if (CombatFeedback.Instance != null)
+            {
+                CombatFeedback.Instance.HitStop(0.05f);
+                CombatFeedback.Instance.Shake(0.12f);
+            }
+        }
+
+        static readonly Color WeakColor = new Color(1f, 0.55f, 0.1f);
+
+        static bool IsWeak(Damageable target, WeaponType weapon)
+        {
+            var enemy = target.GetComponent<EnemyController>();
+            return enemy != null && enemy.Profile != null && enemy.Profile.IsWeakTo(weapon);
+        }
+
+        void AnnounceWeak()
+        {
+            if (Time.unscaledTime - lastWeakAnnounce < 0.6f) return;
+            lastWeakAnnounce = Time.unscaledTime;
+            style.AddBonus(weaknessStyleBonus, "WEAK!", WeakColor);
         }
 
         void SwapCancel(SlotType slot)
@@ -577,12 +686,19 @@ namespace BattleFight
             var bonus = slots.Bonus;
             var weaponData = slots.GetWeaponData(skill.weapon);
 
+            bool anyWeak = false;
             foreach (var target in targets)
             {
                 if (target == null || target.IsDead) continue;
 
-                float damage = step.damage * context.multiplier;
+                bool weak = IsWeak(target, skill.weapon);
+                float damage = step.damage * context.multiplier * SwapChain.DamageMultiplier;
                 float stagger = step.stagger * context.multiplier;
+                if (weak)
+                {
+                    damage *= weaknessDamageMultiplier;
+                    stagger *= weaknessStaggerMultiplier;
+                }
                 if (bonus.Boosts(skill.weapon) && weaponData != null) stagger *= 1f + weaponData.synergyStaggerBonus;
                 if (swapStrike)
                 {
@@ -604,6 +720,7 @@ namespace BattleFight
                 if (!outcome.Landed()) continue;
 
                 anyLanded = true;
+                anyWeak |= weak;
                 hitstop = Mathf.Max(hitstop, step.hitstop * (outcome == HitOutcome.ArmorBroken ? 2f : 1f));
 
                 // 近接の1段は1回だけ登録する。同じ段で複数の敵に当てた分は少しだけ加点
@@ -625,6 +742,7 @@ namespace BattleFight
                 if (CombatFeedback.Instance != null)
                 {
                     var color = swapStrike ? new Color(1f, 0.9f, 0.2f)
+                        : weak ? WeakColor
                         : outcome == HitOutcome.Armored ? new Color(0.7f, 0.7f, 0.7f)
                         : Color.white;
                     CombatFeedback.Instance.SpawnDamageNumber(target.transform.position + Vector3.up * 2.2f, target.LastDamage, color);
@@ -636,6 +754,11 @@ namespace BattleFight
             {
                 swapStrikeUntil = -1f;
                 style.AddBonus(style.Config.swapStrikeBonus, "SWAP STRIKE!", new Color(1f, 0.9f, 0.2f));
+            }
+            if (anyWeak) AnnounceWeak();
+            if (SwapChain.OnHit(Time.time))
+            {
+                style.AddBonus(chainStyleBonusPerStep * SwapChain.Chain, $"CHAIN ×{SwapChain.Chain}", new Color(0.55f, 1f, 0.9f));
             }
             if (CombatFeedback.Instance != null)
             {
@@ -967,6 +1090,8 @@ namespace BattleFight
         public void Interrupt(float stunDuration, float invulnerableDuration)
         {
             if (current != null) EndSkill();
+            // 被弾するとチェンジチェインが途切れる
+            SwapChain.Reset();
             stunnedUntil = Time.time + stunDuration;
             extraInvulnerableUntil = Time.time + invulnerableDuration;
         }

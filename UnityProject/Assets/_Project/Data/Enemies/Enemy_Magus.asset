@@ -15,6 +15,7 @@ MonoBehaviour:
   displayName: "\u9B54\u5C0E\u6A5F"
   isBoss: 1
   heavy: 1
+  weaknesses: 0400000005000000
   maxHealth: 1000
   maxArmor: 120
   armorRegenDelay: 10

@@ -51,6 +51,20 @@ namespace BattleFight
         [Tooltip("引き寄せで動かせない(自分が飛びつく)")]
         public bool heavy;
 
+        [Header("弱点")]
+        [Tooltip("この武器種の技で攻撃されると、ダメージとひるみが増える(頭上に表示される)")]
+        public WeaponType[] weaknesses = new WeaponType[0];
+
+        public bool IsWeakTo(WeaponType weapon)
+        {
+            if (weaknesses == null) return false;
+            foreach (var w in weaknesses)
+            {
+                if (w == weapon) return true;
+            }
+            return false;
+        }
+
         [Header("体力・アーマー")]
         public float maxHealth = 100f;
         public float maxArmor;

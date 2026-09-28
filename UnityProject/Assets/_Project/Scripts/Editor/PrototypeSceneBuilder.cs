@@ -146,6 +146,19 @@ namespace BattleFight.EditorTools
             var flyingDummy = Asset<EnemyProfile>("Enemies/Enemy_FlyingDummy", resetData, PrototypeDefaults.FlyingDummy);
             var magus = Asset<EnemyProfile>("Enemies/Enemy_Magus", resetData, p => PrototypeDefaults.Magus(p, flyer));
 
+            // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
+            EnsureWeaknesses(grunt, WeaponType.Sword, WeaponType.Gauntlet);
+            EnsureWeaknesses(armored, WeaponType.Hammer, WeaponType.Gauntlet);
+            EnsureWeaknesses(shooter, WeaponType.Chain, WeaponType.Sword);
+            EnsureWeaknesses(dasher, WeaponType.Staff, WeaponType.Gun);
+            EnsureWeaknesses(flyer, WeaponType.Gun, WeaponType.Staff);
+            EnsureWeaknesses(bomber, WeaponType.Gun, WeaponType.Chain);
+            EnsureWeaknesses(boss, WeaponType.Hammer, WeaponType.Chain);
+            EnsureWeaknesses(magus, WeaponType.Gun, WeaponType.Gauntlet);
+            EnsureWeaknesses(dummy, WeaponType.Sword);
+            EnsureWeaknesses(armoredDummy, WeaponType.Hammer);
+            EnsureWeaknesses(flyingDummy, WeaponType.Gun);
+
             EnsureFolder(DataRoot, "Stages");
             var stages = new Object[]
             {
@@ -435,6 +448,13 @@ namespace BattleFight.EditorTools
             var property = so.FindProperty(field);
             property.arraySize = values.Length;
             for (int i = 0; i < values.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+        }
+
+        static void EnsureWeaknesses(EnemyProfile profile, params WeaponType[] weaknesses)
+        {
+            if (profile == null || (profile.weaknesses != null && profile.weaknesses.Length > 0)) return;
+            profile.weaknesses = weaknesses;
+            EditorUtility.SetDirty(profile);
         }
 
         static void SetPreset(SerializedProperty presets, int index, string name, SkillData attackA, SkillData attackB, SkillData movement)

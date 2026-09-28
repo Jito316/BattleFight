@@ -15,6 +15,7 @@ MonoBehaviour:
   displayName: "\u9244\u7363"
   isBoss: 1
   heavy: 1
+  weaknesses: 0100000002000000
   maxHealth: 900
   maxArmor: 150
   armorRegenDelay: 10
@@ -23,6 +24,9 @@ MonoBehaviour:
   armorBreakStagger: 2.5
   moveSpeed: 4
   turnSpeed: 240
+  preferredDistance: 0
+  flying: 0
+  hoverHeight: 3.5
   attackCooldown: 1
   attacks:
   - name: "\u722A\u6483"
@@ -37,6 +41,16 @@ MonoBehaviour:
     lunge: 0
     jumpSlam: 0
     weight: 2
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
   - name: "\u7A81\u9032"
     range: 10
     windup: 0.8
@@ -49,6 +63,16 @@ MonoBehaviour:
     lunge: 9
     jumpSlam: 0
     weight: 1
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
   - name: "\u8DF3\u8E8D\u53E9\u304D\u3064\u3051"
     range: 13
     windup: 1.1
@@ -61,6 +85,17 @@ MonoBehaviour:
     lunge: 0
     jumpSlam: 1
     weight: 0.8
+    ranged: 0
+    projectileCount: 1
+    projectileSpread: 0
+    projectileSpeed: 16
+    projectileRadius: 0.35
+    targetedStrike: 0
+    strikeDelay: 0.8
+    selfDestruct: 0
+    summon: {fileID: 0}
+    summonCount: 0
+  bodyShape: 1
   scale: 2.2
   color: {r: 0.55, g: 0.15, b: 0.15, a: 1}
   telegraphColor: {r: 1, g: 0.3, b: 0.1, a: 1}
