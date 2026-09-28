@@ -319,6 +319,16 @@ MVP では **3種類** に絞る。1種類につき 攻撃A / 攻撃B / 移動 �
   WebGL で `memory access out of bounds` / `Maximum call stack size exceeded` になる
 - HUD の文字は 1080p 基準の**決まったサイズ**で描き、`GUI.matrix` で画面全体を拡大縮小する。演出の拡大も `GUIUtility.ScaleAroundPivot` で行う
 
+### 9.2.2 WebGL の軽量化
+- ダウンロード量は Firebase Hosting の Brotli 圧縮後の値で見る(ファイルサイズの 1/3〜1/5 になる)
+- 日本語フォントは使う文字だけに絞る: `python Tools/subset_font.py`(元のフォントは `Tools/Fonts`)。
+  **スキル名や説明に新しい漢字を足したら実行し直す**(足りない文字は表示されない)
+- WebGL 専用の画質レベル「WebGL」と `WebGL_RPAsset` / `WebGL_Renderer` を `WebGLBuilder` が自動で作る
+  (SSAO・ポストエフェクトなし、HDR なし、ハードシャドウ1カスケード、MSAA 2x)。PC / Mobile の画質は WebGL ビルドに含めない
+- 高解像度ディスプレイは devicePixelRatio 1.5 倍まで
+- 関数名(デバッグシンボル)は普段は入れない。クラッシュ調査のときだけ `BATTLEFIGHT_WEBGL_SYMBOLS=1` を付けてビルドする
+- スプラッシュ画面は出さない
+
 ### 9.3 チーム開発への準備
 - Git LFS の導入(モデル、テクスチャ、音声)
 - Unity 向け .gitignore の確認

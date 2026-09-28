@@ -18,7 +18,7 @@ namespace BattleFight.EditorTools
         const string Root = "Assets/_Project";
         const string DataRoot = Root + "/Data";
         public const string ScenePath = Root + "/Scenes/Prototype_Arena.unity";
-        const string HudFontPath = Root + "/Fonts/NotoSansJP-Bold.otf";
+        const string HudFontPath = Root + "/Fonts/NotoSansJP-Bold-Subset.otf";
 
         [MenuItem("BattleFight/Build Prototype Arena")]
         public static void BuildFromMenu()

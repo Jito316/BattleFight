@@ -42,16 +42,13 @@
 #if MEMORY_FILENAME
         memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
 #endif
-#if SYMBOLS_FILENAME
-        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
-#endif
         streamingAssetsUrl: "StreamingAssets",
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
-        // キャンバスの表示サイズに描画解像度を合わせる。高解像度ディスプレイは 2 倍まで
+        // キャンバスの表示サイズに描画解像度を合わせる。高解像度ディスプレイは 1.5 倍まで(2 倍だと 4K 相当になり重い)
         matchWebGLToCanvasSize: true,
-        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
         showBanner: (message, type) => {
           if (type === "error") showError(message);
           else console.warn(message);
