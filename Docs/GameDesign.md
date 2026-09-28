@@ -331,6 +331,12 @@ MVP では **3種類** に絞る。1種類につき 攻撃A / 攻撃B / 移動 �
 - コード: Managed Stripping High / IL2CPP OptimizeSize / Wasm DiskSizeLTO。自分たちのアセンブリ(`BattleFight.Runtime`)は
   `link.xml` で丸ごと残す。**リフレクションで使うコードを外部パッケージに足したら、WebGL で動くか必ず確認する**
 
+### 9.2.3 Windows ビルド
+- メニューの `BattleFight/Build Windows`(バッチ: `-buildTarget Win64 -executeMethod BattleFight.EditorTools.WindowsBuilder.BuildFromCommandLine`)
+- 出力は `UnityProject/Builds/Windows/BattleFight.exe`、配布用に `UnityProject/Builds/BattleFight-Windows.zip` も作る
+- スクリプトのバックエンドは Mono(IL2CPP より速く、Visual Studio の C++ ツールがいらない)。画質は通常の「PC」
+- ウィンドウ化したフルスクリーンで起動する(Alt+Enter で切り替え)
+
 ### 9.3 チーム開発への準備
 - Git LFS の導入(モデル、テクスチャ、音声)
 - Unity 向け .gitignore の確認
