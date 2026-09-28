@@ -145,6 +145,7 @@ namespace BattleFight.EditorTools
             var armoredDummy = Asset<EnemyProfile>("Enemies/Enemy_ArmoredDummy", resetData, PrototypeDefaults.ArmoredDummy);
             var flyingDummy = Asset<EnemyProfile>("Enemies/Enemy_FlyingDummy", resetData, PrototypeDefaults.FlyingDummy);
             var magus = Asset<EnemyProfile>("Enemies/Enemy_Magus", resetData, p => PrototypeDefaults.Magus(p, flyer));
+            var shadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", resetData, PrototypeDefaults.Shadow);
 
             // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
             EnsureWeaknesses(grunt, WeaponType.Sword, WeaponType.Gauntlet);
@@ -167,9 +168,13 @@ namespace BattleFight.EditorTools
                 Asset<StageData>("Stages/Stage_2_Skyfire", resetData, s => PrototypeDefaults.Act2(s, grunt, shooter, dasher, flyer, armored, magus)),
                 Asset<StageData>("Stages/Stage_3_Inferno", resetData,
                     s => PrototypeDefaults.Act3(s, bomber, dasher, shooter, armored, flyer, boss, magus)),
+                Asset<StageData>("Stages/Stage_4_Shadow", resetData,
+                    s => PrototypeDefaults.Act4(s, dasher, shooter, flyer, armored, bomber, shadow)),
                 Asset<StageData>("Stages/Stage_9_Endless", resetData,
                     s => PrototypeDefaults.Endless(s, grunt, dasher, shooter, bomber, flyer, armored, boss, magus)),
             };
+            // 既にあるエンドレスにも、新しいボスを加える
+            EnsureEndlessBoss((StageData)stages[stages.Length - 1], shadow);
 
             AssetDatabase.SaveAssets();
 
@@ -448,6 +453,16 @@ namespace BattleFight.EditorTools
             var property = so.FindProperty(field);
             property.arraySize = values.Length;
             for (int i = 0; i < values.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+        }
+
+        static void EnsureEndlessBoss(StageData endless, EnemyProfile boss)
+        {
+            if (endless == null || boss == null) return;
+            var bosses = new System.Collections.Generic.List<EnemyProfile>(endless.endlessBosses ?? new EnemyProfile[0]);
+            if (bosses.Contains(boss)) return;
+            bosses.Add(boss);
+            endless.endlessBosses = bosses.ToArray();
+            EditorUtility.SetDirty(endless);
         }
 
         static void EnsureWeaknesses(EnemyProfile profile, params WeaponType[] weaknesses)

@@ -94,6 +94,9 @@ namespace BattleFight
             }
         }
 
+        /// <summary>アーマーを最大まで戻す(ボスの第二形態など)</summary>
+        public void RestoreArmor() => Armor = maxArmor;
+
         /// <summary>攻撃によらず倒れる(自爆など)</summary>
         public void Kill()
         {

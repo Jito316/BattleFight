@@ -41,6 +41,12 @@ namespace BattleFight
         [Tooltip("手下を呼ぶ")]
         public EnemyProfile summon;
         [Min(0)] public int summonCount;
+        [Tooltip("予備動作の途中で消え、プレイヤーの背後に現れてから攻撃する")]
+        public bool teleportBehind;
+        [Tooltip("同じ攻撃を続けて出す回数(三連斬なら 2)")]
+        [Min(0)] public int repeat;
+        [Tooltip("続けて出すときの予備動作(秒)")]
+        public float repeatWindup = 0.3f;
     }
 
     [CreateAssetMenu(menuName = "BattleFight/Enemy Profile", fileName = "Enemy_")]
@@ -86,6 +92,16 @@ namespace BattleFight
         [Header("攻撃")]
         public float attackCooldown = 1.2f;
         public List<EnemyAttack> attacks = new List<EnemyAttack> { new EnemyAttack() };
+
+        [Header("第二形態(ボス)")]
+        [Tooltip("体力がこの割合を下回ると第二形態になる。0 なら第二形態なし")]
+        [Range(0f, 1f)] public float phase2HealthRatio;
+        public float phase2SpeedMultiplier = 1.3f;
+        [Tooltip("攻撃の間隔に掛かる(小さいほど攻撃が多い)")]
+        public float phase2CooldownMultiplier = 0.6f;
+        [Tooltip("第二形態で増える攻撃")]
+        public List<EnemyAttack> phase2Attacks = new List<EnemyAttack>();
+        public string phase2Message = "本気になった!";
 
         [Header("見た目・報酬")]
         public PrimitiveType bodyShape = PrimitiveType.Capsule;

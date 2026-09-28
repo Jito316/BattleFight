@@ -379,6 +379,66 @@ namespace BattleFight.Tests
             Assert.IsTrue(style.Announcements.Exists(a => a.text.StartsWith("CHAIN")));
         }
 
+        EnemyProfile ShadowBoss()
+        {
+            foreach (var stage in director.Stages)
+            {
+                if (stage.waves == null) continue;
+                foreach (var wave in stage.waves)
+                foreach (var enemy in wave.enemies)
+                {
+                    if (enemy != null && enemy.displayName == "影刃") return enemy;
+                }
+            }
+            Assert.Fail("影刃のいるステージがない");
+            return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ShadowBoss_TeleportsBehindPlayer()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            yield return PlaceDummy(ShadowBoss(), 8f);
+            var boss = dummy;
+
+            // 背後取り(3番目の攻撃)を出させる
+            Assert.IsTrue(boss.ForceAttack(2));
+            yield return new WaitForSeconds(boss.Profile.attacks[2].windup * 0.5f + 0.15f);
+
+            Vector3 toBoss = boss.transform.position - player.position;
+            toBoss.y = 0f;
+            Assert.Less(Vector3.Dot(toBoss.normalized, player.forward), -0.5f, "プレイヤーの背後に回っていない");
+            Assert.Less(toBoss.magnitude, 5f);
+        }
+
+        [UnityTest]
+        public IEnumerator ShadowBoss_EntersPhase2AtHalfHealth()
+        {
+            yield return LoadArena(SwapMode.Preset);
+            yield return PlaceDummy(ShadowBoss(), 8f);
+            var boss = dummy;
+            var damageable = boss.Damageable;
+            Assert.IsFalse(boss.IsPhase2);
+
+            // アーマーを割ったうえで、体力を半分より少し多いところまで減らす
+            damageable.ApplyHit(new HitInfo { damage = 0f, armorBreak = 999f });
+            damageable.ApplyHit(new HitInfo { damage = damageable.Health - damageable.MaxHealth * 0.55f });
+            Assert.IsFalse(boss.IsPhase2, "半分を切る前に第二形態になった");
+
+            bool announced = false;
+            System.Action<EnemyController> onPhase = e => announced |= e == boss;
+            EnemyController.PhaseChanged += onPhase;
+            damageable.ApplyHit(new HitInfo { damage = damageable.MaxHealth * 0.1f });
+            EnemyController.PhaseChanged -= onPhase;
+
+            Assert.IsTrue(boss.IsPhase2, "半分を切っても第二形態にならない");
+            Assert.IsTrue(announced);
+            Assert.AreEqual(damageable.MaxArmor, damageable.Armor, 1e-3f, "第二形態でアーマーが戻っていない");
+            // 第二形態の攻撃も出せる(通常3 + 追加2)
+            Assert.IsTrue(boss.ForceAttack(4));
+            yield return new WaitForSeconds(1.5f);
+        }
+
         [UnityTest]
         public IEnumerator Arena_StartsOnStageSelect()
         {
