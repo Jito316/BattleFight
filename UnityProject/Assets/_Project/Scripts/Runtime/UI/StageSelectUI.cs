@@ -14,6 +14,7 @@ namespace BattleFight
         [SerializeField] Font font;
 
         int highlighted;
+        Vector2 lastMousePosition = new Vector2(float.NaN, float.NaN);
         GUIStyle label;
         GUIStyle wrap;
 
@@ -66,14 +67,19 @@ namespace BattleFight
             Text(new Rect(panel.x, panel.y + 96, panel.width, 30), "ステージを選んでください", 22, new Color(1f, 1f, 1f, 0.7f),
                 TextAnchor.UpperCenter);
 
+            // マウスを動かしたときだけ、カーソルの下の行を選ぶ(止まったマウスがキー操作の選択を上書きしないように)
+            Vector2 mouse = Event.current.mousePosition;
+            bool mouseMoved = Event.current.type == EventType.Repaint && mouse != lastMousePosition;
+            if (Event.current.type == EventType.Repaint) lastMousePosition = mouse;
+
             float y = panel.y + 150f;
             for (int i = 0; i < director.Stages.Count; i++)
             {
                 var stage = director.Stages[i];
                 if (stage == null) continue;
                 var row = new Rect(panel.x + 40, y, panel.width - 80, RowHeight - 12);
-                bool hover = row.Contains(Event.current.mousePosition);
-                if (hover) highlighted = i;
+                bool hover = row.Contains(mouse);
+                if (hover && mouseMoved) highlighted = i;
                 bool selected = i == highlighted;
 
                 Box(row, selected ? new Color(0.18f, 0.25f, 0.36f) : new Color(0.13f, 0.14f, 0.18f));

@@ -113,6 +113,9 @@ namespace BattleFight
         void Update()
         {
             if (GamePause.IsPaused) return;
+            // ステージ選択中は技も切り替えも受け付けない(メニュー操作のキーで技が出ないように)
+            // (先行入力は消さない。編成画面を開く P などは別のコンポーネントが読む)
+            if (ArenaDirector.Instance != null && ArenaDirector.Instance.State == ArenaDirector.GameState.StageSelect) return;
             if (self.IsDead)
             {
                 motor.LocomotionEnabled = false;

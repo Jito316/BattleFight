@@ -1,8 +1,13 @@
-<!-- 実行時に GameObject.CreatePrimitive で使うコライダーが、ビルドのコード削減で消えないようにする -->
+<!--
+  ビルド時のコード削減(Managed Stripping: High)で消えてはいけないものを残す。
+  ・実行時に GameObject.CreatePrimitive で使うコライダー
+  ・自分たちのコード(量は小さいので丸ごと残し、リフレクションや JsonUtility で使う型が消えないようにする)
+-->
 <linker>
   <assembly fullname="UnityEngine.PhysicsModule">
     <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
     <type fullname="UnityEngine.SphereCollider" preserve="all" />
     <type fullname="UnityEngine.BoxCollider" preserve="all" />
   </assembly>
+  <assembly fullname="BattleFight.Runtime" preserve="all" />
 </linker>

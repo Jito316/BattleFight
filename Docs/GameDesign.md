@@ -328,6 +328,8 @@ MVP では **3種類** に絞る。1種類につき 攻撃A / 攻撃B / 移動 �
 - 高解像度ディスプレイは devicePixelRatio 1.5 倍まで
 - 関数名(デバッグシンボル)は普段は入れない。クラッシュ調査のときだけ `BATTLEFIGHT_WEBGL_SYMBOLS=1` を付けてビルドする
 - スプラッシュ画面は出さない
+- コード: Managed Stripping High / IL2CPP OptimizeSize / Wasm DiskSizeLTO。自分たちのアセンブリ(`BattleFight.Runtime`)は
+  `link.xml` で丸ごと残す。**リフレクションで使うコードを外部パッケージに足したら、WebGL で動くか必ず確認する**
 
 ### 9.3 チーム開発への準備
 - Git LFS の導入(モデル、テクスチャ、音声)

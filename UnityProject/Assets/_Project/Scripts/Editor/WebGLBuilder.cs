@@ -1,5 +1,7 @@
 using System;
+using System.Reflection;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -54,6 +56,7 @@ namespace BattleFight.EditorTools
             // ロゴの表示もオフにしないと、ロゴのテクスチャがビルドに残る
             PlayerSettings.SplashScreen.showUnityLogo = false;
             UseLightweightQualityForWebGL();
+            OptimizeCodeForSize();
 
             // ファイル名が毎回変わるので、前回の出力を消してから作る(古いファイルをデプロイしない)
             if (System.IO.Directory.Exists(OutputPath)) System.IO.Directory.Delete(OutputPath, true);
@@ -69,6 +72,31 @@ namespace BattleFight.EditorTools
             var summary = report.summary;
             Debug.Log($"[BattleFight] WebGL ビルド: {summary.result} / {summary.totalSize / (1024f * 1024f):0.0} MB / {summary.totalTime}");
             return summary.result == BuildResult.Succeeded;
+        }
+
+        /// <summary>
+        /// wasm(エンジンのコード)を小さくする。
+        /// ・Managed Stripping: High … 使っていない .NET / Unity のコードを強めに削る
+        ///   (自分たちのコードは link.xml で丸ごと残す。リフレクションで使う型が消えないように)
+        /// ・IL2CPP: OptimizeSize … 生成する C++ を容量優先にする
+        /// ・Wasm: DiskSizeLTO … 容量優先の最適化 + リンク時最適化(ビルドは少し遅くなる)
+        /// </summary>
+        static void OptimizeCodeForSize()
+        {
+            var target = NamedBuildTarget.WebGL;
+            PlayerSettings.SetManagedStrippingLevel(target, ManagedStrippingLevel.High);
+            PlayerSettings.SetIl2CppCodeGeneration(target, Il2CppCodeGeneration.OptimizeSize);
+            PlayerSettings.stripEngineCode = true;
+
+            // WebGL モジュールの設定は、モジュールが入っていないとコンパイルできないのでリフレクションで触る
+            var settings = Type.GetType("UnityEditor.WebGL.UserBuildSettings, UnityEditor.WebGL.Extensions");
+            var property = settings?.GetProperty("codeOptimization", BindingFlags.Public | BindingFlags.Static);
+            if (property == null)
+            {
+                Debug.LogWarning("[BattleFight] WebGL のコード最適化の設定が見つかりません(既定のまま)");
+                return;
+            }
+            property.SetValue(null, Enum.Parse(property.PropertyType, "DiskSizeLTO"));
         }
 
         const string SourceRenderPipeline = "Assets/Settings/PC_RPAsset.asset";
