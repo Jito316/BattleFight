@@ -47,6 +47,22 @@ namespace BattleFight
         [Min(0)] public int repeat;
         [Tooltip("続けて出すときの予備動作(秒)")]
         public float repeatWindup = 0.3f;
+
+        [Tooltip("プレイヤーのスキルから作った攻撃なら、その元のスキル(予備動作中に名前を出す)")]
+        public SkillData sourceSkill;
+    }
+
+    /// <summary>敵が使うプレイヤーのスキルの「型」。武器種ごとに持ち、戦闘中に切り替える(プレイヤーのプリセットと同じ考え方)</summary>
+    [Serializable]
+    public class EnemySkillSet
+    {
+        public string name = "型";
+        public WeaponType weapon;
+        [Tooltip("武器の色(手に持つ武器と、切り替えたときの演出)")]
+        public Color color = Color.white;
+        public SkillData[] skills = new SkillData[0];
+        [Tooltip("この型のときの弱点。空なら敵の弱点のまま")]
+        public WeaponType[] weaknesses = new WeaponType[0];
     }
 
     [CreateAssetMenu(menuName = "BattleFight/Enemy Profile", fileName = "Enemy_")]
@@ -92,6 +108,16 @@ namespace BattleFight
         [Header("攻撃")]
         public float attackCooldown = 1.2f;
         public List<EnemyAttack> attacks = new List<EnemyAttack> { new EnemyAttack() };
+
+        [Header("プレイヤーのスキル")]
+        [Tooltip("プレイヤーと同じスキルで攻めてくる(攻撃に足される)。2つ以上あると、戦闘中に型を切り替える")]
+        public List<EnemySkillSet> skillSets = new List<EnemySkillSet>();
+        [Tooltip("この秒数ごとに型を切り替える。0 なら切り替えない")]
+        public float skillSwapInterval = 7f;
+        [Tooltip("スキルの威力に掛ける倍率(プレイヤーの技のままだと、敵が使うには強すぎる)")]
+        public float skillDamageScale = 0.5f;
+        [Tooltip("スキルの予備動作に掛ける倍率(見てから避けられるように長くする)")]
+        public float skillWindupScale = 2.2f;
 
         [Header("第二形態(ボス)")]
         [Tooltip("体力がこの割合を下回ると第二形態になる。0 なら第二形態なし")]

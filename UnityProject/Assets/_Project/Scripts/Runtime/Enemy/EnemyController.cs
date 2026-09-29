@@ -61,6 +61,13 @@ namespace BattleFight
         Vector3 pullDestination;
         float pullSpeed;
 
+        // プレイヤーのスキル: 型ごとに変換した攻撃、今の型、次に切り替えるまでの時間
+        readonly List<List<EnemyAttack>> skillAttacks = new List<List<EnemyAttack>>();
+        int skillSetIndex;
+        float swapTimer;
+        Renderer weaponRenderer;
+        int weaponRendererIndex = -1;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
@@ -81,6 +88,37 @@ namespace BattleFight
         /// <summary>ボスが第二形態になった(HUD の告知用)</summary>
         public static event System.Action<EnemyController> PhaseChanged;
         public float Height => controller.height * transform.lossyScale.y;
+
+        /// <summary>今の型(プレイヤーのスキルを使わない敵は null)</summary>
+        public EnemySkillSet CurrentSkillSet => profile != null && profile.skillSets != null && profile.skillSets.Count > 0
+            ? profile.skillSets[Mathf.Clamp(skillSetIndex, 0, profile.skillSets.Count - 1)]
+            : null;
+
+        /// <summary>最後に型を切り替えた時刻(HUD の演出用)</summary>
+        public float SkillSetChangedAt { get; private set; } = -99f;
+
+        /// <summary>予備動作中・攻撃中の攻撃(それ以外は null)</summary>
+        public EnemyAttack CurrentAttack => state == State.Windup || state == State.Attack ? attack : null;
+
+        /// <summary>今の弱点。型が弱点を持っていればそれ、なければ敵の弱点</summary>
+        public WeaponType[] Weaknesses
+        {
+            get
+            {
+                var set = CurrentSkillSet;
+                if (set != null && set.weaknesses != null && set.weaknesses.Length > 0) return set.weaknesses;
+                return profile != null && profile.weaknesses != null ? profile.weaknesses : System.Array.Empty<WeaponType>();
+            }
+        }
+
+        public bool IsWeakTo(WeaponType weapon)
+        {
+            foreach (var w in Weaknesses)
+            {
+                if (w == weapon) return true;
+            }
+            return false;
+        }
         public float Radius => controller.radius * transform.lossyScale.x;
         public Vector3 CenterPoint => transform.position + Vector3.up * (Height * 0.5f);
 
@@ -115,6 +153,43 @@ namespace BattleFight
             cooldown = Random.Range(0.6f, 1.6f);
             strafeSign = Random.value < 0.5f ? -1f : 1f;
             state = State.Chase;
+
+            skillAttacks.Clear();
+            if (profile.skillSets != null)
+            {
+                foreach (var set in profile.skillSets)
+                {
+                    skillAttacks.Add(EnemySkillConverter.ToAttacks(set.skills, profile.skillDamageScale, profile.skillWindupScale));
+                }
+            }
+            skillSetIndex = 0;
+            swapTimer = profile.skillSwapInterval;
+            // 手に持つ武器(EnemyFactory が付ける)は、型の色で塗る
+            var weapon = transform.Find("Weapon");
+            weaponRenderer = weapon != null ? weapon.GetComponent<Renderer>() : null;
+            weaponRendererIndex = weaponRenderer != null ? System.Array.IndexOf(renderers, weaponRenderer) : -1;
+            ApplySkillSetColor();
+        }
+
+        /// <summary>次の型に切り替える(プレイヤーのプリセットの切り替えと同じ)。弱点も変わる</summary>
+        public bool SwapSkillSet()
+        {
+            if (profile.skillSets == null || profile.skillSets.Count < 2 || IsDead) return false;
+            skillSetIndex = (skillSetIndex + 1) % profile.skillSets.Count;
+            swapTimer = profile.skillSwapInterval;
+            SkillSetChangedAt = Time.time;
+            if (state == State.Chase) attack = null;
+            ApplySkillSetColor();
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1.2f, CurrentSkillSet.color);
+            return true;
+        }
+
+        void ApplySkillSetColor()
+        {
+            var set = CurrentSkillSet;
+            if (set == null || weaponRenderer == null) return;
+            if (weaponRendererIndex >= 0) baseColors[weaponRendererIndex] = set.color;
+            weaponRenderer.material.color = set.color;
         }
 
         void Update()
@@ -132,6 +207,13 @@ namespace BattleFight
 
             stateTime += dt;
             cooldown -= dt;
+
+            // 型の切り替え(攻撃していないときだけ)
+            if (profile.skillSets != null && profile.skillSets.Count > 1 && profile.skillSwapInterval > 0f)
+            {
+                swapTimer -= dt;
+                if (swapTimer <= 0f && state == State.Chase) SwapSkillSet();
+            }
 
             Vector3 planar = Vector3.zero;
             switch (state)
@@ -510,6 +592,8 @@ namespace BattleFight
             availableAttacks.Clear();
             if (profile.attacks != null) availableAttacks.AddRange(profile.attacks);
             if (IsPhase2 && profile.phase2Attacks != null) availableAttacks.AddRange(profile.phase2Attacks);
+            // 今の型のスキル(プレイヤーと同じ技)
+            if (skillAttacks.Count > 0) availableAttacks.AddRange(skillAttacks[Mathf.Clamp(skillSetIndex, 0, skillAttacks.Count - 1)]);
             return availableAttacks;
         }
 

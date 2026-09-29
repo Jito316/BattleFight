@@ -54,6 +54,7 @@ MonoBehaviour:
     teleportBehind: 0
     repeat: 2
     repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   - name: "\u5F71\u8D70\u308A"
     range: 12
     windup: 0.7
@@ -79,6 +80,7 @@ MonoBehaviour:
     teleportBehind: 0
     repeat: 0
     repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   - name: "\u80CC\u5F8C\u53D6\u308A"
     range: 20
     windup: 1.1
@@ -104,6 +106,26 @@ MonoBehaviour:
     teleportBehind: 1
     repeat: 0
     repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
+  skillSets:
+  - name: "\u5263\u306E\u578B"
+    weapon: 0
+    color: {r: 0.45, g: 0.8, b: 1, a: 1}
+    skills:
+    - {fileID: 11400000, guid: a31bbe219dadd034ea7df6b5827a1ce1, type: 2}
+    - {fileID: 11400000, guid: 98098865a4719414282c09ccd534ea39, type: 2}
+    - {fileID: 11400000, guid: 726aebcee9e2d5c49b592348af1312de, type: 2}
+    weaknesses: 
+  - name: "\u9396\u306E\u578B"
+    weapon: 2
+    color: {r: 0.75, g: 0.5, b: 1, a: 1}
+    skills:
+    - {fileID: 11400000, guid: fe3cc2a2be865904ebd7d2a4737cd71c, type: 2}
+    - {fileID: 11400000, guid: 5cf53f9e7625375489c3bf4ceb62b6d0, type: 2}
+    weaknesses: 
+  skillSwapInterval: 8
+  skillDamageScale: 0.5
+  skillWindupScale: 2.2
   phase2HealthRatio: 0.5
   phase2SpeedMultiplier: 1.3
   phase2CooldownMultiplier: 0.6
@@ -133,6 +155,7 @@ MonoBehaviour:
     teleportBehind: 0
     repeat: 0
     repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   - name: "\u98DB\u5203"
     range: 16
     windup: 0.8
@@ -158,6 +181,7 @@ MonoBehaviour:
     teleportBehind: 0
     repeat: 0
     repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   phase2Message: "\u5F71\u304C\u3055\u3089\u306B\u901F\u304F\u306A\u308B\u2026\u2026!"
   bodyShape: 1
   scale: 1.5

@@ -298,7 +298,8 @@ namespace BattleFight
         static bool IsWeak(Damageable target, WeaponType weapon)
         {
             var enemy = target.GetComponent<EnemyController>();
-            return enemy != null && enemy.Profile != null && enemy.Profile.IsWeakTo(weapon);
+            // 型を切り替える敵は、今の型の弱点で判定する
+            return enemy != null && enemy.Profile != null && enemy.IsWeakTo(weapon);
         }
 
         void AnnounceWeak()
