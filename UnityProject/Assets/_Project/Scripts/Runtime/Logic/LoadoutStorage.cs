@@ -95,18 +95,28 @@ namespace BattleFight
             return true;
         }
 
-        public static void Save(SwapMode mode, int presetIndex, IReadOnlyList<SkillPreset> presets)
+        /// <summary>探索モードの編成(集めたスキルだけで組む)。アリーナの編成とは別に保存する</summary>
+        public const string ExplorationPrefsKey = "BattleFight.Loadout.Explore.v1";
+
+        public static void Save(SwapMode mode, int presetIndex, IReadOnlyList<SkillPreset> presets) =>
+            Save(PrefsKey, mode, presetIndex, presets);
+
+        public static void Save(string key, SwapMode mode, int presetIndex, IReadOnlyList<SkillPreset> presets)
         {
-            PlayerPrefs.SetString(PrefsKey, Serialize(mode, presetIndex, presets));
+            PlayerPrefs.SetString(key, Serialize(mode, presetIndex, presets));
             PlayerPrefs.Save();
         }
 
-        public static bool TryLoad(SkillDatabase database, out Loadout loadout) =>
-            TryDeserialize(PlayerPrefs.GetString(PrefsKey, null), database, out loadout);
+        public static bool TryLoad(SkillDatabase database, out Loadout loadout) => TryLoad(PrefsKey, database, out loadout);
 
+        public static bool TryLoad(string key, SkillDatabase database, out Loadout loadout) =>
+            TryDeserialize(PlayerPrefs.GetString(key, null), database, out loadout);
+
+        /// <summary>アリーナと探索の両方の編成を消す</summary>
         public static void Clear()
         {
             PlayerPrefs.DeleteKey(PrefsKey);
+            PlayerPrefs.DeleteKey(ExplorationPrefsKey);
             PlayerPrefs.Save();
         }
     }

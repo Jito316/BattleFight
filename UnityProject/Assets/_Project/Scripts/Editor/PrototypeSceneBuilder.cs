@@ -13,7 +13,7 @@ namespace BattleFight.EditorTools
     /// メニュー: BattleFight/Build Prototype Arena
     /// バッチ: -executeMethod BattleFight.EditorTools.PrototypeSceneBuilder.BuildFromCommandLine
     /// </summary>
-    public static class PrototypeSceneBuilder
+    public static partial class PrototypeSceneBuilder
     {
         const string Root = "Assets/_Project";
         const string DataRoot = Root + "/Data";
@@ -172,9 +172,10 @@ namespace BattleFight.EditorTools
                     s => PrototypeDefaults.Act4(s, dasher, shooter, flyer, armored, bomber, shadow)),
                 Asset<StageData>("Stages/Stage_9_Endless", resetData,
                     s => PrototypeDefaults.Endless(s, grunt, dasher, shooter, bomber, flyer, armored, boss, magus)),
+                Asset<StageData>("Stages/Stage_10_Explore", resetData, PrototypeDefaults.ExplorationStage),
             };
             // 既にあるエンドレスにも、新しいボスを加える
-            EnsureEndlessBoss((StageData)stages[stages.Length - 1], shadow);
+            EnsureEndlessBoss((StageData)stages[stages.Length - 2], shadow);
 
             AssetDatabase.SaveAssets();
 
@@ -191,7 +192,22 @@ namespace BattleFight.EditorTools
             light.shadows = LightShadows.Soft;
             lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
-            BuildArena();
+            var arenaRoot = BuildArena();
+
+            // 探索マップ(アリーナとは離れた場所に作る。探索のステージでだけ出す)
+            var explorationSkills = new ExplorationSkills
+            {
+                swordCombo = swordCombo, swordIai = swordIai, swordStep = swordStep,
+                hammerCombo = hammerCombo, hammerSpin = hammerSpin, hammerQuake = hammerQuake, hammerMeteor = hammerMeteor,
+                hammerJump = hammerJump,
+                chainCombo = chainCombo, chainPull = chainPull, chainWire = chainWire,
+                staffBolt = staffBolt, staffBlink = staffBlink, staffFireball = staffFireball, staffThunder = staffThunder,
+            };
+            var explorationEnemies = new ExplorationEnemies
+            {
+                grunt = grunt, armored = armored, shooter = shooter, dasher = dasher, flyer = flyer, boss = boss,
+            };
+            var exploration = BuildExploration(explorationSkills, explorationEnemies);
 
             // プレイヤー
             var player = new GameObject("Player") { tag = "Player" };
@@ -234,9 +250,11 @@ namespace BattleFight.EditorTools
             var directorObject = new GameObject("GameDirector");
             var director = directorObject.AddComponent<ArenaDirector>();
             var feedback = directorObject.AddComponent<CombatFeedback>();
-            var hud = directorObject.AddComponent<BattleHud>();
-            var loadoutEditor = directorObject.AddComponent<LoadoutEditorUI>();
-            var stageSelect = directorObject.AddComponent<StageSelectUI>();
+            // UI(UI Toolkit)。画面ごとに UIDocument を分け、同じ PanelSettings で重ねる
+            var panel = BuildPanelSettings();
+            var hud = UiDocument<BattleHud>("UI_Hud", "Hud", panel, 0);
+            var stageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", panel, 10);
+            var loadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", panel, 20);
 
             // ---------- 参照の設定 ----------
             Configure(damageable, so =>
@@ -314,13 +332,11 @@ namespace BattleFight.EditorTools
                 so.FindProperty("lockOn").objectReferenceValue = lockOn;
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("view").objectReferenceValue = camera;
-                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
             Configure(loadoutEditor, so =>
             {
                 so.FindProperty("slots").objectReferenceValue = slots;
                 so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
             Configure(director, so =>
             {
@@ -329,12 +345,14 @@ namespace BattleFight.EditorTools
                 so.FindProperty("style").objectReferenceValue = style;
                 so.FindProperty("enemyMaterial").objectReferenceValue = surface;
                 SetArray(so, "stages", stages);
+                so.FindProperty("arenaRoot").objectReferenceValue = arenaRoot.gameObject;
+                so.FindProperty("exploration").objectReferenceValue = exploration;
+                so.FindProperty("slots").objectReferenceValue = slots;
             });
             Configure(stageSelect, so =>
             {
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("rankConfig").objectReferenceValue = styleConfig;
-                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -347,7 +365,7 @@ namespace BattleFight.EditorTools
             Debug.Log($"[BattleFight] 試作アリーナを生成しました: {ScenePath}");
         }
 
-        static void BuildArena()
+        static Transform BuildArena()
         {
             var arena = new GameObject("Arena").transform;
             var floorMat = Mat("Floor", new Color(0.32f, 0.34f, 0.38f));
@@ -392,6 +410,7 @@ namespace BattleFight.EditorTools
                 var point = Part(PrimitiveType.Sphere, $"GrapplePoint_{i + 1}", arena, grapplePoints[i], Vector3.one * 0.8f, grappleMat);
                 point.gameObject.AddComponent<GrapplePoint>();
             }
+            return arena;
         }
 
         // ---------- 補助 ----------

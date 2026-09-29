@@ -212,6 +212,13 @@ namespace BattleFight.EditorTools
 
         static StageWave Wave(string label, params EnemyProfile[] enemies) => new StageWave { label = label, enemies = enemies };
 
+        public static void ExplorationStage(StageData s)
+        {
+            s.displayName = "探索  古城";
+            s.description = "剣だけを手に城を巡り、スキルを集めよう。手に入れたスキルで、ひび割れた壁・高い段差・谷を越えられる。";
+            s.kind = StageKind.Exploration;
+        }
+
         public static void TrainingStage(StageData s, EnemyProfile dummy, EnemyProfile armoredDummy, EnemyProfile flyingDummy)
         {
             s.displayName = "訓練場";

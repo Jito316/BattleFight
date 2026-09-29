@@ -35,8 +35,9 @@ namespace BattleFight.Tests
 
         IEnumerator LoadArena(SwapMode mode = SwapMode.Rack, int stage = DefaultStage)
         {
-            // 前回保存した編成に左右されないようにする
+            // 前回保存した編成・探索の進み具合に左右されないようにする
             LoadoutStorage.Clear();
+            ExplorationSave.Reset();
             SceneManager.LoadScene(SceneName);
             yield return null;
             yield return null;
@@ -53,6 +54,7 @@ namespace BattleFight.Tests
         {
             if (GamePause.IsPaused) GamePause.Set(false);
             LoadoutStorage.Clear();
+            ExplorationSave.Reset();
             base.TearDown();
         }
 
@@ -456,6 +458,8 @@ namespace BattleFight.Tests
             int count = director.Stages.Count;
             for (int i = 0; i < count; i++)
             {
+                // 探索は部屋に入るまで敵が出ない(ExplorationPlayTests で確かめる)
+                if (director.Stages[i].kind == StageKind.Exploration) continue;
                 yield return LoadArena(SwapMode.Preset, i);
                 MakePlayerSturdy();
                 yield return WaitUntil(() => EnemyController.Active.Count > 0, 6f);

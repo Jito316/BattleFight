@@ -1,0 +1,126 @@
+/*
+  BattleFight の UI 共通スタイル(色・文字・パネル・バー・ボタン・キー表示)。
+  HUD / スキル編成 / ステージ選択の UXML がすべて読み込む。
+  色や角丸を変えるときは、まずここの変数(--bf-*)を変える。
+*/
+:root {
+    --bf-text: #EEF1F6;
+    --bf-text-sub: rgba(238, 241, 246, 0.64);
+    --bf-text-dim: rgba(238, 241, 246, 0.40);
+    --bf-panel: rgba(11, 13, 19, 0.74);
+    --bf-panel-strong: rgba(13, 15, 22, 0.96);
+    --bf-card: rgba(255, 255, 255, 0.045);
+    --bf-card-hover: rgba(255, 255, 255, 0.09);
+    --bf-line: rgba(255, 255, 255, 0.10);
+    --bf-accent: #6FC3FF;
+    --bf-accent-strong: #2F7FD8;
+    --bf-gold: #FFD76A;
+    --bf-danger: #FF5C66;
+    --bf-good: #5BE38F;
+    --bf-chain: #8CFFE6;
+    --bf-cancel: #66E0FF;
+
+    /* 日本語フォント(使う文字だけに絞ったもの。PrototypeSceneBuilder が .otf から作る) */
+    -unity-font-definition: url("NotoSansJP-Bold.asset");
+    color: var(--bf-text);
+    font-size: 18px;
+}
+
+.panel {
+    background-color: var(--bf-panel);
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: var(--bf-line);
+    padding: 12px 16px;
+}
+
+.panel--strong {
+    background-color: var(--bf-panel-strong);
+}
+
+.text-sub {
+    color: var(--bf-text-sub);
+}
+
+.text-dim {
+    color: var(--bf-text-dim);
+}
+
+/* 残量バー: .bar の中に .bar__fill を入れ、幅(%)を C# から変える */
+.bar {
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.55);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bar__fill {
+    height: 100%;
+    width: 0;
+    background-color: var(--bf-accent);
+    border-radius: 4px;
+}
+
+/* キーやボタンの表示([J] [1] など) */
+.key {
+    background-color: rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    padding: 0 6px;
+    font-size: 14px;
+    color: var(--bf-text);
+    -unity-text-align: middle-center;
+}
+
+.pill {
+    font-size: 15px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 2px 10px;
+    margin-right: 8px;
+    color: var(--bf-text-sub);
+}
+
+.bf-button {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-width: 1px;
+    border-color: var(--bf-line);
+    border-radius: 8px;
+    color: var(--bf-text);
+    font-size: 20px;
+    padding: 10px 22px;
+    margin: 0;
+    transition-property: background-color, border-color, scale;
+    transition-duration: 0.12s;
+}
+
+.bf-button:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+.bf-button:active {
+    scale: 0.97 0.97;
+}
+
+.bf-button:focus {
+    border-color: var(--bf-accent);
+}
+
+.bf-button--primary {
+    background-color: var(--bf-accent-strong);
+    border-color: #58A6FF;
+}
+
+.bf-button--primary:hover {
+    background-color: #3B8FEA;
+}
+
+.bf-button--danger {
+    background-color: rgba(255, 92, 102, 0.18);
+    border-color: rgba(255, 92, 102, 0.45);
+}
+
+.bf-button--selected {
+    background-color: var(--bf-accent-strong);
+    border-color: #8CCBFF;
+}

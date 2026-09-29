@@ -26,7 +26,7 @@ namespace BattleFight.Tests
             var used = new HashSet<char>();
             foreach (var path in Directory.GetFiles("Assets/_Project", "*.*", SearchOption.AllDirectories))
             {
-                if (!path.EndsWith(".cs") && !path.EndsWith(".asset")) continue;
+                if (!path.EndsWith(".cs") && !path.EndsWith(".asset") && !path.EndsWith(".uxml")) continue;
                 // テストのメッセージは画面に出ないので対象外(subset_font.py と同じ)
                 if (path.Replace('\\', '/').Contains("/Tests/")) continue;
                 string text = File.ReadAllText(path, Encoding.UTF8);

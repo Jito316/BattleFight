@@ -1,0 +1,133 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!--
+      戦闘中の HUD。位置と見た目は Hud.uss、中身は BattleHud.cs が入れる。
+      画面は 1920x1080 基準で、PanelSettings が画面の高さに合わせて拡大縮小する。
+    -->
+    <Style src="Common.uss" />
+    <Style src="Hud.uss" />
+    <ui:Template name="SlotCard" src="SlotCard.uxml" />
+    <ui:Template name="PresetChip" src="PresetChip.uxml" />
+
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <!-- 敵の体力・弱点・目印・ダメージ数字など、3D の位置に合わせて動くもの -->
+        <ui:VisualElement name="world-layer" class="layer" picking-mode="Ignore" />
+
+        <!-- 左上: 体力・刻片・切り替え方式 -->
+        <ui:VisualElement name="status" class="status panel" picking-mode="Ignore">
+            <ui:VisualElement class="status__row" picking-mode="Ignore">
+                <ui:Label text="HP" class="status__hp-label" picking-mode="Ignore" />
+                <ui:Label name="hp-value" class="status__hp-value" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement class="bar bar--hp" picking-mode="Ignore">
+                <ui:VisualElement name="hp-fill" class="bar__fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement class="status__meta" picking-mode="Ignore">
+                <ui:Label name="shards" class="pill pill--shard" picking-mode="Ignore" />
+                <ui:Label name="mode" class="pill" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 左: 操作説明(0 / R3 で開閉) -->
+        <ui:Label name="guide-hint" class="guide-hint" picking-mode="Ignore" />
+        <ui:VisualElement name="guide" class="guide panel" picking-mode="Ignore">
+            <ui:VisualElement class="guide__head" picking-mode="Ignore">
+                <ui:Label name="guide-title" class="guide__title" picking-mode="Ignore" />
+                <ui:Label name="guide-close" class="guide__close" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="guide-rows" class="guide__rows" picking-mode="Ignore" />
+            <ui:Label text="コツ" class="guide__subtitle" picking-mode="Ignore" />
+            <ui:VisualElement name="guide-tips" class="guide__tips" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <!-- 上中央: ステージ名・ウェーブ(探索では部屋の名前と集めたスキル)・ボスの体力 -->
+        <ui:VisualElement name="header" class="header" picking-mode="Ignore">
+            <ui:Label name="title" class="header__title" picking-mode="Ignore" />
+            <ui:Label name="subtitle" class="header__sub" picking-mode="Ignore" />
+            <ui:VisualElement name="boss" class="boss" picking-mode="Ignore">
+                <ui:VisualElement class="boss__row" picking-mode="Ignore">
+                    <ui:Label name="boss-name" class="boss__name" picking-mode="Ignore" />
+                    <ui:Label name="boss-phase" text="第二形態" class="boss__phase" picking-mode="Ignore" />
+                    <ui:Label name="boss-weak" class="boss__weak" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement class="bar bar--boss" picking-mode="Ignore">
+                    <ui:VisualElement name="boss-fill" class="bar__fill" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement name="boss-armor" class="bar bar--armor" picking-mode="Ignore">
+                    <ui:VisualElement name="boss-armor-fill" class="bar__fill" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 右: スタイルランク・お知らせ・チェンジチェイン -->
+        <ui:VisualElement name="style" class="style" picking-mode="Ignore">
+            <ui:Label text="STYLE" class="style__caption" picking-mode="Ignore" />
+            <ui:Label name="rank" class="style__rank" picking-mode="Ignore" />
+            <ui:VisualElement class="bar bar--rank" picking-mode="Ignore">
+                <ui:VisualElement name="rank-fill" class="bar__fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="announcements" class="announcements" picking-mode="Ignore" />
+            <ui:VisualElement name="chain" class="chain" picking-mode="Ignore">
+                <ui:Label name="chain-count" class="chain__count" picking-mode="Ignore" />
+                <ui:Label name="chain-bonus" class="chain__bonus" picking-mode="Ignore" />
+                <ui:VisualElement class="bar bar--chain" picking-mode="Ignore">
+                    <ui:VisualElement name="chain-fill" class="bar__fill" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="chain-hint" text="CHAIN  切り替え → ヒットでつながる" class="chain__hint" picking-mode="Ignore" />
+            <ui:Label name="debug" class="style__debug" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <!-- 下: 武器種ボーナス・スワップストライク・プリセット・スロット・チェンジアタック -->
+        <ui:VisualElement name="bottom" class="bottom" picking-mode="Ignore">
+            <ui:VisualElement name="swap-strike" class="swap-strike" picking-mode="Ignore">
+                <ui:Label text="SWAP STRIKE READY" class="swap-strike__label" picking-mode="Ignore" />
+                <ui:VisualElement class="bar bar--strike" picking-mode="Ignore">
+                    <ui:VisualElement name="swap-strike-fill" class="bar__fill" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="bonus" class="bonus" picking-mode="Ignore" />
+            <ui:VisualElement class="bottom__row" picking-mode="Ignore">
+                <ui:VisualElement name="presets" class="presets" picking-mode="Ignore">
+                    <ui:Instance template="PresetChip" name="preset-1" picking-mode="Ignore" />
+                    <ui:Instance template="PresetChip" name="preset-2" picking-mode="Ignore" />
+                    <ui:Instance template="PresetChip" name="preset-3" picking-mode="Ignore" />
+                    <ui:Instance template="PresetChip" name="preset-4" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement name="slots" class="slots" picking-mode="Ignore">
+                    <ui:Instance template="SlotCard" name="slot-a" picking-mode="Ignore" />
+                    <ui:Instance template="SlotCard" name="slot-b" picking-mode="Ignore" />
+                    <ui:Instance template="SlotCard" name="slot-m" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement name="change-attack" class="change-attack" picking-mode="Ignore">
+                    <ui:Label name="change-attack-label" class="change-attack__label" picking-mode="Ignore" />
+                    <ui:VisualElement class="bar bar--change" picking-mode="Ignore">
+                        <ui:VisualElement name="change-attack-fill" class="bar__fill" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- 中央: READY・ボスの第二形態・探索のお知らせ -->
+        <ui:Label name="ready" text="READY" class="ready" picking-mode="Ignore" />
+        <ui:VisualElement name="phase-banner" class="banner" picking-mode="Ignore">
+            <ui:Label name="phase-title" class="banner__title" picking-mode="Ignore" />
+            <ui:Label name="phase-sub" class="banner__sub" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="toast-wrap" class="toast-wrap" picking-mode="Ignore">
+            <ui:Label name="toast" class="toast panel" picking-mode="Ignore" />
+        </ui:VisualElement>
+
+        <!-- クリア / ゲームオーバー -->
+        <ui:VisualElement name="result" class="result">
+            <ui:VisualElement class="result__card panel panel--strong">
+                <ui:Label name="result-title" class="result__title" />
+                <ui:Label name="result-body" class="result__body" />
+                <ui:VisualElement class="result__buttons">
+                    <ui:Button name="result-next" class="bf-button bf-button--primary result__button" />
+                    <ui:Button name="result-retry" class="bf-button result__button" />
+                    <ui:Button name="result-select" class="bf-button result__button" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

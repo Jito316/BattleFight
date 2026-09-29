@@ -1,0 +1,98 @@
+/* ステージ選択(StageSelect.uxml) */
+
+.select {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(4, 6, 10, 0.55);
+    align-items: center;
+    justify-content: center;
+}
+
+.select__window {
+    width: 1100px;
+    max-height: 1000px;
+    padding: 30px 40px 20px 40px;
+    border-radius: 16px;
+    align-items: stretch;
+}
+
+.select__logo {
+    font-size: 60px;
+    letter-spacing: 4px;
+    -unity-text-align: middle-center;
+}
+
+.select__lead {
+    font-size: 20px;
+    color: var(--bf-text-sub);
+    -unity-text-align: middle-center;
+    margin-bottom: 20px;
+}
+
+.select__list {
+    flex-shrink: 1;
+}
+
+.stage-row {
+    flex-direction: row;
+    background-color: var(--bf-card);
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition-property: background-color, border-color, translate;
+    transition-duration: 0.12s;
+}
+
+.stage-row--selected {
+    background-color: rgba(47, 127, 216, 0.22);
+    border-color: #6FC3FF;
+    translate: 6px 0;
+}
+
+.stage-row__stripe {
+    width: 8px;
+}
+
+.stage-row__body {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding: 10px 18px 12px 18px;
+}
+
+.stage-row__head {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stage-row__title {
+    font-size: 26px;
+}
+
+.stage-row__record {
+    font-size: 17px;
+    color: var(--bf-gold);
+}
+
+.stage-row__desc {
+    font-size: 16px;
+    color: var(--bf-text-sub);
+    white-space: normal;
+    margin-top: 2px;
+}
+
+.select__footer {
+    font-size: 17px;
+    color: var(--bf-text-dim);
+    -unity-text-align: middle-center;
+    margin-top: 8px;
+}
+
+.select__footer--notice {
+    color: var(--bf-gold);
+}

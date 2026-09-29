@@ -33,6 +33,11 @@ namespace BattleFight
         readonly List<SkillPreset> presets = new List<SkillPreset>();
         int presetIndex;
 
+        // 探索モード: 集めたスキルだけを使える。編成はアリーナとは別に保存する
+        bool collecting;
+        SkillPreset[] collectionPresets;
+        string storageKey = LoadoutStorage.PrefsKey;
+
         /// <summary>スロットのスキルが変わった(切り替え・編成の変更)</summary>
         public event Action<SlotType> SlotChanged;
         public event Action PresetChanged;
@@ -78,13 +83,78 @@ namespace BattleFight
 
         void ResetPresetsToDefault()
         {
+            var sources = collecting ? collectionPresets : defaultPresets;
             presets.Clear();
             for (int i = 0; i < PresetCount; i++)
             {
-                var source = defaultPresets != null && i < defaultPresets.Length ? defaultPresets[i] : null;
+                var source = sources != null && i < sources.Length ? sources[i] : null;
                 presets.Add(source != null ? source.Clone() : new SkillPreset { name = $"プリセット{i + 1}" });
             }
             presetIndex = 0;
+        }
+
+        /// <summary>探索モードで、集めたスキルだけを使えるようにしているか</summary>
+        public bool IsCollecting => collecting;
+
+        /// <summary>編成で選べるスキルか(探索モードでは手に入れたものだけ)</summary>
+        public bool IsAvailable(SkillData skill) => skill != null && (!collecting || ExplorationSave.IsUnlocked(skill));
+
+        /// <summary>
+        /// 探索モードに入る。プリセット方式に固定し、集めたスキルだけで組んだ編成を読み込む。
+        /// 手に入れていないスキルが保存データに残っていたら外す。
+        /// </summary>
+        public void BeginCollection(SkillPreset[] startingPresets)
+        {
+            collecting = true;
+            collectionPresets = startingPresets;
+            storageKey = LoadoutStorage.ExplorationPrefsKey;
+            mode = SwapMode.Preset;
+
+            ResetPresetsToDefault();
+            if (persistLoadout && LoadoutStorage.TryLoad(storageKey, database, out var saved))
+            {
+                for (int i = 0; i < presets.Count && i < saved.presets.Count; i++) presets[i] = saved.presets[i];
+                presetIndex = Mathf.Clamp(saved.presetIndex, 0, presets.Count - 1);
+            }
+            foreach (var preset in presets)
+            {
+                for (int s = 0; s < 3; s++)
+                {
+                    if (!IsAvailable(preset.Get((SlotType)s))) preset.Set((SlotType)s, null);
+                }
+            }
+            if (presets[presetIndex].IsEmpty) presetIndex = FirstNonEmptyPreset();
+
+            RecomputeBonus();
+            for (int i = 0; i < 3; i++) SlotChanged?.Invoke((SlotType)i);
+            ModeChanged?.Invoke();
+            PresetChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// 新しく手に入れたスキルを、そのスロットが空いている最初のプリセットに入れる(すぐ使えるように)。
+        /// 入れたプリセットの番号を返す。空きがなければ -1。
+        /// </summary>
+        public int EquipNewSkill(SkillData skill)
+        {
+            if (skill == null) return -1;
+            for (int i = 0; i < presets.Count; i++)
+            {
+                if (presets[i].Get(skill.slot) != null) continue;
+                AssignPresetSkill(i, skill.slot, skill);
+                SaveLoadout();
+                return i;
+            }
+            return -1;
+        }
+
+        int FirstNonEmptyPreset()
+        {
+            for (int i = 0; i < presets.Count; i++)
+            {
+                if (!presets[i].IsEmpty) return i;
+            }
+            return 0;
         }
 
         public SkillRack GetRack(SlotType slot) => racks[(int)slot];
@@ -109,6 +179,8 @@ namespace BattleFight
         public bool SelectPreset(int index)
         {
             if (mode != SwapMode.Preset || index < 0 || index >= presets.Count || index == presetIndex) return false;
+            // 空のプリセットに切り替えると何もできなくなるので、切り替えない
+            if (presets[index].IsEmpty) return false;
 
             var before = new[] { GetCurrent(SlotType.AttackA), GetCurrent(SlotType.AttackB), GetCurrent(SlotType.Movement) };
             presetIndex = index;
@@ -123,7 +195,8 @@ namespace BattleFight
 
         public void SetMode(SwapMode newMode)
         {
-            if (mode == newMode) return;
+            // 探索モードはプリセット方式だけ(ラックの候補は集めたスキルと関係なく決まっているため)
+            if (mode == newMode || collecting) return;
             mode = newMode;
             RecomputeBonus();
             for (int i = 0; i < 3; i++) SlotChanged?.Invoke((SlotType)i);
@@ -133,7 +206,7 @@ namespace BattleFight
         /// <summary>編成画面から: プリセットのスロットにスキルを入れる</summary>
         public bool AssignPresetSkill(int index, SlotType slot, SkillData skill)
         {
-            if (index < 0 || index >= presets.Count || !presets[index].Set(slot, skill)) return false;
+            if (index < 0 || index >= presets.Count || (skill != null && !IsAvailable(skill)) || !presets[index].Set(slot, skill)) return false;
             if (index == presetIndex)
             {
                 RecomputeBonus();
@@ -157,7 +230,7 @@ namespace BattleFight
 
         public void SaveLoadout()
         {
-            if (persistLoadout) LoadoutStorage.Save(mode, presetIndex, presets);
+            if (persistLoadout) LoadoutStorage.Save(storageKey, mode, presetIndex, presets);
         }
 
         public WeaponTypeData GetWeaponData(WeaponType weapon)

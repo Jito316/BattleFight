@@ -662,6 +662,14 @@ namespace BattleFight
             targetBuffer.Clear();
             for (int i = 0; i < count; i++)
             {
+                // 探索: ひび割れた壁(決まった武器種の技で崩れる)
+                var wall = OverlapBuffer[i].GetComponentInParent<BreakableWall>();
+                if (wall != null)
+                {
+                    wall.TryBreak(current);
+                    continue;
+                }
+
                 var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
                 if (target == null || target.Team == self.Team || target.IsDead || !hitThisStep.Add(target)) continue;
                 targetBuffer.Add(target);

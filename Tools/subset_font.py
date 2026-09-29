@@ -5,7 +5,7 @@ HUD 用の日本語フォントを、ゲームで使う文字だけに絞る(Web
     python -m pip install fonttools
     python Tools/subset_font.py
 
-・UnityProject/Assets 以下の .cs と .asset(Unity の YAML は \\uXXXX で書かれる)から文字を集める
+・UnityProject/Assets 以下の .cs と .asset(Unity の YAML は \\uXXXX で書かれる)と .uxml(UI の文字)から文字を集める
 ・ひらがな・カタカナ全部と、よく使う記号も入れておく(あとで文字を足しても表示が崩れにくいように)
 ・スキル名や説明に新しい漢字を足したら、このスクリプトを実行し直すこと
 """
@@ -36,7 +36,7 @@ def collect_characters() -> set[str]:
     chars = base_characters()
     for scan_root in SCAN_ROOTS:
         for path in scan_root.rglob("*"):
-            if path.suffix not in (".cs", ".asset"):
+            if path.suffix not in (".cs", ".asset", ".uxml"):
                 continue
             # テストのメッセージは画面に出ないので対象外(FontCoverageTests と同じ)
             if "Tests" in path.parts:

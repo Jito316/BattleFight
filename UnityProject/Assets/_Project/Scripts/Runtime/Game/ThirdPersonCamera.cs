@@ -64,6 +64,27 @@ namespace BattleFight
 
         public void AddShake(float amount) => shake = Mathf.Min(0.5f, shake + amount);
 
+        static readonly RaycastHit[] CameraHits = new RaycastHit[16];
+
+        /// <summary>
+        /// 壁の向こうに回り込まないよう、注視点からカメラまでの間にある地形の手前で止める。
+        /// プレイヤーや敵(Damageable を持つもの)は無視する。
+        /// </summary>
+        float ObstructedDistance(Vector3 from, Vector3 direction, float maxDistance)
+        {
+            const float radius = 0.3f;
+            int count = Physics.SphereCastNonAlloc(from, radius, direction, CameraHits, maxDistance, ~0, QueryTriggerInteraction.Ignore);
+            float nearest = maxDistance;
+            for (int i = 0; i < count; i++)
+            {
+                var hit = CameraHits[i];
+                if (hit.distance <= 0f || hit.collider.GetComponentInParent<Damageable>() != null) continue;
+                if (target != null && hit.collider.transform.IsChildOf(target)) continue;
+                nearest = Mathf.Min(nearest, hit.distance);
+            }
+            return Mathf.Max(1.2f, nearest - 0.1f);
+        }
+
         void LateUpdate()
         {
             if (target == null || GamePause.IsPaused) return;
@@ -95,7 +116,8 @@ namespace BattleFight
             focus = Vector3.Lerp(focus, desiredFocus, 1f - Mathf.Exp(-followSharpness * dt));
 
             Quaternion rotation = Quaternion.Euler(pitch, yaw, 0f);
-            Vector3 position = focus - rotation * Vector3.forward * distance;
+            Vector3 back = -(rotation * Vector3.forward);
+            Vector3 position = focus + back * ObstructedDistance(focus, back, distance);
             position.y = Mathf.Max(position.y, 0.4f);
             position += Random.insideUnitSphere * shake;
             shake = Mathf.Lerp(shake, 0f, 1f - Mathf.Exp(-10f * dt));

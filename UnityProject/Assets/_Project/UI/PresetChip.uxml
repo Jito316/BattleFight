@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- プリセット方式のプリセット1つ分(左下に4つ並ぶ) -->
+    <ui:VisualElement name="chip" class="preset" picking-mode="Ignore">
+        <ui:Label name="key" class="key preset__key" picking-mode="Ignore" />
+        <ui:Label name="name" class="preset__name" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

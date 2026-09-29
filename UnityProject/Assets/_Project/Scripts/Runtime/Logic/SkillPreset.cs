@@ -46,6 +46,9 @@ namespace BattleFight
                 ? WeaponBonusResolver.Resolve(attackA.weapon, attackB.weapon, movement.weapon)
                 : WeaponBonus.None;
 
+        /// <summary>3スロットとも空(探索でまだスキルが足りないプリセット)</summary>
+        public bool IsEmpty => attackA == null && attackB == null && movement == null;
+
         public SkillPreset Clone() => new SkillPreset(name, attackA, attackB, movement);
     }
 }

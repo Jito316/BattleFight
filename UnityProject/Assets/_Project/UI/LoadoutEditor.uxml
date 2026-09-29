@@ -1,0 +1,71 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!--
+      スキル編成画面(P / Select で開閉)。レイアウトはここ、見た目は LoadoutEditor.uss、
+      スキルの一覧など中身は LoadoutEditorUI.cs が入れる。
+    -->
+    <Style src="Common.uss" />
+    <Style src="LoadoutEditor.uss" />
+    <ui:Template name="PresetCard" src="PresetCard.uxml" />
+
+    <ui:VisualElement name="editor" class="editor">
+        <ui:VisualElement class="editor__window panel panel--strong">
+            <ui:VisualElement class="editor__header">
+                <ui:Label text="スキル編成" class="editor__title" />
+                <ui:VisualElement class="editor__spacer" />
+                <ui:Label name="collect-info" class="editor__collect" />
+                <ui:VisualElement name="mode" class="editor__mode">
+                    <ui:Label text="戦闘中の切り替え方式" class="editor__mode-label" />
+                    <ui:Button name="mode-rack" text="ラック方式" class="bf-button editor__mode-button" />
+                    <ui:Button name="mode-preset" text="プリセット方式" class="bf-button editor__mode-button" />
+                </ui:VisualElement>
+                <ui:Button name="close" class="bf-button editor__close" />
+            </ui:VisualElement>
+            <ui:Label name="notice" text="※ 今はラック方式です。ここで編集したプリセットは「プリセット方式」にすると使えます" class="editor__notice" />
+
+            <ui:VisualElement class="editor__body">
+                <ui:VisualElement class="editor__presets">
+                    <ui:VisualElement class="editor__presets-head">
+                        <ui:Label text="プリセット" class="editor__section" />
+                        <ui:Button name="reset" text="初期に戻す" class="bf-button bf-button--danger editor__reset" />
+                    </ui:VisualElement>
+                    <ui:Instance template="PresetCard" name="preset-card-1" />
+                    <ui:Instance template="PresetCard" name="preset-card-2" />
+                    <ui:Instance template="PresetCard" name="preset-card-3" />
+                    <ui:Instance template="PresetCard" name="preset-card-4" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="editor__lists">
+                    <ui:VisualElement class="editor__column">
+                        <ui:Label text="攻撃A" class="editor__section" />
+                        <ui:ScrollView name="list-a" class="skill-list" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="editor__column">
+                        <ui:Label text="攻撃B" class="editor__section" />
+                        <ui:ScrollView name="list-b" class="skill-list" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="editor__column">
+                        <ui:Label text="移動" class="editor__section" />
+                        <ui:ScrollView name="list-m" class="skill-list" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="editor__detail">
+                    <ui:Label name="name-caption" class="editor__section" />
+                    <ui:TextField name="preset-name" max-length="16" class="editor__name" />
+                    <ui:VisualElement class="detail">
+                        <ui:Label name="detail-empty" text="スキルにマウスを乗せると、詳しい説明が出ます" class="detail__empty" />
+                        <ui:Label name="detail-name" class="detail__name" />
+                        <ui:Label name="detail-meta" class="detail__meta" />
+                        <ui:Label name="detail-desc" class="detail__desc" />
+                        <ui:VisualElement name="detail-stats" class="detail__stats" />
+                        <ui:VisualElement class="editor__spacer" />
+                        <ui:Label text="このプリセットの武器種ボーナス" class="detail__caption" />
+                        <ui:Label name="detail-bonus" class="detail__bonus" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:Label name="footer" class="editor__footer" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
