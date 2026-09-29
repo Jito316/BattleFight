@@ -1,6 +1,7 @@
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace BattleFight
 {
@@ -13,7 +14,8 @@ namespace BattleFight
         const float RefHeight = 1080f;
 
         static readonly string[] SlotLabels = { "攻撃A", "攻撃B", "移動" };
-        static readonly string[] SlotKeys = { "←/1", "→/2", "↓/3", "↑/4" };
+        static readonly string[] KeyboardSlotKeys = { "1", "2", "3", "4" };
+        static readonly string[] GamepadSlotKeys = { "←", "→", "↓", "↑" };
         static readonly Color[] RankColors =
         {
             new Color(0.6f, 0.6f, 0.6f),
@@ -46,6 +48,12 @@ namespace BattleFight
         EnemyController phaseEnemy;
         float phaseAnnouncedAt = -99f;
 
+        /// <summary>操作説明を表示しているか</summary>
+        public bool IsHelpShown => showHelp;
+
+        /// <summary>最後に触ったのがゲームパッドか(操作説明とキー表示をそのデバイスのものにする)</summary>
+        public bool UsingGamepad { get; private set; }
+
         void OnEnable()
         {
             slots.SlotChanged += OnSlotChanged;
@@ -58,6 +66,45 @@ namespace BattleFight
             EnemyController.PhaseChanged -= OnPhaseChanged;
         }
 
+        /// <summary>このフレームに触ったデバイスを見て、表示をキーボード用かゲームパッド用に切り替える</summary>
+        void TrackLastDevice()
+        {
+            if (GamepadTouched(Gamepad.current))
+            {
+                UsingGamepad = true;
+                return;
+            }
+            var keyboard = Keyboard.current;
+            var mouse = Mouse.current;
+            if ((keyboard != null && keyboard.anyKey.wasPressedThisFrame)
+                || (mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame
+                    || mouse.middleButton.wasPressedThisFrame || mouse.delta.ReadValue().sqrMagnitude > 4f)))
+            {
+                UsingGamepad = false;
+            }
+        }
+
+        static bool GamepadTouched(Gamepad gamepad)
+        {
+            if (gamepad == null) return false;
+            if (gamepad.leftStick.ReadValue().sqrMagnitude > 0.25f || gamepad.rightStick.ReadValue().sqrMagnitude > 0.25f) return true;
+            foreach (var control in gamepad.allControls)
+            {
+                if (control is ButtonControl button && !button.synthetic && button.wasPressedThisFrame) return true;
+            }
+            return false;
+        }
+
+        bool HelpTogglePressed()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard != null && (keyboard.digit0Key.wasPressedThisFrame || keyboard.numpad0Key.wasPressedThisFrame || keyboard.f1Key.wasPressedThisFrame)) return true;
+            var gamepad = Gamepad.current;
+            return gamepad != null && gamepad.rightStickButton.wasPressedThisFrame;
+        }
+
+        string SlotKey(int index) => (UsingGamepad ? GamepadSlotKeys : KeyboardSlotKeys)[index];
+
         void OnPhaseChanged(EnemyController enemy)
         {
             phaseEnemy = enemy;
@@ -67,7 +114,8 @@ namespace BattleFight
 
         void Update()
         {
-            if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame) showHelp = !showHelp;
+            TrackLastDevice();
+            if (HelpTogglePressed()) showHelp = !showHelp;
 
             int rank = style.Meter.RankIndex;
             if (rank > lastRank) rankPulse = 1f;
@@ -118,7 +166,7 @@ namespace BattleFight
             Bar(new Rect(80, 36, 400, 22), player.Health / player.MaxHealth, new Color(0.3f, 0.9f, 0.4f));
             Text(new Rect(40, 64, 440, 30), $"刻片 {director.Shards}", 22, new Color(0.8f, 0.9f, 1f));
             string mode = slots.Mode == SwapMode.Preset ? "プリセット方式" : "ラック方式";
-            Text(new Rect(40, 92, 440, 30), $"切り替え: {mode}   <color=#AAAAAA>[P] 編成</color>", 18, new Color(1f, 1f, 1f, 0.8f),
+            Text(new Rect(40, 92, 440, 30), $"切り替え: {mode}   <color=#AAAAAA>[{(UsingGamepad ? "Select" : "P")}] 編成</color>", 18, new Color(1f, 1f, 1f, 0.8f),
                 TextAnchor.UpperLeft, FontStyle.Normal);
         }
 
@@ -278,7 +326,7 @@ namespace BattleFight
                     float blink = Mathf.PingPong(Time.unscaledTime * 8f, 1f);
                     Outline(rect, Color.Lerp(new Color(0.4f, 0.9f, 1f), Color.white, blink), 3f);
                 }
-                Text(new Rect(rect.x + 14, rect.y + 7, rect.width - 20, rect.height), $"<color=#AAAAAA>[{SlotKeys[i]}]</color>  {preset.name}",
+                Text(new Rect(rect.x + 14, rect.y + 7, rect.width - 20, rect.height), $"<color=#AAAAAA>[{SlotKey(i)}]</color>  {preset.name}",
                     20, current ? Color.white : new Color(1f, 1f, 1f, 0.7f));
             }
         }
@@ -318,7 +366,7 @@ namespace BattleFight
             }
             Box(new Rect(rect.x, rect.y, 8, rect.height), weaponColor);
 
-            string keyHint = rackMode ? $"   <color=#AAAAAA>[{SlotKeys[i]}]</color>" : "";
+            string keyHint = rackMode ? $"   <color=#AAAAAA>[{SlotKey(i)}]</color>" : "";
             Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 30, 26), $"{SlotLabels[i]}{keyHint}", 20, Color.white);
             if (cancelReady)
             {
@@ -403,7 +451,7 @@ namespace BattleFight
             {
                 case WeaponBonusKind.Mastery:
                     var finisher = slots.MasteryFinisher;
-                    text = $"マスタリー({weaponName})   [R1 / F] フィニッシャー「{(finisher != null ? finisher.displayName : "-")}」";
+                    text = $"マスタリー({weaponName})   [{(UsingGamepad ? "R1" : "F")}] フィニッシャー「{(finisher != null ? finisher.displayName : "-")}」";
                     color = data != null ? data.color : Color.white;
                     break;
                 case WeaponBonusKind.Synergy:
@@ -501,39 +549,61 @@ namespace BattleFight
             const float y = 120f;
             if (!showHelp)
             {
-                Text(new Rect(x, y, 400, 30), "[F1] 操作説明", 18, new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperLeft, FontStyle.Normal);
+                Text(new Rect(x, y, 400, 30), UsingGamepad ? "[R3] 操作説明" : "[0] 操作説明", 18, new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperLeft, FontStyle.Normal);
                 return;
             }
 
-            const string help =
-                "<b>操作(キーボード / ゲームパッド)</b>\n" +
-                "移動            WASD / 左スティック\n" +
-                "カメラ          マウス / 右スティック\n" +
-                "攻撃A           左クリック・J / □\n" +
-                "攻撃B           右クリック・K / △(居合は長押しで溜め)\n" +
-                "移動スキル      Shift・L / ○\n" +
-                "ジャンプ        Space / ×\n" +
-                "ロックオン      Tab・中クリック / L1\n" +
-                "切り替え        1〜4  ・  十字キー\n" +
-                "  ラック方式: 1/2/3 で各スロット  プリセット方式: 1〜4 で一括\n" +
-                "フィニッシャー  F / R1(マスタリー時)\n" +
-                "スキル編成      P / Select(切り替え方式もここで)\n" +
-                "もう一度 / 選択に戻る  R / T\n" +
-                "\n" +
-                "<b>コツ</b>\n" +
-                "・技の硬直中にそのスロットを切り替えると硬直をキャンセル\n" +
-                "・切り替えた直後の一撃は強化(SWAP STRIKE)\n" +
-                "・同じ技の連発はスタイルが伸びない\n" +
-                "・敵の頭上の「弱」の武器で攻撃すると 1.5倍\n" +
-                "・切り替え → ヒットでCHAIN(最大×5、ダメージ +50%)\n" +
-                "・切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)\n" +
-                "・ワイヤーは視界内で一番近い ◎ へ飛ぶ(ぶら下がり中に\n" +
-                "   ワイヤーで次へ / Space でジャンプ / 攻撃で空中攻撃)\n" +
-                "・[F1] でこの説明を閉じる";
-
+            string help = UsingGamepad ? GamepadHelp : KeyboardHelp;
             Box(new Rect(x - 10, y - 8, 600, 650), new Color(0f, 0f, 0f, 0.45f));
             Text(new Rect(x, y, 580, 640), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
         }
+
+        const string HelpTips =
+            "\n" +
+            "<b>コツ</b>\n" +
+            "・技の硬直中にそのスロットを切り替えると硬直をキャンセル\n" +
+            "・切り替えた直後の一撃は強化(SWAP STRIKE)\n" +
+            "・同じ技の連発はスタイルが伸びない\n" +
+            "・敵の頭上の「弱」の武器で攻撃すると 1.5倍\n" +
+            "・切り替え → ヒットでCHAIN(最大×5、ダメージ +50%)\n" +
+            "・切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)\n" +
+            "・ワイヤーは視界内で一番近い ◎ へ飛ぶ(ぶら下がり中に\n";
+
+        const string KeyboardHelp =
+            "<b>操作(キーボード・マウス)</b>\n" +
+            "移動            WASD\n" +
+            "カメラ          マウス\n" +
+            "攻撃A           左クリック・J\n" +
+            "攻撃B           右クリック・K(居合は長押しで溜め)\n" +
+            "移動スキル      Shift・L\n" +
+            "ジャンプ        Space\n" +
+            "ロックオン      Tab・中クリック\n" +
+            "切り替え        1〜4\n" +
+            "  ラック方式: 1/2/3 で各スロット  プリセット方式: 1〜4 で一括\n" +
+            "フィニッシャー  F(マスタリー時)\n" +
+            "スキル編成      P(切り替え方式もここで)\n" +
+            "もう一度 / 選択に戻る  R / T\n" +
+            HelpTips +
+            "   ワイヤーで次へ / Space でジャンプ / 攻撃で空中攻撃)\n" +
+            "・[0] でこの説明を閉じる";
+
+        const string GamepadHelp =
+            "<b>操作(ゲームパッド)</b>\n" +
+            "移動            左スティック\n" +
+            "カメラ          右スティック\n" +
+            "攻撃A           □\n" +
+            "攻撃B           △(居合は長押しで溜め)\n" +
+            "移動スキル      ○\n" +
+            "ジャンプ        ×\n" +
+            "ロックオン      L1\n" +
+            "切り替え        十字キー\n" +
+            "  ラック方式: ←/→/↓ で各スロット  プリセット方式: 十字キーで一括\n" +
+            "フィニッシャー  R1(マスタリー時)\n" +
+            "スキル編成      Select(切り替え方式もここで)\n" +
+            "もう一度        Start\n" +
+            HelpTips +
+            "   ワイヤーで次へ / × でジャンプ / 攻撃で空中攻撃)\n" +
+            "・[R3] でこの説明を閉じる";
 
         void DrawCenterMessage()
         {
