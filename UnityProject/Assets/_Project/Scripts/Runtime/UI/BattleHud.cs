@@ -1,19 +1,22 @@
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.UIElements;
 
 namespace BattleFight
 {
     /// <summary>
-    /// 試作用の HUD(IMGUI)。スロットとラック、武器種ボーナス、スタイルランク(常時表示)、体力などを描く。
-    /// 1920x1080 基準の座標を画面の高さに合わせて拡大縮小する。
+    /// 戦闘中の HUD(UI Toolkit)。レイアウトは Hud.uxml、見た目は Hud.uss / Common.uss。
+    /// ここでは毎フレーム、ゲームの状態を要素に反映する(文字は変わったときだけ入れ替える)。
+    /// 画面は 1920x1080 基準で、PanelSettings が画面の高さに合わせて拡大縮小する。
     /// </summary>
+    [RequireComponent(typeof(UIDocument))]
     public class BattleHud : MonoBehaviour
     {
-        const float RefHeight = 1080f;
-
         static readonly string[] SlotLabels = { "攻撃A", "攻撃B", "移動" };
+        static readonly string[] SlotNames = { "slot-a", "slot-b", "slot-m" };
         static readonly string[] KeyboardSlotKeys = { "1", "2", "3", "4" };
         static readonly string[] GamepadSlotKeys = { "←", "→", "↓", "↑" };
         static readonly Color[] RankColors =
@@ -27,6 +30,30 @@ namespace BattleFight
             new Color(1f, 0.3f, 1f),
         };
 
+        // 操作説明: (操作, キー)。キーは「・」で区切ると複数の枠になる。2列に並べ、補足のある「切り替え」は最後に1行で出す
+        static readonly (string action, string keys)[] KeyboardGuide =
+        {
+            ("移動", "W・A・S・D"), ("カメラ", "マウス"), ("攻撃A", "左クリック・J"), ("攻撃B", "右クリック・K"),
+            ("移動スキル", "Shift・L"), ("ジャンプ", "Space"), ("ロックオン", "Tab・中クリック"), ("フィニッシャー", "F"),
+            ("スキル編成", "P"), ("もう一度 / 選択へ", "R・T"), ("切り替え", "1・2・3・4"),
+        };
+        static readonly (string action, string keys)[] GamepadGuide =
+        {
+            ("移動", "左スティック"), ("カメラ", "右スティック"), ("攻撃A", "□"), ("攻撃B", "△"),
+            ("移動スキル", "○"), ("ジャンプ", "×"), ("ロックオン", "L1"), ("フィニッシャー", "R1"),
+            ("スキル編成", "Select"), ("もう一度", "Start"), ("切り替え", "十字キー"),
+        };
+        static readonly string[] Tips =
+        {
+            "技の硬直中にそのスロットを切り替えると、硬直をキャンセル",
+            "切り替えた直後の一撃は強化(SWAP STRIKE)",
+            "同じ技の連発はスタイルが伸びない",
+            "敵の頭上の「弱」の武器で攻撃すると 1.5倍",
+            "切り替え → ヒットで CHAIN(最大×5、ダメージ +50%)",
+            "切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)",
+            "居合は長押しで溜め。ワイヤーは視界内で一番近い ◎ へ飛ぶ",
+        };
+
         [SerializeField] SkillSlotController slots;
         [SerializeField] SkillExecutor executor;
         [SerializeField] StyleRankSystem style;
@@ -34,19 +61,55 @@ namespace BattleFight
         [SerializeField] LockOnSystem lockOn;
         [SerializeField] ArenaDirector director;
         [SerializeField] Camera view;
-        [SerializeField, Tooltip("WebGL ではOSのフォントを使えないため、日本語を含むフォントを指定する")] Font font;
 
-        GUIStyle labelStyle;
-        float scale;
-        float virtualWidth;
+        UIDocument document;
+        VisualElement root;
+        VisualElement hud;
         bool showHelp = true;
+        bool guideForGamepad;
         int lastRank;
-        float rankPulse;
-        readonly float[] swappedAt = { -99f, -99f, -99f };
+        readonly SkillData[] shownSkills = new SkillData[3];
         readonly StringBuilder builder = new StringBuilder();
 
         EnemyController phaseEnemy;
         float phaseAnnouncedAt = -99f;
+
+        // 要素
+        Label hpValue, shards, mode, guideHint, guideTitle, guideClose, title, subtitle;
+        VisualElement hpBar, hpFill, guide, guideRows, guideTips, boss, bossFill, bossArmor, bossArmorFill;
+        Label bossName, bossPhase, bossWeak, rank, chainCount, chainBonus, chainHint, debugLabel, bonus, changeAttackLabel;
+        VisualElement rankFill, announcements, chain, chainFill, swapStrike, swapStrikeFill, presetsRoot, changeAttack, changeAttackFill;
+        Label ready, phaseTitle, phaseSub, toast;
+        VisualElement phaseBanner, toastWrap, result, worldLayer;
+        Label resultTitle, resultBody;
+        Button resultNext, resultRetry, resultSelect;
+        readonly SlotView[] slotViews = new SlotView[3];
+        readonly PresetView[] presetViews = new PresetView[SkillSlotController.PresetCount];
+
+        // 3D の位置に出すもの(使い回す)
+        readonly List<EnemyTag> enemyTags = new List<EnemyTag>();
+        readonly List<Label> worldLabels = new List<Label>();
+        readonly List<Label> damageLabels = new List<Label>();
+        readonly List<Label> announcementLabels = new List<Label>();
+        Label lockMark, grappleMark;
+
+        class SlotView
+        {
+            public VisualElement card;
+            public Label popup, label, key, cancel, name, weapon, desc;
+        }
+
+        class PresetView
+        {
+            public VisualElement chip;
+            public Label key, name;
+        }
+
+        class EnemyTag
+        {
+            public VisualElement root, fill, armor, armorFill;
+            public Label weak, alert;
+        }
 
         /// <summary>操作説明を表示しているか</summary>
         public bool IsHelpShown => showHelp;
@@ -54,8 +117,15 @@ namespace BattleFight
         /// <summary>最後に触ったのがゲームパッドか(操作説明とキー表示をそのデバイスのものにする)</summary>
         public bool UsingGamepad { get; private set; }
 
+        /// <summary>スロットのパネルに今出ているスキル(実際に使われるもの。プリセット方式ではプリセットの中身)</summary>
+        public SkillData ShownSkill(SlotType slot) => shownSkills[(int)slot];
+
         void OnEnable()
         {
+            document = GetComponent<UIDocument>();
+            root = document.rootVisualElement;
+            Bind();
+
             slots.SlotChanged += OnSlotChanged;
             EnemyController.PhaseChanged += OnPhaseChanged;
         }
@@ -65,6 +135,102 @@ namespace BattleFight
             slots.SlotChanged -= OnSlotChanged;
             EnemyController.PhaseChanged -= OnPhaseChanged;
         }
+
+        void Bind()
+        {
+            hud = root.Q("hud");
+            hpValue = root.Q<Label>("hp-value");
+            hpFill = root.Q("hp-fill");
+            hpBar = hpFill.parent;
+            shards = root.Q<Label>("shards");
+            mode = root.Q<Label>("mode");
+            guideHint = root.Q<Label>("guide-hint");
+            guide = root.Q("guide");
+            guideTitle = root.Q<Label>("guide-title");
+            guideRows = root.Q("guide-rows");
+            guideTips = root.Q("guide-tips");
+            guideClose = root.Q<Label>("guide-close");
+            title = root.Q<Label>("title");
+            subtitle = root.Q<Label>("subtitle");
+            boss = root.Q("boss");
+            bossName = root.Q<Label>("boss-name");
+            bossPhase = root.Q<Label>("boss-phase");
+            bossWeak = root.Q<Label>("boss-weak");
+            bossFill = root.Q("boss-fill");
+            bossArmor = root.Q("boss-armor");
+            bossArmorFill = root.Q("boss-armor-fill");
+            rank = root.Q<Label>("rank");
+            rankFill = root.Q("rank-fill");
+            announcements = root.Q("announcements");
+            chain = root.Q("chain");
+            chainCount = root.Q<Label>("chain-count");
+            chainBonus = root.Q<Label>("chain-bonus");
+            chainFill = root.Q("chain-fill");
+            chainHint = root.Q<Label>("chain-hint");
+            debugLabel = root.Q<Label>("debug");
+            swapStrike = root.Q("swap-strike");
+            swapStrikeFill = root.Q("swap-strike-fill");
+            bonus = root.Q<Label>("bonus");
+            presetsRoot = root.Q("presets");
+            changeAttack = root.Q("change-attack");
+            changeAttackLabel = root.Q<Label>("change-attack-label");
+            changeAttackFill = root.Q("change-attack-fill");
+            ready = root.Q<Label>("ready");
+            phaseBanner = root.Q("phase-banner");
+            phaseTitle = root.Q<Label>("phase-title");
+            phaseSub = root.Q<Label>("phase-sub");
+            toastWrap = root.Q("toast-wrap");
+            toast = root.Q<Label>("toast");
+            result = root.Q("result");
+            resultTitle = root.Q<Label>("result-title");
+            resultBody = root.Q<Label>("result-body");
+            resultNext = root.Q<Button>("result-next");
+            resultRetry = root.Q<Button>("result-retry");
+            resultSelect = root.Q<Button>("result-select");
+            worldLayer = root.Q("world-layer");
+
+            for (int i = 0; i < 3; i++)
+            {
+                var instance = root.Q(SlotNames[i]);
+                slotViews[i] = new SlotView
+                {
+                    card = instance.Q("card"),
+                    popup = instance.Q<Label>("popup"),
+                    label = instance.Q<Label>("label"),
+                    key = instance.Q<Label>("key"),
+                    cancel = instance.Q<Label>("cancel"),
+                    name = instance.Q<Label>("name"),
+                    weapon = instance.Q<Label>("weapon"),
+                    desc = instance.Q<Label>("desc"),
+                };
+                slotViews[i].label.text = SlotLabels[i];
+            }
+            for (int i = 0; i < presetViews.Length; i++)
+            {
+                var instance = root.Q($"preset-{i + 1}");
+                presetViews[i] = new PresetView { chip = instance.Q("chip"), key = instance.Q<Label>("key"), name = instance.Q<Label>("name") };
+            }
+
+            resultNext.clicked += () => director.NextStage();
+            resultRetry.clicked += () => director.Retry();
+            resultSelect.clicked += () => director.BackToStageSelect();
+
+            lockMark = new Label("◇") { pickingMode = PickingMode.Ignore };
+            lockMark.AddToClassList("world-mark");
+            lockMark.AddToClassList("world-mark--lock");
+            grappleMark = new Label("◎") { pickingMode = PickingMode.Ignore };
+            grappleMark.AddToClassList("world-mark");
+            grappleMark.AddToClassList("world-mark--grapple");
+            var grappleHint = new Label { name = "grapple-hint", pickingMode = PickingMode.Ignore };
+            grappleHint.AddToClassList("world-mark__hint");
+            grappleMark.Add(grappleHint);
+            worldLayer.Add(lockMark);
+            worldLayer.Add(grappleMark);
+
+            BuildGuide(false);
+        }
+
+        // ---------- 入力 ----------
 
         /// <summary>このフレームに触ったデバイスを見て、表示をキーボード用かゲームパッド用に切り替える</summary>
         void TrackLastDevice()
@@ -95,7 +261,7 @@ namespace BattleFight
             return false;
         }
 
-        bool HelpTogglePressed()
+        static bool HelpTogglePressed()
         {
             var keyboard = Keyboard.current;
             if (keyboard != null && (keyboard.digit0Key.wasPressedThisFrame || keyboard.numpad0Key.wasPressedThisFrame || keyboard.f1Key.wasPressedThisFrame)) return true;
@@ -110,162 +276,513 @@ namespace BattleFight
             phaseEnemy = enemy;
             phaseAnnouncedAt = Time.unscaledTime;
         }
-        void OnSlotChanged(SlotType slot) => swappedAt[(int)slot] = Time.unscaledTime;
+
+        void OnSlotChanged(SlotType slot)
+        {
+            int i = (int)slot;
+            // 表示中のスキルはすぐ更新する(編成を変えた直後に ShownSkill を読んでも古くならないように)
+            shownSkills[i] = slots.GetCurrent(slot);
+            // 切り替えた瞬間だけ大きくし、新しいスキル名を上に出す(戻りは USS の transition)
+            var view = slotViews[i];
+            if (view == null) return;
+            var skill = slots.GetCurrent(slot);
+            view.card.AddToClassList("slot--swapped");
+            view.card.schedule.Execute(() => view.card.RemoveFromClassList("slot--swapped")).StartingIn(60);
+            if (skill != null)
+            {
+                view.popup.text = $"⇒ {skill.displayName}";
+                view.popup.style.color = WeaponColor(skill);
+                view.popup.AddToClassList("slot__popup--show");
+                view.popup.schedule.Execute(() => view.popup.RemoveFromClassList("slot__popup--show")).StartingIn(380);
+            }
+        }
 
         void Update()
         {
             TrackLastDevice();
             if (HelpTogglePressed()) showHelp = !showHelp;
-
-            int rank = style.Meter.RankIndex;
-            if (rank > lastRank) rankPulse = 1f;
-            lastRank = rank;
-            rankPulse = Mathf.MoveTowards(rankPulse, 0f, Time.unscaledDeltaTime * 3f);
+            Refresh();
         }
 
-        void OnGUI()
+        // ---------- 反映 ----------
+
+        void Refresh()
         {
-            if (LoadoutEditorUI.IsOpen) return;
-            if (labelStyle == null)
+            if (root == null) return;
+            bool visible = director.State != ArenaDirector.GameState.StageSelect && !LoadoutEditorUI.IsOpen;
+            Show(hud, visible);
+            // スロットの表示はテストや他の画面からも読むので、HUD を隠していても更新する
+            RefreshSlots();
+            if (!visible) return;
+
+            RefreshStatus();
+            RefreshGuide();
+            RefreshHeader();
+            RefreshBoss();
+            RefreshStyle();
+            RefreshBottom();
+            RefreshCenter();
+            RefreshWorld();
+        }
+
+        void RefreshStatus()
+        {
+            float ratio = player.MaxHealth > 0f ? player.Health / player.MaxHealth : 0f;
+            SetText(hpValue, $"{Mathf.CeilToInt(player.Health)} <color=#8A93A3>/ {Mathf.CeilToInt(player.MaxHealth)}</color>");
+            SetFill(hpFill, ratio);
+            hpBar.EnableInClassList("low", ratio < 0.3f);
+            SetText(shards, $"刻片 {director.Shards}");
+            string modeName = slots.Mode == SwapMode.Preset ? "プリセット方式" : "ラック方式";
+            SetText(mode, $"{modeName}  <color=#FFFFFF>[{(UsingGamepad ? "Select" : "P")}]</color> 編成");
+        }
+
+        void RefreshGuide()
+        {
+            if (guideForGamepad != UsingGamepad) BuildGuide(UsingGamepad);
+            Show(guide, showHelp);
+            Show(guideHint, !showHelp);
+            SetText(guideHint, UsingGamepad ? "[R3] 操作説明" : "[0] 操作説明");
+        }
+
+        void BuildGuide(bool gamepad)
+        {
+            guideForGamepad = gamepad;
+            guideTitle.text = gamepad ? "操作(ゲームパッド)" : "操作(キーボード・マウス)";
+            guideRows.Clear();
+            foreach (var (action, keys) in gamepad ? GamepadGuide : KeyboardGuide)
             {
-                labelStyle = new GUIStyle(GUI.skin.label) { richText = true, wordWrap = false };
-                if (font != null) labelStyle.font = font;
+                var row = new VisualElement { pickingMode = PickingMode.Ignore };
+                row.AddToClassList("guide__row");
+                row.Add(Classed(new Label(action), "guide__action"));
+                var keyRow = Classed(new VisualElement(), "guide__keys");
+                foreach (var key in keys.Split('・')) keyRow.Add(Classed(new Label(key), "key"));
+                row.Add(keyRow);
+                if (action == "切り替え")
+                {
+                    // 補足があるので1行まるごと使う
+                    row.AddToClassList("guide__row--wide");
+                    row.Add(Classed(new Label(gamepad ? "ラック: ←/→/↓ で各スロット  プリセット: 十字キーで一括" : "ラック: 1/2/3 で各スロット  プリセット: 1〜4 で一括"), "guide__note"));
+                }
+                guideRows.Add(row);
             }
-            scale = Screen.height / RefHeight;
-            virtualWidth = Screen.width / scale;
+            guideTips.Clear();
+            foreach (var tip in Tips) guideTips.Add(Classed(new Label("・" + tip), "guide__tip"));
+            guideClose.text = gamepad ? "[R3] で閉じる" : "[0] で閉じる";
+        }
 
-            // 文字は 1080p 基準の決まったサイズで描き、画面全体を拡大縮小する。
-            // 文字サイズを画面や演出で変え続けると、動的フォントのテクスチャがあふれて
-            // 再構築が無限に続き、WebGL でスタックオーバーフローになる。
-            var previousMatrix = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
-
-            if (director.State == ArenaDirector.GameState.StageSelect)
+        void RefreshHeader()
+        {
+            var stage = director.CurrentStage;
+            if (stage == null)
             {
-                GUI.matrix = previousMatrix;
+                SetText(title, "");
+                Show(subtitle, false);
                 return;
             }
 
-            DrawWorldOverlays();
-            DrawHealth();
-            DrawWave();
-            DrawBoss();
-            DrawStyleRank();
-            DrawSlots();
-            DrawHelp();
-            DrawCenterMessage();
-
-            GUI.matrix = previousMatrix;
-        }
-
-        // ---------- 画面上部 ----------
-
-        void DrawHealth()
-        {
-            Text(new Rect(40, 30, 400, 30), "HP", 22, Color.white);
-            Bar(new Rect(80, 36, 400, 22), player.Health / player.MaxHealth, new Color(0.3f, 0.9f, 0.4f));
-            Text(new Rect(40, 64, 440, 30), $"刻片 {director.Shards}", 22, new Color(0.8f, 0.9f, 1f));
-            string mode = slots.Mode == SwapMode.Preset ? "プリセット方式" : "ラック方式";
-            Text(new Rect(40, 92, 440, 30), $"切り替え: {mode}   <color=#AAAAAA>[{(UsingGamepad ? "Select" : "P")}] 編成</color>", 18, new Color(1f, 1f, 1f, 0.8f),
-                TextAnchor.UpperLeft, FontStyle.Normal);
-        }
-
-        void DrawWave()
-        {
-            var stage = director.CurrentStage;
-            if (stage == null) return;
-            string text;
             var region = ExplorationRegion.Active;
             if (stage.kind == StageKind.Exploration && region != null)
             {
-                // 探索: 今いる部屋と、集めたスキルの数
+                // 探索: 今いる部屋と、集めたスキルの数(ボス戦中は体力と重なるので出さない)
                 string room = region.CurrentRoomName();
-                text = room.Length > 0 ? $"{region.RegionName}  <color=#AAAAAA>-</color>  {room}" : region.RegionName;
-                Text(new Rect(0, 24, virtualWidth, 40), text, 28, Color.white, TextAnchor.UpperCenter);
-                // ボス戦中はボスの体力と重なるので出さない
-                if (director.Boss == null)
-                {
-                    Text(new Rect(0, 60, virtualWidth, 30), $"集めたスキル  {ExplorationSave.UnlockedCount} / {region.TotalSkills}", 20,
-                        new Color(1f, 0.9f, 0.55f), TextAnchor.UpperCenter);
-                }
+                SetText(title, room.Length > 0 ? $"{region.RegionName}  <color=#8A93A3>-</color>  {room}" : region.RegionName);
+                SetText(subtitle, $"集めたスキル  {ExplorationSave.UnlockedCount} / {region.TotalSkills}");
+                Show(subtitle, director.Boss == null);
                 return;
             }
-            if (stage.kind == StageKind.Training) text = stage.displayName;
-            else if (director.WaveNumber <= 0) text = stage.displayName;
-            else if (stage.kind == StageKind.Endless) text = $"{stage.displayName}   {director.WaveLabel} {director.WaveNumber}";
-            else text = $"{stage.displayName}   {director.WaveLabel}  {director.WaveNumber} / {director.WaveCount}";
-            Text(new Rect(0, 24, virtualWidth, 40), text, 28, Color.white, TextAnchor.UpperCenter);
+
+            string text;
+            if (stage.kind == StageKind.Training || director.WaveNumber <= 0) text = stage.displayName;
+            else if (stage.kind == StageKind.Endless) text = $"{stage.displayName}   <color=#8A93A3>{director.WaveLabel}</color> {director.WaveNumber}";
+            else text = $"{stage.displayName}   <color=#8A93A3>{director.WaveLabel}</color>  {director.WaveNumber} / {director.WaveCount}";
+            SetText(title, text);
+            Show(subtitle, false);
         }
 
-        void DrawBoss()
+        void RefreshBoss()
         {
-            var boss = director.Boss;
-            if (boss == null) return;
-            float width = 800f;
-            float x = (virtualWidth - width) * 0.5f;
-            var damageable = boss.Damageable;
-            string weakness = WeaknessText(boss.Profile);
-            string phase = boss.IsPhase2 ? "  <color=#FF6666>第二形態</color>" : "";
-            Text(new Rect(x, 64, width, 30), boss.Profile.displayName + phase + (weakness.Length > 0 ? $"   <size=20>弱点 {weakness}</size>" : ""), 24,
-                new Color(1f, 0.5f, 0.5f), TextAnchor.UpperCenter);
-            Bar(new Rect(x, 96, width, 18), damageable.Health / damageable.MaxHealth, new Color(0.9f, 0.2f, 0.2f));
-            if (damageable.MaxArmor > 0f)
-            {
-                Bar(new Rect(x, 118, width, 8), damageable.Armor / damageable.MaxArmor, new Color(1f, 0.7f, 0.2f));
-            }
+            var enemy = director.Boss;
+            Show(boss, enemy != null);
+            if (enemy == null) return;
+            var damageable = enemy.Damageable;
+            SetText(bossName, enemy.Profile.displayName);
+            Show(bossPhase, enemy.IsPhase2);
+            string weakness = WeaknessText(enemy.Profile);
+            SetText(bossWeak, weakness.Length > 0 ? $"<color=#8A93A3>弱点</color> {weakness}" : "");
+            SetFill(bossFill, damageable.Health / damageable.MaxHealth);
+            Show(bossArmor, damageable.MaxArmor > 0f);
+            if (damageable.MaxArmor > 0f) SetFill(bossArmorFill, damageable.Armor / damageable.MaxArmor);
         }
 
-        // ---------- スタイルランク(右側) ----------
-
-        void DrawStyleRank()
+        void RefreshStyle()
         {
             var meter = style.Meter;
-            float right = virtualWidth - 50f;
-            float width = 320f;
             var color = RankColors[Mathf.Min(meter.RankIndex, RankColors.Length - 1)];
-
-            Text(new Rect(right - width, 150, width, 30), "STYLE", 22, new Color(1f, 1f, 1f, 0.7f), TextAnchor.UpperRight);
-            // ランクアップの演出は文字サイズではなく拡大表示で行う(文字サイズは固定)
-            var matrix = GUI.matrix;
-            GUIUtility.ScaleAroundPivot(Vector2.one * (1f + 0.35f * rankPulse), new Vector2(right, 240f) * scale);
-            Text(new Rect(right - width, 170, width, 150), meter.RankName, 110, color, TextAnchor.UpperRight);
-            GUI.matrix = matrix;
-            Bar(new Rect(right - width, 320, width, 10), meter.RankProgress, color);
-
-            float y = 345f;
-            for (int i = style.Announcements.Count - 1; i >= 0; i--)
+            SetText(rank, meter.RankName);
+            rank.style.color = color;
+            rankFill.style.backgroundColor = color;
+            SetFill(rankFill, meter.RankProgress);
+            if (meter.RankIndex > lastRank)
             {
-                var announcement = style.Announcements[i];
+                rank.AddToClassList("pulse");
+                rank.schedule.Execute(() => rank.RemoveFromClassList("pulse")).StartingIn(40);
+            }
+            lastRank = meter.RankIndex;
+
+            // お知らせ(新しいものを上に)
+            int count = style.Announcements.Count;
+            while (announcementLabels.Count < count)
+            {
+                var label = Classed(new Label(), "announcement");
+                announcementLabels.Add(label);
+                announcements.Add(label);
+            }
+            for (int i = 0; i < announcementLabels.Count; i++)
+            {
+                var label = announcementLabels[i];
+                if (i >= count)
+                {
+                    Show(label, false);
+                    continue;
+                }
+                var announcement = style.Announcements[count - 1 - i];
                 float age = Time.unscaledTime - announcement.time;
+                Show(label, true);
+                SetText(label, announcement.text);
                 var c = announcement.color;
-                c.a = Mathf.Clamp01(1f - age / StyleRankSystem.AnnouncementLifetime) * 1.5f;
-                Text(new Rect(right - width - 100, y, width + 100, 40), announcement.text, 30, c, TextAnchor.UpperRight);
-                y += 38f;
+                c.a = Mathf.Clamp01((1f - age / StyleRankSystem.AnnouncementLifetime) * 1.5f);
+                label.style.color = c;
             }
 
-            DrawChain(right, width);
-
-            Text(new Rect(right - width - 100, 690, width + 100, 30), executor.DebugLabel, 18, new Color(1f, 1f, 1f, 0.6f),
-                TextAnchor.UpperRight, FontStyle.Normal);
-        }
-
-        /// <summary>チェンジチェイン(切り替え → ヒットで上がり、ダメージが増える)</summary>
-        void DrawChain(float right, float width)
-        {
-            var chain = executor.SwapChain;
-            var color = new Color(0.55f, 1f, 0.9f);
-            if (chain.Chain <= 0)
+            var chainMeter = executor.SwapChain;
+            bool chaining = chainMeter.Chain > 0;
+            Show(chain, chaining);
+            Show(chainHint, !chaining);
+            if (chaining)
             {
-                Text(new Rect(right - width, 580, width, 30), "CHAIN  切り替え → ヒットでつながる", 16, new Color(1f, 1f, 1f, 0.45f),
-                    TextAnchor.UpperRight, FontStyle.Normal);
-                return;
+                int bonusPercent = Mathf.RoundToInt((chainMeter.DamageMultiplier - 1f) * 100f);
+                SetText(chainCount, $"CHAIN ×{chainMeter.Chain}{(chainMeter.Chain >= chainMeter.MaxChain ? "  MAX" : "")}");
+                SetText(chainBonus, $"ダメージ +{bonusPercent}%");
+                SetFill(chainFill, chainMeter.Remaining(Time.time));
             }
-            int bonus = Mathf.RoundToInt((chain.DamageMultiplier - 1f) * 100f);
-            string max = chain.Chain >= chain.MaxChain ? "  MAX" : "";
-            Text(new Rect(right - width, 575, width, 50), $"CHAIN ×{chain.Chain}{max}", 38, color, TextAnchor.UpperRight);
-            Text(new Rect(right - width, 622, width, 26), $"ダメージ +{bonus}%", 20, color, TextAnchor.UpperRight);
-            Bar(new Rect(right - width, 652, width, 6), chain.Remaining(Time.time), color);
+            SetText(debugLabel, executor.DebugLabel);
         }
+
+        void RefreshSlots()
+        {
+            bool rackMode = slots.Mode == SwapMode.Rack;
+            for (int i = 0; i < 3; i++)
+            {
+                var slot = (SlotType)i;
+                var view = slotViews[i];
+                var current = slots.GetCurrent(slot);
+                shownSkills[i] = current;
+                if (view == null) continue;
+
+                var weaponData = current != null ? slots.GetWeaponData(current.weapon) : null;
+                var weaponColor = weaponData != null ? weaponData.color : new Color(1f, 1f, 1f, 0.25f);
+                bool active = executor.Current != null && executor.Current == current && !executor.IsFinisherActive;
+                bool cancelReady = rackMode && executor.CanSwapCancelNow(slot);
+
+                view.card.style.borderTopColor = weaponColor;
+                view.card.EnableInClassList("slot--active", active);
+                view.card.EnableInClassList("slot--cancel", cancelReady && Mathf.PingPong(Time.unscaledTime * 8f, 1f) > 0.4f);
+                Show(view.cancel, cancelReady);
+                Show(view.key, rackMode);
+                SetText(view.key, SlotKey(i));
+
+                SetText(view.name, current != null ? current.displayName : "(なし)");
+                view.name.style.color = current != null ? weaponColor : new Color(1f, 1f, 1f, 0.35f);
+                SetText(view.weapon, weaponData != null ? weaponData.displayName : "");
+                SetText(view.desc, rackMode ? RackLine(slots.GetRack(slot)) : DescribeShort(current));
+            }
+        }
+
+        string RackLine(SkillRack rack)
+        {
+            builder.Clear();
+            for (int j = 0; j < rack.Count; j++)
+            {
+                var skill = rack.Skills[j];
+                string hex = ColorUtility.ToHtmlStringRGB(WeaponColor(skill));
+                if (j > 0) builder.Append("  ");
+                if (j == rack.CurrentIndex) builder.Append($"<color=#{hex}>■{skill.displayName}</color>");
+                else if (skill == rack.Next) builder.Append($"<color=#{hex}>▶{skill.displayName}</color>");
+                else builder.Append($"<color=#777777>{skill.displayName}</color>");
+            }
+            return builder.ToString();
+        }
+
+        void RefreshBottom()
+        {
+            // スワップストライク
+            bool strike = executor.SwapStrikeReady;
+            Show(swapStrike, strike);
+            if (strike) SetFill(swapStrikeFill, executor.SwapStrikeRemaining);
+
+            // 武器種ボーナス
+            var weaponBonus = slots.Bonus;
+            var data = slots.GetWeaponData(weaponBonus.Weapon);
+            string weaponName = data != null ? data.displayName : weaponBonus.Weapon.ToString();
+            string text = "";
+            Color color = Color.white;
+            switch (weaponBonus.Kind)
+            {
+                case WeaponBonusKind.Mastery:
+                    var finisher = slots.MasteryFinisher;
+                    text = $"マスタリー({weaponName})   <color=#FFFFFF>[{(UsingGamepad ? "R1" : "F")}]</color> フィニッシャー「{(finisher != null ? finisher.displayName : "-")}」";
+                    color = data != null ? data.color : Color.white;
+                    break;
+                case WeaponBonusKind.Synergy:
+                    text = $"シナジー({weaponName})   ひるみ +{Mathf.RoundToInt((data != null ? data.synergyStaggerBonus : 0f) * 100f)}%";
+                    color = data != null ? Color.Lerp(data.color, Color.white, 0.3f) : Color.white;
+                    break;
+                case WeaponBonusKind.Arsenal:
+                    text = $"アーセナル   スタイル獲得 x{style.Config.arsenalMultiplier:0.##}";
+                    color = new Color(0.9f, 0.9f, 1f);
+                    break;
+            }
+            Show(bonus, text.Length > 0);
+            SetText(bonus, text);
+            bonus.style.color = color;
+
+            // プリセット
+            bool presetMode = slots.Mode == SwapMode.Preset;
+            Show(presetsRoot, presetMode);
+            if (presetMode)
+            {
+                for (int i = 0; i < presetViews.Length; i++)
+                {
+                    var view = presetViews[i];
+                    bool exists = i < slots.Presets.Count;
+                    Show(view.chip, exists);
+                    if (!exists) continue;
+                    var preset = slots.Presets[i];
+                    var a = preset.attackA;
+                    view.chip.style.borderLeftColor = a != null ? WeaponColor(a) : new Color(1f, 1f, 1f, 0.2f);
+                    view.chip.EnableInClassList("preset--current", i == slots.PresetIndex);
+                    view.chip.EnableInClassList("preset--empty", preset.IsEmpty);
+                    view.chip.EnableInClassList("preset--cancel",
+                        i != slots.PresetIndex && executor.CanPresetCancel(i) && Mathf.PingPong(Time.unscaledTime * 8f, 1f) > 0.4f);
+                    SetText(view.key, SlotKey(i));
+                    SetText(view.name, preset.name);
+                }
+            }
+
+            // チェンジアタック
+            bool readyNow = executor.ChangeAttackReady;
+            changeAttack.EnableInClassList("ready", readyNow);
+            SetText(changeAttackLabel, readyNow ? "CHANGE ATTACK 準備OK" : "CHANGE ATTACK");
+            SetFill(changeAttackFill, executor.ChangeAttackCharge);
+        }
+
+        void RefreshCenter()
+        {
+            var state = director.State;
+            Show(ready, state == ArenaDirector.GameState.Starting);
+
+            // ボスの第二形態の告知(2秒)
+            float sincePhase = Time.unscaledTime - phaseAnnouncedAt;
+            bool phase = phaseEnemy != null && sincePhase < 2f && state != ArenaDirector.GameState.Cleared && state != ArenaDirector.GameState.GameOver;
+            Show(phaseBanner, phase);
+            if (phase)
+            {
+                var c = phaseEnemy.Profile.telegraphColor;
+                c.a = Mathf.Clamp01((2f - sincePhase) / 0.5f);
+                SetText(phaseTitle, $"{phaseEnemy.Profile.displayName}  第二形態");
+                SetText(phaseSub, phaseEnemy.Profile.phase2Message);
+                phaseTitle.style.color = c;
+                phaseSub.style.color = c;
+            }
+
+            // 探索のお知らせ(4秒で消える)
+            var region = ExplorationRegion.Active;
+            float sinceToast = region != null ? Time.unscaledTime - region.MessageTime : 99f;
+            bool showToast = region != null && !string.IsNullOrEmpty(region.Message) && sinceToast < 4f && !phase;
+            Show(toastWrap, showToast);
+            if (showToast)
+            {
+                SetText(toast, region.Message);
+                toast.style.color = region.MessageColor;
+                toast.style.opacity = Mathf.Clamp01((4f - sinceToast) / 0.6f);
+            }
+
+            RefreshResult(state);
+        }
+
+        void RefreshResult(ArenaDirector.GameState state)
+        {
+            bool cleared = state == ArenaDirector.GameState.Cleared;
+            bool over = state == ArenaDirector.GameState.GameOver;
+            Show(result, cleared || over);
+            if (!cleared && !over) return;
+
+            if (cleared && director.IsExploring && ExplorationRegion.Active != null)
+            {
+                SetText(resultTitle, "探索クリア");
+                SetText(resultBody, $"集めたスキル {ExplorationSave.UnlockedCount} / {ExplorationRegion.Active.TotalSkills}   タイム {director.ElapsedTime:0.0}秒\n続きからは、マップを自由に回れます");
+                resultTitle.style.color = new Color(1f, 0.9f, 0.4f);
+            }
+            else if (cleared)
+            {
+                string best = style.Config.rankNames[Mathf.Min(style.HighestRank, style.Config.rankNames.Length - 1)];
+                string record = director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "";
+                SetText(resultTitle, "STAGE CLEAR");
+                SetText(resultBody, $"タイム {director.ElapsedTime:0.0}秒   最高ランク {best}   刻片 {director.Shards}{record}");
+                resultTitle.style.color = new Color(1f, 0.9f, 0.4f);
+            }
+            else
+            {
+                bool endless = director.CurrentStage != null && director.CurrentStage.kind == StageKind.Endless;
+                SetText(resultTitle, "GAME OVER");
+                SetText(resultBody, endless ? $"到達 WAVE {director.WaveNumber}{(director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "")}" : "");
+                resultTitle.style.color = new Color(1f, 0.35f, 0.35f);
+            }
+            Show(resultBody, resultBody.text.Length > 0);
+
+            Show(resultNext, cleared && director.HasNextStage);
+            SetText(resultNext, "次のステージ [N]");
+            SetText(resultRetry, !director.IsExploring ? "もう一度 [R]" : over ? "祭壇から再開 [R]" : "続きから [R]");
+            SetText(resultSelect, "ステージ選択 [T]");
+        }
+
+        // ---------- 3D の位置に出すもの ----------
+
+        void RefreshWorld()
+        {
+            if (view == null || root.panel == null) return;
+
+            // 敵の体力・弱点・予備動作の「!」(ボスは上の体力バーに出すので除く)
+            int used = 0;
+            var attackA = slots.GetCurrent(SlotType.AttackA);
+            foreach (var enemy in EnemyController.Active)
+            {
+                if (enemy.IsDead || enemy.Profile.isBoss) continue;
+                if (!ToPanel(enemy.transform.position + Vector3.up * (enemy.Height + 0.4f), out var point)) continue;
+                var tag = EnemyTagAt(used++);
+                Show(tag.root, true);
+                Place(tag.root, point);
+                var damageable = enemy.Damageable;
+                SetFill(tag.fill, damageable.Health / damageable.MaxHealth);
+                Show(tag.armor, damageable.MaxArmor > 0f);
+                if (damageable.MaxArmor > 0f) SetFill(tag.armorFill, damageable.Armor / damageable.MaxArmor);
+                string weakness = WeaknessText(enemy.Profile);
+                bool weakNow = attackA != null && enemy.Profile.IsWeakTo(attackA.weapon);
+                Show(tag.weak, weakness.Length > 0);
+                SetText(tag.weak, (weakNow ? "弱点 " : "弱 ") + weakness);
+                tag.weak.EnableInClassList("now", weakNow);
+                Show(tag.alert, enemy.IsTelegraphing);
+                tag.alert.style.color = enemy.Profile.telegraphColor;
+            }
+            for (int i = used; i < enemyTags.Count; i++) Show(enemyTags[i].root, false);
+
+            // 探索の目印(近いものだけ)
+            used = 0;
+            var playerPosition = player.transform.position;
+            foreach (var worldLabel in WorldLabel.All)
+            {
+                if (worldLabel == null || string.IsNullOrEmpty(worldLabel.text)) continue;
+                var position = worldLabel.Position;
+                float distance = Vector3.Distance(position, playerPosition);
+                if (distance > worldLabel.showDistance || !ToPanel(position, out var point)) continue;
+                var label = PooledLabel(worldLabels, used++, "world-label");
+                Place(label, point);
+                SetText(label, worldLabel.text);
+                var c = worldLabel.color;
+                c.a *= Mathf.Clamp01((worldLabel.showDistance - distance) / 3f);
+                label.style.color = c;
+            }
+            for (int i = used; i < worldLabels.Count; i++) Show(worldLabels[i], false);
+
+            // ワイヤーで飛ぶ先
+            var grapple = executor.GrapplePreview;
+            Vector2 grapplePoint = default;
+            bool showGrapple = grapple != null && ToPanel(grapple.transform.position, out grapplePoint);
+            Show(grappleMark, showGrapple);
+            if (showGrapple)
+            {
+                Place(grappleMark, grapplePoint);
+                float pulse = 1f + 0.15f * Mathf.Sin(Time.unscaledTime * 10f);
+                grappleMark.style.scale = new Scale(new Vector3(pulse, pulse, 1f));
+                SetText(grappleMark.Q<Label>("grapple-hint"), UsingGamepad ? "○" : "Shift / L");
+            }
+
+            // ロックオン
+            var target = lockOn.Target;
+            Vector2 lockPoint = default;
+            bool showLock = target != null && ToPanel(target.CenterPoint, out lockPoint);
+            Show(lockMark, showLock);
+            if (showLock) Place(lockMark, lockPoint);
+
+            // ダメージの数字
+            used = 0;
+            if (CombatFeedback.Instance != null)
+            {
+                foreach (var number in CombatFeedback.Instance.DamageNumbers)
+                {
+                    float age = Time.unscaledTime - number.time;
+                    if (!ToPanel(number.position + Vector3.up * age * 1.2f, out var point)) continue;
+                    var label = PooledLabel(damageLabels, used++, "damage");
+                    Place(label, point);
+                    SetText(label, number.text);
+                    var c = number.color;
+                    c.a = 1f - age / CombatFeedback.DamageNumberLifetime;
+                    label.style.color = c;
+                }
+            }
+            for (int i = used; i < damageLabels.Count; i++) Show(damageLabels[i], false);
+        }
+
+        EnemyTag EnemyTagAt(int index)
+        {
+            while (enemyTags.Count <= index)
+            {
+                var tag = new EnemyTag { root = Classed(new VisualElement(), "enemy-tag") };
+                tag.alert = Classed(new Label("!"), "enemy-tag__alert");
+                tag.weak = Classed(new Label(), "enemy-tag__weak");
+                var bar = Classed(Classed(new VisualElement(), "bar"), "enemy-tag__bar");
+                tag.fill = Classed(new VisualElement(), "bar__fill");
+                bar.Add(tag.fill);
+                tag.armor = Classed(Classed(new VisualElement(), "bar"), "enemy-tag__armor");
+                tag.armorFill = Classed(new VisualElement(), "bar__fill");
+                tag.armor.Add(tag.armorFill);
+                tag.root.Add(tag.alert);
+                tag.root.Add(tag.weak);
+                tag.root.Add(bar);
+                tag.root.Add(tag.armor);
+                worldLayer.Insert(0, tag.root);
+                enemyTags.Add(tag);
+            }
+            return enemyTags[index];
+        }
+
+        Label PooledLabel(List<Label> pool, int index, string className)
+        {
+            while (pool.Count <= index)
+            {
+                var label = Classed(new Label(), className);
+                pool.Add(label);
+                worldLayer.Add(label);
+            }
+            Show(pool[index], true);
+            return pool[index];
+        }
+
+        bool ToPanel(Vector3 world, out Vector2 point)
+        {
+            point = default;
+            if (view.WorldToScreenPoint(world).z <= 0f) return false;
+            point = RuntimePanelUtils.CameraTransformWorldToPanel(root.panel, world, view);
+            return true;
+        }
+
+        static void Place(VisualElement element, Vector2 point)
+        {
+            element.style.left = point.x;
+            element.style.top = point.y;
+        }
+
+        // ---------- 補助 ----------
 
         string WeaknessText(EnemyProfile profile)
         {
@@ -281,169 +798,10 @@ namespace BattleFight
             return builder.ToString();
         }
 
-        // ---------- スロット(下部) ----------
-
-        void DrawSlots()
+        Color WeaponColor(SkillData skill)
         {
-            const float width = 330f;
-            const float height = 128f;
-            const float gap = 18f;
-            float total = width * 3f + gap * 2f;
-            float x0 = (virtualWidth - total) * 0.5f;
-            float y = RefHeight - height - 30f;
-
-            DrawBonusLine(x0, y - 78f, total);
-            DrawChangeAttack(x0 + total - 260f, y - 124f);
-
-            if (executor.SwapStrikeReady)
-            {
-                var strikeColor = new Color(1f, 0.9f, 0.2f);
-                Text(new Rect(x0, y - 124f, total, 36), "SWAP STRIKE READY", 26, strikeColor, TextAnchor.UpperCenter);
-                Bar(new Rect(x0 + total * 0.5f - 150f, y - 88f, 300f, 6f), executor.SwapStrikeRemaining, strikeColor);
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                DrawSlot((SlotType)i, new Rect(x0 + (width + gap) * i, y, width, height));
-            }
-
-            if (slots.Mode == SwapMode.Preset)
-            {
-                // 左側に置く余白がなければ、スロットの上に横一列で並べる
-                bool roomOnLeft = x0 - 300f >= 20f;
-                if (roomOnLeft) DrawPresetBar(x0 - 300f, RefHeight - 30f, false);
-                else DrawPresetBar(x0, y - 176f, true);
-            }
-        }
-
-        /// <summary>プリセット方式: 4つのプリセットと切り替えキー。今切り替えるとキャンセルになるものは点滅させる。</summary>
-        void DrawPresetBar(float x, float anchorY, bool horizontal)
-        {
-            const float width = 250f;
-            const float height = 40f;
-            int count = slots.Presets.Count;
-            for (int i = 0; i < count; i++)
-            {
-                var rect = horizontal
-                    ? new Rect(x + i * (width + 8f), anchorY, width, height)
-                    : new Rect(x, anchorY - (count - i) * (height + 6f), width, height);
-                var preset = slots.Presets[i];
-                bool current = i == slots.PresetIndex;
-                var a = preset.attackA;
-                var data = a != null ? slots.GetWeaponData(a.weapon) : null;
-                var color = data != null ? data.color : Color.white;
-
-                Box(rect, new Color(0f, 0f, 0f, current ? 0.75f : 0.45f));
-                Box(new Rect(rect.x, rect.y, 6, rect.height), color);
-                if (current) Outline(rect, color, 3f);
-                else if (executor.CanPresetCancel(i))
-                {
-                    float blink = Mathf.PingPong(Time.unscaledTime * 8f, 1f);
-                    Outline(rect, Color.Lerp(new Color(0.4f, 0.9f, 1f), Color.white, blink), 3f);
-                }
-                Text(new Rect(rect.x + 14, rect.y + 7, rect.width - 20, rect.height), $"<color=#AAAAAA>[{SlotKey(i)}]</color>  {preset.name}",
-                    20, current ? Color.white : new Color(1f, 1f, 1f, 0.7f));
-            }
-        }
-
-        void DrawSlot(SlotType slot, Rect rect)
-        {
-            var rack = slots.GetRack(slot);
-            var current = ShownSkill(slot);
-            var weaponData = current != null ? slots.GetWeaponData(current.weapon) : null;
-            var weaponColor = weaponData != null ? weaponData.color : Color.white;
-            bool active = executor.Current != null && executor.Current == current && !executor.IsFinisherActive;
-            bool rackMode = slots.Mode == SwapMode.Rack;
-            bool cancelReady = rackMode && executor.CanSwapCancelNow(slot);
-            int i = (int)slot;
-            float sinceSwap = Time.unscaledTime - swappedAt[i];
-
-            // 切り替えた直後は枠が外へ広がって光る
-            if (sinceSwap < 0.3f)
-            {
-                float t = sinceSwap / 0.3f;
-                float grow = 14f * t;
-                var glow = weaponColor;
-                glow.a = 1f - t;
-                Outline(new Rect(rect.x - grow, rect.y - grow, rect.width + grow * 2f, rect.height + grow * 2f), glow, 4f);
-            }
-
-            Box(rect, new Color(0f, 0f, 0f, active ? 0.75f : 0.5f));
-            if (cancelReady)
-            {
-                // 今切り替えるとスワップキャンセルになる
-                float blink = Mathf.PingPong(Time.unscaledTime * 8f, 1f);
-                Outline(rect, Color.Lerp(new Color(0.4f, 0.9f, 1f), Color.white, blink), 4f);
-            }
-            else if (active)
-            {
-                Outline(rect, weaponColor, 3f);
-            }
-            Box(new Rect(rect.x, rect.y, 8, rect.height), weaponColor);
-
-            string keyHint = rackMode ? $"   <color=#AAAAAA>[{SlotKey(i)}]</color>" : "";
-            Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 30, 26), $"{SlotLabels[i]}{keyHint}", 20, Color.white);
-            if (cancelReady)
-            {
-                Text(new Rect(rect.x + 20, rect.y + 8, rect.width - 34, 26), "今なら切替でキャンセル", 18, new Color(0.4f, 0.9f, 1f),
-                    TextAnchor.UpperRight);
-            }
-
-            // 切り替えた直後は、新しいスキル名をパネルの上に出す
-            if (sinceSwap < 0.8f && current != null)
-            {
-                var labelColor = weaponColor;
-                labelColor.a = Mathf.Clamp01(1f - (sinceSwap - 0.4f) / 0.4f);
-                float rise = 10f * Mathf.Clamp01(sinceSwap / 0.2f);
-                Text(new Rect(rect.x, rect.y - 26 - rise, rect.width, 34), $"⇒ {current.displayName}", 26, labelColor,
-                    TextAnchor.UpperCenter);
-            }
-
-            if (current == null) return;
-            Text(new Rect(rect.x + 20, rect.y + 36, rect.width - 30, 44), current.displayName, 34, weaponColor);
-            if (weaponData != null)
-            {
-                Text(new Rect(rect.x + 20, rect.y + 44, rect.width - 34, 30), weaponData.displayName, 20,
-                    new Color(1f, 1f, 1f, 0.7f), TextAnchor.UpperRight);
-            }
-
-            if (!rackMode)
-            {
-                // プリセット方式: 次に切り替わる候補の代わりに、技の種類を出す
-                Text(new Rect(rect.x + 20, rect.y + 88, rect.width - 30, 30), DescribeShort(current), 18,
-                    new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperLeft, FontStyle.Normal);
-                return;
-            }
-
-            // ラックの中身。現在の候補を強調し、次の候補に矢印を付ける
-            builder.Clear();
-            for (int j = 0; j < rack.Count; j++)
-            {
-                var skill = rack.Skills[j];
-                var data = slots.GetWeaponData(skill.weapon);
-                string hex = ColorUtility.ToHtmlStringRGB(data != null ? data.color : Color.white);
-                if (j > 0) builder.Append("  ");
-                if (j == rack.CurrentIndex) builder.Append($"<color=#{hex}><b>■{skill.displayName}</b></color>");
-                else if (skill == rack.Next) builder.Append($"<color=#{hex}>▶{skill.displayName}</color>");
-                else builder.Append($"<color=#888888>{skill.displayName}</color>");
-            }
-            Text(new Rect(rect.x + 20, rect.y + 88, rect.width - 30, 30), builder.ToString(), 18, Color.white, TextAnchor.UpperLeft,
-                FontStyle.Normal);
-        }
-
-        /// <summary>
-        /// スロットのパネルに出すスキル。実際に使われるもの(プリセット方式ではプリセットの中身)を出す。
-        /// 以前はラックの候補を出していたため、プリセットを変えても表示が変わらなかった。
-        /// </summary>
-        public SkillData ShownSkill(SlotType slot) => slots.GetCurrent(slot);
-
-        /// <summary>チェンジアタック(切り替えた瞬間の周囲攻撃)の準備</summary>
-        void DrawChangeAttack(float x, float y)
-        {
-            bool ready = executor.ChangeAttackReady;
-            var color = ready ? new Color(0.55f, 1f, 0.9f) : new Color(1f, 1f, 1f, 0.5f);
-            Text(new Rect(x, y, 260, 30), ready ? "CHANGE ATTACK 準備OK" : "CHANGE ATTACK", 18, color, TextAnchor.UpperRight);
-            Bar(new Rect(x + 60, y + 28, 200, 5), executor.ChangeAttackCharge, color);
+            var data = skill != null ? slots.GetWeaponData(skill.weapon) : null;
+            return data != null ? data.color : Color.white;
         }
 
         static string DescribeShort(SkillData skill)
@@ -452,319 +810,29 @@ namespace BattleFight
             string description = skill.description ?? "";
             int end = description.IndexOf('。');
             if (end > 0) description = description.Substring(0, end);
-            return description.Length > 18 ? description.Substring(0, 18) + "…" : description;
+            return description.Length > 20 ? description.Substring(0, 20) + "…" : description;
         }
 
-        void DrawBonusLine(float x, float y, float width)
+        static T Classed<T>(T element, string className) where T : VisualElement
         {
-            var bonus = slots.Bonus;
-            var data = slots.GetWeaponData(bonus.Weapon);
-            string weaponName = data != null ? data.displayName : bonus.Weapon.ToString();
-            string text;
-            Color color;
-            switch (bonus.Kind)
-            {
-                case WeaponBonusKind.Mastery:
-                    var finisher = slots.MasteryFinisher;
-                    text = $"マスタリー({weaponName})   [{(UsingGamepad ? "R1" : "F")}] フィニッシャー「{(finisher != null ? finisher.displayName : "-")}」";
-                    color = data != null ? data.color : Color.white;
-                    break;
-                case WeaponBonusKind.Synergy:
-                    text = $"シナジー({weaponName})   ひるみ +{Mathf.RoundToInt((data != null ? data.synergyStaggerBonus : 0f) * 100f)}%";
-                    color = data != null ? Color.Lerp(data.color, Color.white, 0.3f) : Color.white;
-                    break;
-                case WeaponBonusKind.Arsenal:
-                    text = $"アーセナル   スタイル獲得 x{style.Config.arsenalMultiplier:0.##}";
-                    color = new Color(0.9f, 0.9f, 1f);
-                    break;
-                default:
-                    return;
-            }
-            Text(new Rect(x, y, width, 36), text, 24, color, TextAnchor.UpperCenter);
+            element.AddToClassList(className);
+            element.pickingMode = PickingMode.Ignore;
+            return element;
         }
 
-        // ---------- ワールド上の表示 ----------
-
-        void DrawWorldOverlays()
+        /// <summary>文字が変わったときだけ入れ替える(毎フレーム同じ文字を入れて、レイアウトをやり直させない)</summary>
+        static void SetText(TextElement element, string text)
         {
-            if (view == null) return;
-
-            foreach (var enemy in EnemyController.Active)
-            {
-                if (enemy.IsDead || enemy.Profile.isBoss) continue;
-                if (!WorldToGui(enemy.transform.position + Vector3.up * (enemy.Height + 0.4f), out var point)) continue;
-
-                var damageable = enemy.Damageable;
-                var rect = new Rect(point.x - 40, point.y, 80, 7);
-                Bar(rect, damageable.Health / damageable.MaxHealth, new Color(0.9f, 0.25f, 0.25f));
-                if (damageable.MaxArmor > 0f)
-                {
-                    Bar(new Rect(rect.x, rect.y + 9, rect.width, 5), damageable.Armor / damageable.MaxArmor, new Color(1f, 0.7f, 0.2f));
-                }
-                // 弱点の武器種(今の攻撃Aの武器が弱点なら強調する)
-                string weakness = WeaknessText(enemy.Profile);
-                if (weakness.Length > 0)
-                {
-                    var attackA = slots.GetCurrent(SlotType.AttackA);
-                    bool weakNow = attackA != null && enemy.Profile.IsWeakTo(attackA.weapon);
-                    Text(new Rect(point.x - 70, point.y - 24, 140, 24), (weakNow ? "<b>弱点</b> " : "弱 ") + weakness, weakNow ? 17 : 15,
-                        weakNow ? new Color(1f, 0.6f, 0.2f) : new Color(1f, 1f, 1f, 0.75f), TextAnchor.UpperCenter);
-                }
-                if (enemy.IsTelegraphing)
-                {
-                    Text(new Rect(point.x - 40, point.y - 40, 80, 40), "!", 34, enemy.Profile.telegraphColor, TextAnchor.UpperCenter);
-                }
-            }
-
-            // 探索: 「ひび割れた壁」「祭壇」などの目印(近いものだけ)
-            var playerPosition = player.transform.position;
-            foreach (var label in WorldLabel.All)
-            {
-                if (label == null || string.IsNullOrEmpty(label.text)) continue;
-                var position = label.Position;
-                float distance = Vector3.Distance(position, playerPosition);
-                if (distance > label.showDistance || !WorldToGui(position, out var labelPoint)) continue;
-                var color = label.color;
-                color.a *= Mathf.Clamp01((label.showDistance - distance) / 3f);
-                Text(new Rect(labelPoint.x - 150, labelPoint.y - 16, 300, 32), label.text, 20, color, TextAnchor.MiddleCenter);
-            }
-
-            // ワイヤーで飛ぶ先のポイント
-            var grapple = executor.GrapplePreview;
-            if (grapple != null && WorldToGui(grapple.transform.position, out var grapplePoint))
-            {
-                float pulse = 1f + 0.15f * Mathf.Sin(Time.unscaledTime * 10f);
-                var matrix = GUI.matrix;
-                GUIUtility.ScaleAroundPivot(Vector2.one * pulse, grapplePoint * scale);
-                Text(new Rect(grapplePoint.x - 40, grapplePoint.y - 26, 80, 52), "◎", 44, new Color(0.8f, 0.55f, 1f),
-                    TextAnchor.MiddleCenter);
-                GUI.matrix = matrix;
-                Text(new Rect(grapplePoint.x - 80, grapplePoint.y + 18, 160, 30), "Shift / ○", 16, new Color(0.9f, 0.8f, 1f),
-                    TextAnchor.UpperCenter, FontStyle.Normal);
-            }
-
-            var target = lockOn.Target;
-            if (target != null && WorldToGui(target.CenterPoint, out var lockPoint))
-            {
-                Text(new Rect(lockPoint.x - 40, lockPoint.y - 22, 80, 44), "◇", 40, new Color(1f, 0.3f, 0.3f), TextAnchor.MiddleCenter);
-            }
-
-            if (CombatFeedback.Instance != null)
-            {
-                foreach (var number in CombatFeedback.Instance.DamageNumbers)
-                {
-                    float age = Time.unscaledTime - number.time;
-                    if (!WorldToGui(number.position + Vector3.up * age * 1.2f, out var p)) continue;
-                    var c = number.color;
-                    c.a = 1f - age / CombatFeedback.DamageNumberLifetime;
-                    Text(new Rect(p.x - 60, p.y - 20, 120, 40), number.text, 26, c, TextAnchor.MiddleCenter);
-                }
-            }
+            text ??= "";
+            if (element.text != text) element.text = text;
         }
 
-        bool WorldToGui(Vector3 world, out Vector2 point)
+        static void SetFill(VisualElement fill, float ratio) => fill.style.width = Length.Percent(Mathf.Clamp01(ratio) * 100f);
+
+        static void Show(VisualElement element, bool visible)
         {
-            Vector3 screen = view.WorldToScreenPoint(world);
-            point = new Vector2(screen.x / scale, (Screen.height - screen.y) / scale);
-            return screen.z > 0f;
-        }
-
-        // ---------- ヘルプ・メッセージ ----------
-
-        void DrawHelp()
-        {
-            const float x = 40f;
-            const float y = 120f;
-            if (!showHelp)
-            {
-                Text(new Rect(x, y, 400, 30), UsingGamepad ? "[R3] 操作説明" : "[0] 操作説明", 18, new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperLeft, FontStyle.Normal);
-                return;
-            }
-
-            string help = UsingGamepad ? GamepadHelp : KeyboardHelp;
-            Box(new Rect(x - 10, y - 8, 600, 650), new Color(0f, 0f, 0f, 0.45f));
-            Text(new Rect(x, y, 580, 640), help, 18, Color.white, TextAnchor.UpperLeft, FontStyle.Normal);
-        }
-
-        const string HelpTips =
-            "\n" +
-            "<b>コツ</b>\n" +
-            "・技の硬直中にそのスロットを切り替えると硬直をキャンセル\n" +
-            "・切り替えた直後の一撃は強化(SWAP STRIKE)\n" +
-            "・同じ技の連発はスタイルが伸びない\n" +
-            "・敵の頭上の「弱」の武器で攻撃すると 1.5倍\n" +
-            "・切り替え → ヒットでCHAIN(最大×5、ダメージ +50%)\n" +
-            "・切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)\n" +
-            "・ワイヤーは視界内で一番近い ◎ へ飛ぶ(ぶら下がり中に\n";
-
-        const string KeyboardHelp =
-            "<b>操作(キーボード・マウス)</b>\n" +
-            "移動            WASD\n" +
-            "カメラ          マウス\n" +
-            "攻撃A           左クリック・J\n" +
-            "攻撃B           右クリック・K(居合は長押しで溜め)\n" +
-            "移動スキル      Shift・L\n" +
-            "ジャンプ        Space\n" +
-            "ロックオン      Tab・中クリック\n" +
-            "切り替え        1〜4\n" +
-            "  ラック方式: 1/2/3 で各スロット  プリセット方式: 1〜4 で一括\n" +
-            "フィニッシャー  F(マスタリー時)\n" +
-            "スキル編成      P(切り替え方式もここで)\n" +
-            "もう一度 / 選択に戻る  R / T\n" +
-            HelpTips +
-            "   ワイヤーで次へ / Space でジャンプ / 攻撃で空中攻撃)\n" +
-            "・[0] でこの説明を閉じる";
-
-        const string GamepadHelp =
-            "<b>操作(ゲームパッド)</b>\n" +
-            "移動            左スティック\n" +
-            "カメラ          右スティック\n" +
-            "攻撃A           □\n" +
-            "攻撃B           △(居合は長押しで溜め)\n" +
-            "移動スキル      ○\n" +
-            "ジャンプ        ×\n" +
-            "ロックオン      L1\n" +
-            "切り替え        十字キー\n" +
-            "  ラック方式: ←/→/↓ で各スロット  プリセット方式: 十字キーで一括\n" +
-            "フィニッシャー  R1(マスタリー時)\n" +
-            "スキル編成      Select(切り替え方式もここで)\n" +
-            "もう一度        Start\n" +
-            HelpTips +
-            "   ワイヤーで次へ / × でジャンプ / 攻撃で空中攻撃)\n" +
-            "・[R3] でこの説明を閉じる";
-
-        void DrawCenterMessage()
-        {
-            string message = null;
-            Color color = Color.white;
-            switch (director.State)
-            {
-                case ArenaDirector.GameState.Starting:
-                    message = "READY";
-                    break;
-                case ArenaDirector.GameState.Cleared when director.IsExploring && ExplorationRegion.Active != null:
-                    message = $"探索クリア\n<size=30>集めたスキル {ExplorationSave.UnlockedCount} / {ExplorationRegion.Active.TotalSkills}   " +
-                              $"タイム {director.ElapsedTime:0.0}秒   続きからはマップを自由に回れます</size>";
-                    color = new Color(1f, 0.9f, 0.4f);
-                    break;
-                case ArenaDirector.GameState.Cleared:
-                    string best = style.Config.rankNames[Mathf.Min(style.HighestRank, style.Config.rankNames.Length - 1)];
-                    string record = director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "";
-                    message = $"STAGE CLEAR\n<size=30>タイム {director.ElapsedTime:0.0}秒   最高ランク {best}   刻片 {director.Shards}{record}</size>";
-                    color = new Color(1f, 0.9f, 0.4f);
-                    break;
-                case ArenaDirector.GameState.GameOver:
-                    bool endless = director.CurrentStage != null && director.CurrentStage.kind == StageKind.Endless;
-                    string reached = endless ? $"到達 WAVE {director.WaveNumber}{(director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "")}" : "";
-                    message = $"GAME OVER\n<size=30>{reached}</size>";
-                    color = new Color(1f, 0.35f, 0.35f);
-                    break;
-            }
-            // ボスの第二形態の告知(2秒)
-            float sincePhase = Time.unscaledTime - phaseAnnouncedAt;
-            if (message == null && phaseEnemy != null && sincePhase < 2f)
-            {
-                var c = phaseEnemy.Profile.telegraphColor;
-                c.a = Mathf.Clamp01((2f - sincePhase) / 0.5f);
-                Text(new Rect(0, RefHeight * 0.3f, virtualWidth, 200),
-                    $"{phaseEnemy.Profile.displayName}  第二形態\n<size=30>{phaseEnemy.Profile.phase2Message}</size>", 64, c, TextAnchor.UpperCenter);
-            }
-
-            if (message == null)
-            {
-                DrawExplorationMessage();
-                return;
-            }
-            Text(new Rect(0, RefHeight * 0.28f, virtualWidth, 300), message, 72, color, TextAnchor.UpperCenter);
-
-            if (director.State == ArenaDirector.GameState.Cleared || director.State == ArenaDirector.GameState.GameOver)
-            {
-                DrawResultButtons(RefHeight * 0.28f + 190f);
-            }
-        }
-
-        /// <summary>探索のお知らせ(スキルを手に入れた、壁が崩れた など)。4秒出して消える</summary>
-        void DrawExplorationMessage()
-        {
-            var region = ExplorationRegion.Active;
-            if (region == null || string.IsNullOrEmpty(region.Message)) return;
-            float since = Time.unscaledTime - region.MessageTime;
-            if (since > 4f) return;
-            var color = region.MessageColor;
-            color.a = Mathf.Clamp01((4f - since) / 0.6f);
-            Box(new Rect(virtualWidth * 0.5f - 420, RefHeight * 0.2f - 16, 840, 230), new Color(0f, 0f, 0f, 0.55f * color.a));
-            Text(new Rect(0, RefHeight * 0.2f, virtualWidth, 220), region.Message, 40, color, TextAnchor.UpperCenter);
-        }
-
-        void DrawResultButtons(float y)
-        {
-            bool next = director.State == ArenaDirector.GameState.Cleared && director.HasNextStage;
-            int count = next ? 3 : 2;
-            const float width = 260f;
-            const float gap = 20f;
-            float x = (virtualWidth - (width * count + gap * (count - 1))) * 0.5f;
-
-            if (next)
-            {
-                if (ResultButton(new Rect(x, y, width, 56), "次のステージ [N]", new Color(0.2f, 0.55f, 0.9f))) director.NextStage();
-                x += width + gap;
-            }
-            string retry = !director.IsExploring ? "もう一度 [R]"
-                : director.State == ArenaDirector.GameState.GameOver ? "祭壇から再開 [R]" : "続きから [R]";
-            if (ResultButton(new Rect(x, y, width, 56), retry, new Color(0.3f, 0.45f, 0.3f))) director.Retry();
-            x += width + gap;
-            if (ResultButton(new Rect(x, y, width, 56), "ステージ選択 [T]", new Color(0.3f, 0.3f, 0.36f))) director.BackToStageSelect();
-        }
-
-        bool ResultButton(Rect rect, string text, Color color)
-        {
-            bool hover = rect.Contains(Event.current.mousePosition);
-            Box(rect, hover ? Color.Lerp(color, Color.white, 0.2f) : color);
-            Text(rect, text, 24, Color.white, TextAnchor.MiddleCenter);
-            return GUI.Button(rect, GUIContent.none, GUIStyle.none);
-        }
-
-        // ---------- 描画の補助 ----------
-
-        // GUI.matrix で拡大縮小しているので、座標は 1080p 基準のまま使う
-        static Rect Scaled(Rect r) => r;
-
-        void Text(Rect rect, string text, int size, Color color, TextAnchor anchor = TextAnchor.UpperLeft,
-            FontStyle fontStyle = FontStyle.Bold)
-        {
-            labelStyle.fontSize = size;
-            labelStyle.alignment = anchor;
-            labelStyle.fontStyle = fontStyle;
-
-            var scaled = Scaled(rect);
-            var previous = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, color.a * 0.8f);
-            GUI.Label(new Rect(scaled.x + 2, scaled.y + 2, scaled.width, scaled.height), text, labelStyle);
-            GUI.color = color;
-            GUI.Label(scaled, text, labelStyle);
-            GUI.color = previous;
-        }
-
-        void Box(Rect rect, Color color)
-        {
-            var previous = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(Scaled(rect), Texture2D.whiteTexture);
-            GUI.color = previous;
-        }
-
-        void Outline(Rect rect, Color color, float thickness)
-        {
-            Box(new Rect(rect.x, rect.y, rect.width, thickness), color);
-            Box(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), color);
-            Box(new Rect(rect.x, rect.y, thickness, rect.height), color);
-            Box(new Rect(rect.xMax - thickness, rect.y, thickness, rect.height), color);
-        }
-
-        void Bar(Rect rect, float fill, Color color)
-        {
-            Box(rect, new Color(0f, 0f, 0f, 0.6f));
-            Box(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(fill), rect.height), color);
+            var display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (element.style.display != display) element.style.display = display;
         }
     }
 }

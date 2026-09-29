@@ -1,0 +1,18 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 戦闘中のスロット1つ分(攻撃A / 攻撃B / 移動)。中身は BattleHud が入れる -->
+    <ui:VisualElement name="card" class="slot" picking-mode="Ignore">
+        <ui:Label name="popup" class="slot__popup" picking-mode="Ignore" />
+        <ui:VisualElement class="slot__head" picking-mode="Ignore">
+            <ui:VisualElement class="slot__head-left" picking-mode="Ignore">
+                <ui:Label name="label" class="slot__label" picking-mode="Ignore" />
+                <ui:Label name="key" class="key slot__key" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="cancel" text="今なら切替でキャンセル" class="slot__cancel" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement class="slot__main" picking-mode="Ignore">
+            <ui:Label name="name" class="slot__name" picking-mode="Ignore" />
+            <ui:Label name="weapon" class="slot__weapon" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label name="desc" class="slot__desc" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

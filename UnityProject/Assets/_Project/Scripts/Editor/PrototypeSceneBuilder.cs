@@ -250,9 +250,11 @@ namespace BattleFight.EditorTools
             var directorObject = new GameObject("GameDirector");
             var director = directorObject.AddComponent<ArenaDirector>();
             var feedback = directorObject.AddComponent<CombatFeedback>();
-            var hud = directorObject.AddComponent<BattleHud>();
-            var loadoutEditor = directorObject.AddComponent<LoadoutEditorUI>();
-            var stageSelect = directorObject.AddComponent<StageSelectUI>();
+            // UI(UI Toolkit)。画面ごとに UIDocument を分け、同じ PanelSettings で重ねる
+            var panel = BuildPanelSettings();
+            var hud = UiDocument<BattleHud>("UI_Hud", "Hud", panel, 0);
+            var stageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", panel, 10);
+            var loadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", panel, 20);
 
             // ---------- 参照の設定 ----------
             Configure(damageable, so =>
@@ -330,13 +332,11 @@ namespace BattleFight.EditorTools
                 so.FindProperty("lockOn").objectReferenceValue = lockOn;
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("view").objectReferenceValue = camera;
-                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
             Configure(loadoutEditor, so =>
             {
                 so.FindProperty("slots").objectReferenceValue = slots;
                 so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
             Configure(director, so =>
             {
@@ -353,7 +353,6 @@ namespace BattleFight.EditorTools
             {
                 so.FindProperty("director").objectReferenceValue = director;
                 so.FindProperty("rankConfig").objectReferenceValue = styleConfig;
-                so.FindProperty("font").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
             });
 
             EditorSceneManager.SaveScene(scene, ScenePath);

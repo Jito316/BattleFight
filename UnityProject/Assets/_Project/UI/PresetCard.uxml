@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- スキル編成画面の、プリセット1つ分のカード(クリックで編集するプリセットを選ぶ) -->
+    <ui:VisualElement name="card" class="preset-card">
+        <ui:VisualElement class="preset-card__head" picking-mode="Ignore">
+            <ui:Label name="number" class="preset-card__number" picking-mode="Ignore" />
+            <ui:Label name="title" class="preset-card__title" picking-mode="Ignore" />
+            <ui:Label name="in-use" text="使用中" class="preset-card__in-use" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label name="a" class="preset-card__skill" picking-mode="Ignore" />
+        <ui:Label name="b" class="preset-card__skill" picking-mode="Ignore" />
+        <ui:Label name="m" class="preset-card__skill" picking-mode="Ignore" />
+        <ui:Label name="bonus" class="preset-card__bonus" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

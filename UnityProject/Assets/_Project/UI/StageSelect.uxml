@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- ステージ選択(起動時とステージ選択へ戻ったとき)。行は StageSelectUI.cs がステージの数だけ作る -->
+    <Style src="Common.uss" />
+    <Style src="StageSelect.uss" />
+
+    <ui:VisualElement name="stage-select" class="select">
+        <ui:VisualElement class="select__window panel panel--strong">
+            <ui:Label text="BattleFight" class="select__logo" />
+            <ui:Label text="ステージを選んでください" class="select__lead" />
+            <ui:VisualElement name="stage-list" class="select__list" />
+            <ui:Label name="footer" class="select__footer" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

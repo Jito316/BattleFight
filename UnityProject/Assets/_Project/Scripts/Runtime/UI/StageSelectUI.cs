@@ -1,28 +1,72 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 namespace BattleFight
 {
-    /// <summary>ステージ選択画面(IMGUI)。ArenaDirector がステージ選択中のときだけ出る。</summary>
+    /// <summary>ステージ選択画面(UI Toolkit)。ArenaDirector がステージ選択中のときだけ出る。レイアウトは StageSelect.uxml。</summary>
+    [RequireComponent(typeof(UIDocument))]
     public class StageSelectUI : MonoBehaviour
     {
-        const float RefHeight = 1080f;
-        const float RowHeight = 118f;
-
         [SerializeField] ArenaDirector director;
         [SerializeField] StyleRankConfig rankConfig;
-        [SerializeField] Font font;
 
+        VisualElement root, window, list;
+        Label footer;
+        readonly List<(VisualElement row, Label record)> rows = new List<(VisualElement, Label)>();
         int highlighted;
-        Vector2 lastMousePosition = new Vector2(float.NaN, float.NaN);
-        GUIStyle label;
-        GUIStyle wrap;
+        float resetNoticeTime = -99f;
 
         bool Visible => director != null && director.State == ArenaDirector.GameState.StageSelect && !LoadoutEditorUI.IsOpen;
 
+        public int Highlighted => highlighted;
+
+        void OnEnable()
+        {
+            root = GetComponent<UIDocument>().rootVisualElement;
+            window = root.Q("stage-select");
+            list = root.Q("stage-list");
+            footer = root.Q<Label>("footer");
+            BuildRows();
+        }
+
+        void BuildRows()
+        {
+            list.Clear();
+            rows.Clear();
+            if (director == null || director.Stages == null) return;
+            for (int i = 0; i < director.Stages.Count; i++)
+            {
+                var stage = director.Stages[i];
+                var row = Classed(new VisualElement(), "stage-row");
+                var stripe = Classed(new VisualElement(), "stage-row__stripe");
+                stripe.style.backgroundColor = stage != null ? KindColor(stage.kind) : Color.gray;
+                row.Add(stripe);
+                var body = Classed(new VisualElement(), "stage-row__body");
+                var head = Classed(new VisualElement(), "stage-row__head");
+                head.Add(Classed(new Label(stage != null ? stage.displayName : "-"), "stage-row__title"));
+                var record = Classed(new Label(), "stage-row__record");
+                head.Add(record);
+                body.Add(head);
+                body.Add(Classed(new Label(stage != null ? stage.description : ""), "stage-row__desc"));
+                row.Add(body);
+
+                int index = i;
+                // マウスを動かしたときだけ選択を変える(止まったマウスがキー操作の選択を上書きしないように)
+                row.RegisterCallback<PointerMoveEvent>(_ => highlighted = index);
+                row.RegisterCallback<ClickEvent>(_ => { if (Visible) director.StartStage(index); });
+                list.Add(row);
+                rows.Add((row, record));
+            }
+        }
+
         void Update()
         {
-            if (!Visible || director.Stages == null || director.Stages.Count == 0) return;
+            bool visible = Visible;
+            window.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!visible || director.Stages == null || director.Stages.Count == 0) return;
+            if (rows.Count != director.Stages.Count) BuildRows();
 
             var keyboard = Keyboard.current;
             var gamepad = Gamepad.current;
@@ -36,89 +80,33 @@ namespace BattleFight
 
             if (up) highlighted = (highlighted + count - 1) % count;
             if (down) highlighted = (highlighted + 1) % count;
-            if (confirm) director.StartStage(highlighted);
 
             // 探索を選んでいるとき: Backspace で記録を消して、はじめからにする
             var stage = director.Stages[highlighted];
-            if (stage != null && stage.kind == StageKind.Exploration && keyboard != null && keyboard.backspaceKey.wasPressedThisFrame)
+            bool exploration = stage != null && stage.kind == StageKind.Exploration;
+            if (exploration && keyboard != null && keyboard.backspaceKey.wasPressedThisFrame)
             {
                 ExplorationSave.Reset();
                 PlayerPrefs.DeleteKey(LoadoutStorage.ExplorationPrefsKey);
                 StageRecords.Clear(stage.name);
                 resetNoticeTime = Time.unscaledTime;
             }
-        }
 
-        float resetNoticeTime = -99f;
-
-        void OnGUI()
-        {
-            if (!Visible || director.Stages == null) return;
-            if (label == null)
+            for (int i = 0; i < rows.Count; i++)
             {
-                label = new GUIStyle(GUI.skin.label) { richText = true, fontSize = 20 };
-                wrap = new GUIStyle(label) { wordWrap = true, fontSize = 18 };
-                if (font != null)
-                {
-                    label.font = font;
-                    wrap.font = font;
-                }
+                var (row, record) = rows[i];
+                row.EnableInClassList("stage-row--selected", i == highlighted);
+                string text = director.Stages[i] != null ? RecordText(director.Stages[i]) : "";
+                if (record.text != text) record.text = text;
             }
 
-            float scale = Screen.height / RefHeight;
-            float width = Screen.width / scale;
-            var previous = GUI.matrix;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+            bool notice = Time.unscaledTime - resetNoticeTime < 2.5f;
+            footer.EnableInClassList("select__footer--notice", notice);
+            footer.text = notice
+                ? "探索の記録を消しました。はじめから遊べます"
+                : "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   [P] スキル編成" + (exploration ? "   [Backspace] 探索をはじめから" : "");
 
-            Box(new Rect(0, 0, width, RefHeight), new Color(0f, 0f, 0f, 0.5f));
-            float panelWidth = Mathf.Min(1100f, width - 80f);
-            var panel = new Rect((width - panelWidth) * 0.5f, 60f, panelWidth, RefHeight - 120f);
-            Box(panel, new Color(0.08f, 0.09f, 0.12f, 0.95f));
-
-            Text(new Rect(panel.x, panel.y + 24, panel.width, 70), "<b>BattleFight</b>", 56, Color.white, TextAnchor.UpperCenter);
-            Text(new Rect(panel.x, panel.y + 96, panel.width, 30), "ステージを選んでください", 22, new Color(1f, 1f, 1f, 0.7f),
-                TextAnchor.UpperCenter);
-
-            // マウスを動かしたときだけ、カーソルの下の行を選ぶ(止まったマウスがキー操作の選択を上書きしないように)
-            Vector2 mouse = Event.current.mousePosition;
-            bool mouseMoved = Event.current.type == EventType.Repaint && mouse != lastMousePosition;
-            if (Event.current.type == EventType.Repaint) lastMousePosition = mouse;
-
-            float y = panel.y + 150f;
-            // ステージが増えても画面に収まるように、行の高さを詰める
-            float rowHeight = Mathf.Min(RowHeight, (panel.height - 210f) / Mathf.Max(1, director.Stages.Count));
-            // 行を詰めたときは説明の文字を少し小さくして、2行目まで収める(大きさは2通りに固定。毎フレーム変えない)
-            wrap.fontSize = rowHeight < RowHeight ? 16 : 18;
-            for (int i = 0; i < director.Stages.Count; i++)
-            {
-                var stage = director.Stages[i];
-                if (stage == null) continue;
-                var row = new Rect(panel.x + 40, y, panel.width - 80, rowHeight - 12);
-                bool hover = row.Contains(mouse);
-                if (hover && mouseMoved) highlighted = i;
-                bool selected = i == highlighted;
-
-                Box(row, selected ? new Color(0.18f, 0.25f, 0.36f) : new Color(0.13f, 0.14f, 0.18f));
-                Box(new Rect(row.x, row.y, 8, row.height), KindColor(stage.kind));
-                if (selected) Outline(row, new Color(0.4f, 0.75f, 1f), 3f);
-
-                Text(new Rect(row.x + 24, row.y + 8, row.width - 360, 36), $"<b>{stage.displayName}</b>", 28, Color.white);
-                GUI.Label(new Rect(row.x + 24, row.y + 42, row.width - 380, row.height - 44), stage.description, wrap);
-                Text(new Rect(row.xMax - 340, row.y + 14, 320, 30), RecordText(stage), 18, new Color(1f, 0.9f, 0.5f),
-                    TextAnchor.UpperRight);
-
-                if (GUI.Button(row, GUIContent.none, GUIStyle.none)) director.StartStage(i);
-                y += rowHeight;
-            }
-
-            var highlightedStage = highlighted < director.Stages.Count ? director.Stages[highlighted] : null;
-            bool exploration = highlightedStage != null && highlightedStage.kind == StageKind.Exploration;
-            string footer = "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   [P] スキル編成";
-            if (exploration) footer += "   [Backspace] 探索をはじめから";
-            if (Time.unscaledTime - resetNoticeTime < 2.5f) footer = "<color=#FFE08A>探索の記録を消しました。はじめから遊べます</color>";
-            Text(new Rect(panel.x, panel.yMax - 44, panel.width, 30), footer, 18, new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperCenter);
-
-            GUI.matrix = previous;
+            if (confirm) director.StartStage(highlighted);
         }
 
         string RecordText(StageData stage)
@@ -150,30 +138,11 @@ namespace BattleFight
             _ => new Color(0.4f, 0.7f, 1f),
         };
 
-        void Text(Rect rect, string text, int size, Color color, TextAnchor anchor = TextAnchor.UpperLeft)
+        static T Classed<T>(T element, string className) where T : VisualElement
         {
-            label.fontSize = size;
-            label.alignment = anchor;
-            var previousColor = GUI.color;
-            GUI.color = color;
-            GUI.Label(rect, text, label);
-            GUI.color = previousColor;
-        }
-
-        static void Box(Rect rect, Color color)
-        {
-            var previous = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = previous;
-        }
-
-        static void Outline(Rect rect, Color color, float thickness)
-        {
-            Box(new Rect(rect.x, rect.y, rect.width, thickness), color);
-            Box(new Rect(rect.x, rect.yMax - thickness, rect.width, thickness), color);
-            Box(new Rect(rect.x, rect.y, thickness, rect.height), color);
-            Box(new Rect(rect.xMax - thickness, rect.y, thickness, rect.height), color);
+            element.AddToClassList(className);
+            if (element is Label) element.pickingMode = PickingMode.Ignore;
+            return element;
         }
     }
 }
