@@ -37,7 +37,19 @@ namespace BattleFight
             if (up) highlighted = (highlighted + count - 1) % count;
             if (down) highlighted = (highlighted + 1) % count;
             if (confirm) director.StartStage(highlighted);
+
+            // 探索を選んでいるとき: Backspace で記録を消して、はじめからにする
+            var stage = director.Stages[highlighted];
+            if (stage != null && stage.kind == StageKind.Exploration && keyboard != null && keyboard.backspaceKey.wasPressedThisFrame)
+            {
+                ExplorationSave.Reset();
+                PlayerPrefs.DeleteKey(LoadoutStorage.ExplorationPrefsKey);
+                StageRecords.Clear(stage.name);
+                resetNoticeTime = Time.unscaledTime;
+            }
         }
+
+        float resetNoticeTime = -99f;
 
         void OnGUI()
         {
@@ -73,11 +85,15 @@ namespace BattleFight
             if (Event.current.type == EventType.Repaint) lastMousePosition = mouse;
 
             float y = panel.y + 150f;
+            // ステージが増えても画面に収まるように、行の高さを詰める
+            float rowHeight = Mathf.Min(RowHeight, (panel.height - 210f) / Mathf.Max(1, director.Stages.Count));
+            // 行を詰めたときは説明の文字を少し小さくして、2行目まで収める(大きさは2通りに固定。毎フレーム変えない)
+            wrap.fontSize = rowHeight < RowHeight ? 16 : 18;
             for (int i = 0; i < director.Stages.Count; i++)
             {
                 var stage = director.Stages[i];
                 if (stage == null) continue;
-                var row = new Rect(panel.x + 40, y, panel.width - 80, RowHeight - 12);
+                var row = new Rect(panel.x + 40, y, panel.width - 80, rowHeight - 12);
                 bool hover = row.Contains(mouse);
                 if (hover && mouseMoved) highlighted = i;
                 bool selected = i == highlighted;
@@ -86,18 +102,21 @@ namespace BattleFight
                 Box(new Rect(row.x, row.y, 8, row.height), KindColor(stage.kind));
                 if (selected) Outline(row, new Color(0.4f, 0.75f, 1f), 3f);
 
-                Text(new Rect(row.x + 24, row.y + 10, row.width - 360, 36), $"<b>{stage.displayName}</b>", 28, Color.white);
-                GUI.Label(new Rect(row.x + 24, row.y + 50, row.width - 380, row.height - 54), stage.description, wrap);
+                Text(new Rect(row.x + 24, row.y + 8, row.width - 360, 36), $"<b>{stage.displayName}</b>", 28, Color.white);
+                GUI.Label(new Rect(row.x + 24, row.y + 42, row.width - 380, row.height - 44), stage.description, wrap);
                 Text(new Rect(row.xMax - 340, row.y + 14, 320, 30), RecordText(stage), 18, new Color(1f, 0.9f, 0.5f),
                     TextAnchor.UpperRight);
 
                 if (GUI.Button(row, GUIContent.none, GUIStyle.none)) director.StartStage(i);
-                y += RowHeight;
+                y += rowHeight;
             }
 
-            Text(new Rect(panel.x, panel.yMax - 44, panel.width, 30),
-                "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   [P] スキル編成", 18, new Color(1f, 1f, 1f, 0.6f),
-                TextAnchor.UpperCenter);
+            var highlightedStage = highlighted < director.Stages.Count ? director.Stages[highlighted] : null;
+            bool exploration = highlightedStage != null && highlightedStage.kind == StageKind.Exploration;
+            string footer = "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   [P] スキル編成";
+            if (exploration) footer += "   [Backspace] 探索をはじめから";
+            if (Time.unscaledTime - resetNoticeTime < 2.5f) footer = "<color=#FFE08A>探索の記録を消しました。はじめから遊べます</color>";
+            Text(new Rect(panel.x, panel.yMax - 44, panel.width, 30), footer, 18, new Color(1f, 1f, 1f, 0.6f), TextAnchor.UpperCenter);
 
             GUI.matrix = previous;
         }
@@ -108,6 +127,10 @@ namespace BattleFight
             {
                 case StageKind.Training:
                     return "練習用";
+                case StageKind.Exploration:
+                    if (!ExplorationSave.HasStarted) return "はじめから";
+                    string cleared = StageRecords.IsCleared(stage.name) ? "クリア済み  " : "";
+                    return $"{cleared}スキル {ExplorationSave.UnlockedCount} / {Mathf.Max(ExplorationSave.TotalSkills, ExplorationSave.UnlockedCount)}";
                 case StageKind.Endless:
                     int wave = StageRecords.BestWave(stage.name);
                     return wave > 0 ? $"最高 WAVE {wave}" : "記録なし";
@@ -123,6 +146,7 @@ namespace BattleFight
         {
             StageKind.Training => new Color(0.4f, 0.9f, 0.5f),
             StageKind.Endless => new Color(1f, 0.4f, 0.4f),
+            StageKind.Exploration => new Color(0.8f, 0.55f, 1f),
             _ => new Color(0.4f, 0.7f, 1f),
         };
 

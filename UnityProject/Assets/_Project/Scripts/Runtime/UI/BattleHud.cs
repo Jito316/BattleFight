@@ -175,6 +175,21 @@ namespace BattleFight
             var stage = director.CurrentStage;
             if (stage == null) return;
             string text;
+            var region = ExplorationRegion.Active;
+            if (stage.kind == StageKind.Exploration && region != null)
+            {
+                // 探索: 今いる部屋と、集めたスキルの数
+                string room = region.CurrentRoomName();
+                text = room.Length > 0 ? $"{region.RegionName}  <color=#AAAAAA>-</color>  {room}" : region.RegionName;
+                Text(new Rect(0, 24, virtualWidth, 40), text, 28, Color.white, TextAnchor.UpperCenter);
+                // ボス戦中はボスの体力と重なるので出さない
+                if (director.Boss == null)
+                {
+                    Text(new Rect(0, 60, virtualWidth, 30), $"集めたスキル  {ExplorationSave.UnlockedCount} / {region.TotalSkills}", 20,
+                        new Color(1f, 0.9f, 0.55f), TextAnchor.UpperCenter);
+                }
+                return;
+            }
             if (stage.kind == StageKind.Training) text = stage.displayName;
             else if (director.WaveNumber <= 0) text = stage.displayName;
             else if (stage.kind == StageKind.Endless) text = $"{stage.displayName}   {director.WaveLabel} {director.WaveNumber}";
@@ -501,6 +516,19 @@ namespace BattleFight
                 }
             }
 
+            // 探索: 「ひび割れた壁」「祭壇」などの目印(近いものだけ)
+            var playerPosition = player.transform.position;
+            foreach (var label in WorldLabel.All)
+            {
+                if (label == null || string.IsNullOrEmpty(label.text)) continue;
+                var position = label.Position;
+                float distance = Vector3.Distance(position, playerPosition);
+                if (distance > label.showDistance || !WorldToGui(position, out var labelPoint)) continue;
+                var color = label.color;
+                color.a *= Mathf.Clamp01((label.showDistance - distance) / 3f);
+                Text(new Rect(labelPoint.x - 150, labelPoint.y - 16, 300, 32), label.text, 20, color, TextAnchor.MiddleCenter);
+            }
+
             // ワイヤーで飛ぶ先のポイント
             var grapple = executor.GrapplePreview;
             if (grapple != null && WorldToGui(grapple.transform.position, out var grapplePoint))
@@ -614,6 +642,11 @@ namespace BattleFight
                 case ArenaDirector.GameState.Starting:
                     message = "READY";
                     break;
+                case ArenaDirector.GameState.Cleared when director.IsExploring && ExplorationRegion.Active != null:
+                    message = $"探索クリア\n<size=30>集めたスキル {ExplorationSave.UnlockedCount} / {ExplorationRegion.Active.TotalSkills}   " +
+                              $"タイム {director.ElapsedTime:0.0}秒   続きからはマップを自由に回れます</size>";
+                    color = new Color(1f, 0.9f, 0.4f);
+                    break;
                 case ArenaDirector.GameState.Cleared:
                     string best = style.Config.rankNames[Mathf.Min(style.HighestRank, style.Config.rankNames.Length - 1)];
                     string record = director.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "";
@@ -637,13 +670,30 @@ namespace BattleFight
                     $"{phaseEnemy.Profile.displayName}  第二形態\n<size=30>{phaseEnemy.Profile.phase2Message}</size>", 64, c, TextAnchor.UpperCenter);
             }
 
-            if (message == null) return;
+            if (message == null)
+            {
+                DrawExplorationMessage();
+                return;
+            }
             Text(new Rect(0, RefHeight * 0.28f, virtualWidth, 300), message, 72, color, TextAnchor.UpperCenter);
 
             if (director.State == ArenaDirector.GameState.Cleared || director.State == ArenaDirector.GameState.GameOver)
             {
                 DrawResultButtons(RefHeight * 0.28f + 190f);
             }
+        }
+
+        /// <summary>探索のお知らせ(スキルを手に入れた、壁が崩れた など)。4秒出して消える</summary>
+        void DrawExplorationMessage()
+        {
+            var region = ExplorationRegion.Active;
+            if (region == null || string.IsNullOrEmpty(region.Message)) return;
+            float since = Time.unscaledTime - region.MessageTime;
+            if (since > 4f) return;
+            var color = region.MessageColor;
+            color.a = Mathf.Clamp01((4f - since) / 0.6f);
+            Box(new Rect(virtualWidth * 0.5f - 420, RefHeight * 0.2f - 16, 840, 230), new Color(0f, 0f, 0f, 0.55f * color.a));
+            Text(new Rect(0, RefHeight * 0.2f, virtualWidth, 220), region.Message, 40, color, TextAnchor.UpperCenter);
         }
 
         void DrawResultButtons(float y)
@@ -659,7 +709,9 @@ namespace BattleFight
                 if (ResultButton(new Rect(x, y, width, 56), "次のステージ [N]", new Color(0.2f, 0.55f, 0.9f))) director.NextStage();
                 x += width + gap;
             }
-            if (ResultButton(new Rect(x, y, width, 56), "もう一度 [R]", new Color(0.3f, 0.45f, 0.3f))) director.Retry();
+            string retry = !director.IsExploring ? "もう一度 [R]"
+                : director.State == ArenaDirector.GameState.GameOver ? "祭壇から再開 [R]" : "続きから [R]";
+            if (ResultButton(new Rect(x, y, width, 56), retry, new Color(0.3f, 0.45f, 0.3f))) director.Retry();
             x += width + gap;
             if (ResultButton(new Rect(x, y, width, 56), "ステージ選択 [T]", new Color(0.3f, 0.3f, 0.36f))) director.BackToStageSelect();
         }

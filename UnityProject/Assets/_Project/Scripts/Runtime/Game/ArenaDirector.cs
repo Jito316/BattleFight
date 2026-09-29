@@ -36,6 +36,11 @@ namespace BattleFight
         [SerializeField] float baseShardReward = 10f;
         [SerializeField] float trainingRespawnDelay = 1.5f;
 
+        [Header("探索")]
+        [SerializeField, Tooltip("アリーナの地形(探索中は隠す)")] GameObject arenaRoot;
+        [SerializeField, Tooltip("探索マップ(探索のステージでだけ出す)")] ExplorationRegion exploration;
+        [SerializeField] SkillSlotController slots;
+
         // シーンを読み直しても、選んだステージと「すぐ始めるか」を覚えておく
         static int selectedStage = -1;
         static bool startImmediately;
@@ -83,7 +88,11 @@ namespace BattleFight
         void Awake()
         {
             Instance = this;
+            if (exploration != null) exploration.gameObject.SetActive(false);
         }
+
+        public bool IsExploring => CurrentStage != null && CurrentStage.kind == StageKind.Exploration;
+        public ExplorationRegion Exploration => exploration;
 
         void Start()
         {
@@ -122,6 +131,12 @@ namespace BattleFight
             CurrentStage = stages[index];
             ElapsedTime = 0f;
             WaveNumber = 0;
+
+            // 探索のステージだけ探索マップを出し、アリーナの地形は隠す
+            bool exploring = IsExploring && exploration != null;
+            if (arenaRoot != null) arenaRoot.SetActive(!exploring);
+            if (exploring) exploration.Begin(this, player, slots, enemyMaterial);
+            else if (exploration != null) exploration.gameObject.SetActive(false);
 #if !UNITY_WEBGL || UNITY_EDITOR
             ThirdPersonCamera.SetCursorLocked(true);
 #endif
@@ -136,6 +151,12 @@ namespace BattleFight
 
             switch (CurrentStage.kind)
             {
+                case StageKind.Exploration:
+                    // 敵は部屋ごとの EncounterZone が出す。ボスを倒すと CompleteExploration でクリア
+                    WaveLabel = CurrentStage.displayName;
+                    State = GameState.Fighting;
+                    yield break;
+
                 case StageKind.Training:
                     WaveLabel = CurrentStage.displayName;
                     if (CurrentStage.trainingDummies != null) Spawn(CurrentStage.trainingDummies);
@@ -203,6 +224,7 @@ namespace BattleFight
         public EnemyController SpawnExtra(EnemyProfile profile, Vector3 position)
         {
             if (profile == null || alive.Count >= MaxAliveEnemies || State == GameState.GameOver) return null;
+            if (IsExploring) return SpawnEnemy(profile, position, true);
             // アリーナの外に出ないようにする
             Vector3 offset = position - arenaCenter;
             offset.y = 0f;
@@ -210,9 +232,25 @@ namespace BattleFight
             return SpawnEnemy(profile, position);
         }
 
-        EnemyController SpawnEnemy(EnemyProfile profile, Vector3 position)
+        /// <summary>探索: 部屋の敵をその場所(高さもそのまま)に出す</summary>
+        public EnemyController SpawnAt(EnemyProfile profile, Vector3 position)
         {
-            position.y = 0.1f;
+            if (profile == null || State == GameState.GameOver) return null;
+            return SpawnEnemy(profile, position, true);
+        }
+
+        /// <summary>探索: 最後のボスを倒した</summary>
+        public void CompleteExploration()
+        {
+            if (!IsExploring || State == GameState.GameOver) return;
+            State = GameState.Cleared;
+            NewRecord = StageRecords.RecordClear(CurrentStage.name, ElapsedTime, style != null ? style.HighestRank : 0);
+            ThirdPersonCamera.SetCursorLocked(false);
+        }
+
+        EnemyController SpawnEnemy(EnemyProfile profile, Vector3 position, bool keepHeight = false)
+        {
+            position.y = keepHeight ? position.y + 0.1f : 0.1f;
             Vector3 look = player.position - position;
             look.y = 0f;
             var rotation = look.sqrMagnitude > 0.01f ? Quaternion.LookRotation(look) : Quaternion.identity;

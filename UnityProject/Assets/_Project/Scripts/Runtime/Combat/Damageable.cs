@@ -94,6 +94,13 @@ namespace BattleFight
             }
         }
 
+        /// <summary>体力を回復する(探索の祭壇など)。倒れていたら何もしない</summary>
+        public void Heal(float amount)
+        {
+            if (IsDead) return;
+            Health = Mathf.Min(maxHealth, Health + amount);
+        }
+
         /// <summary>アーマーを最大まで戻す(ボスの第二形態など)</summary>
         public void RestoreArmor() => Armor = maxArmor;
 

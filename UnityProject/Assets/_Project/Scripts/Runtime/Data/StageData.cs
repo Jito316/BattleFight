@@ -12,6 +12,8 @@ namespace BattleFight
         Training,
         /// <summary>ウェーブが自動生成され続ける。何ウェーブまで行けるか</summary>
         Endless,
+        /// <summary>マップを探索してスキルを集める(メトロイドヴァニア)。スキルが進入制限を開く鍵になる</summary>
+        Exploration,
     }
 
     [Serializable]

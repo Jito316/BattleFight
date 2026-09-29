@@ -146,6 +146,15 @@ namespace BattleFight
             if (Button(new Rect(x -= 200, panel.y + 20, 200, 48), "閉じる [P]", new Color(0.3f, 0.3f, 0.35f))) Close();
 
             x -= 30;
+            if (slots.IsCollecting)
+            {
+                // 探索: 切り替え方式はプリセットだけ。代わりに集めたスキルの数を出す
+                int total = ExplorationRegion.Active != null ? ExplorationRegion.Active.TotalSkills : ExplorationSave.TotalSkills;
+                Text(new Rect(x - 700, panel.y + 30, 700, 30),
+                    $"探索中: 集めたスキルだけで組めます   <color=#FFE08A>{ExplorationSave.UnlockedCount} / {total}</color>", 20,
+                    new Color(1f, 1f, 1f, 0.8f), TextAnchor.UpperRight);
+                return;
+            }
             bool preset = slots.Mode == SwapMode.Preset;
             if (Button(new Rect(x -= 220, panel.y + 20, 220, 48), "プリセット方式",
                     preset ? new Color(0.2f, 0.55f, 0.9f) : new Color(0.22f, 0.22f, 0.26f)))
@@ -251,6 +260,16 @@ namespace BattleFight
                         var row = new Rect(6, y, view.width - 12, RowHeight - 4);
                         bool selected = skill == assigned;
                         bool hover = row.Contains(Event.current.mousePosition);
+
+                        // 探索: まだ手に入れていないスキルは名前を隠し、選べないようにする
+                        if (!slots.IsAvailable(skill))
+                        {
+                            Box(row, new Color(0.12f, 0.12f, 0.14f));
+                            Text(new Rect(row.x + 10, row.y + 6, row.width - 14, row.height), "？？？", 17, new Color(1f, 1f, 1f, 0.3f));
+                            if (hover) detailSkill = null;
+                            y += RowHeight;
+                            continue;
+                        }
                         var background = selected ? Color.Lerp(weapon.color, Color.black, 0.45f)
                             : hover ? new Color(0.22f, 0.24f, 0.3f)
                             : new Color(0.15f, 0.16f, 0.2f);
