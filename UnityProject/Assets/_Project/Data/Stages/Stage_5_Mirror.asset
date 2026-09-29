@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
+  m_Name: Stage_5_Mirror
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
+  displayName: "\u7B2C5\u5E55  \u5199\u3057\u8EAB"
+  description: "\u3053\u3061\u3089\u3068\u540C\u3058\u30B9\u30AD\u30EB\u3092\u4F7F\u3046\u300C\u5199\u3057\u8EAB\u300D\u304C\u73FE\u308C\u308B\u3002\u578B\u3092\u5207\u308A\u66FF\u3048\u308B\u3068\u5F31\u70B9\u3082\u5909\u308F\u308B\u306E\u3067\u3001\u982D\u4E0A\u306E\u5F31\u70B9\u3092\u898B\u3066\u6301\u3061\u66FF\u3048\u3088\u3046\u3002"
+  kind: 0
+  waves:
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: 21fefb01ae6576441808ef12665a9216, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: def89b69de17a054597ec0f40e75e35c, type: 2}
+    - {fileID: 11400000, guid: 21fefb01ae6576441808ef12665a9216, type: 2}
+    - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+  - label: WAVE
+    enemies:
+    - {fileID: 11400000, guid: 8b43be6c0e72f784f972ff815f8b68f0, type: 2}
+    - {fileID: 11400000, guid: 8b43be6c0e72f784f972ff815f8b68f0, type: 2}
+    - {fileID: 11400000, guid: def89b69de17a054597ec0f40e75e35c, type: 2}
+  - label: BOSS
+    enemies:
+    - {fileID: 11400000, guid: 6da8d7d4d0acb324085dbf79ff3a14aa, type: 2}
+    - {fileID: 11400000, guid: 21fefb01ae6576441808ef12665a9216, type: 2}
+  trainingDummies: []
+  endlessPool: []
+  endlessBosses: []
+  bossEvery: 5

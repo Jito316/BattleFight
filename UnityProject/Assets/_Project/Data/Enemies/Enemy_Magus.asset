@@ -51,6 +51,10 @@ MonoBehaviour:
     selfDestruct: 0
     summon: {fileID: 0}
     summonCount: 0
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   - name: "\u96F7\u6483"
     range: 25
     windup: 0.6
@@ -73,6 +77,10 @@ MonoBehaviour:
     selfDestruct: 0
     summon: {fileID: 0}
     summonCount: 0
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   - name: "\u53EC\u559A"
     range: 30
     windup: 1.2
@@ -95,6 +103,10 @@ MonoBehaviour:
     selfDestruct: 0
     summon: {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
     summonCount: 2
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
   - name: "\u885D\u6483"
     range: 4
     windup: 0.8
@@ -117,6 +129,26 @@ MonoBehaviour:
     selfDestruct: 0
     summon: {fileID: 0}
     summonCount: 0
+    teleportBehind: 0
+    repeat: 0
+    repeatWindup: 0.3
+    sourceSkill: {fileID: 0}
+  skillSets:
+  - name: "\u6756\u306E\u6280"
+    weapon: 3
+    color: {r: 0.3, g: 1, b: 0.75, a: 1}
+    skills:
+    - {fileID: 11400000, guid: a0b8f0fc62381e042a0f0520233fe939, type: 2}
+    - {fileID: 11400000, guid: 55a4b8798e4d66747bdda786a0ce9e3e, type: 2}
+    weaknesses: 
+  skillSwapInterval: 0
+  skillDamageScale: 0.5
+  skillWindupScale: 2.2
+  phase2HealthRatio: 0
+  phase2SpeedMultiplier: 1.3
+  phase2CooldownMultiplier: 0.6
+  phase2Attacks: []
+  phase2Message: "\u672C\u6C17\u306B\u306A\u3063\u305F!"
   bodyShape: 0
   scale: 2
   color: {r: 0.25, g: 0.3, b: 0.8, a: 1}

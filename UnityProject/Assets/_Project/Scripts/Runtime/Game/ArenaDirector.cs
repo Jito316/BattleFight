@@ -223,6 +223,8 @@ namespace BattleFight
         /// <summary>ボスの召喚などで、ウェーブの途中に敵を足す(倒すまでウェーブは終わらない)</summary>
         public EnemyController SpawnExtra(EnemyProfile profile, Vector3 position)
         {
+            // 倒れずに消えた敵(ウェーブの外で消したものなど)は数えない
+            alive.RemoveAll(e => e == null);
             if (profile == null || alive.Count >= MaxAliveEnemies || State == GameState.GameOver) return null;
             if (IsExploring) return SpawnEnemy(profile, position, true);
             // アリーナの外に出ないようにする

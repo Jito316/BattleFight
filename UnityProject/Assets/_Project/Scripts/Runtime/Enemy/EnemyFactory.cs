@@ -42,6 +42,16 @@ namespace BattleFight
                 plate.localScale = new Vector3(0.9f, 0.7f, 0.25f);
             }
 
+            // プレイヤーのスキルを使う敵は武器を持つ(色は型ごとに EnemyController が塗る)
+            if (profile.skillSets != null && profile.skillSets.Count > 0)
+            {
+                var weapon = CreatePart(PrimitiveType.Cube, root.transform, surfaceMaterial, profile.skillSets[0].color);
+                weapon.name = "Weapon";
+                weapon.localPosition = new Vector3(0.62f, 1.05f, 0.45f);
+                weapon.localRotation = Quaternion.Euler(20f, 0f, 0f);
+                weapon.localScale = new Vector3(0.14f, 0.14f, 1.3f);
+            }
+
             var damageable = root.AddComponent<Damageable>();
             damageable.Configure(Team.Enemy, profile.maxHealth, profile.maxArmor, profile.armorRegenDelay);
 

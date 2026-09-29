@@ -84,6 +84,14 @@ namespace BattleFight.EditorTools
                 }
                 AssetDatabase.ImportAsset(ThemePath, ImportAssetOptions.ForceUpdate);
             }
+            else
+            {
+                // フォントを作り直す(文字を足す)と、字形の番号が変わる。前のフォントで作った字形を残さないよう毎回消す
+                // (字形は実行時に必要な分だけ作られる)
+                fontAsset.ClearFontAssetData(true);
+                EditorUtility.SetDirty(fontAsset);
+                AssetDatabase.SaveAssets();
+            }
             return fontAsset;
         }
 

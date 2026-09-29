@@ -108,7 +108,7 @@ namespace BattleFight
         class EnemyTag
         {
             public VisualElement root, fill, armor, armorFill;
-            public Label weak, alert;
+            public Label weak, alert, skill;
         }
 
         /// <summary>操作説明を表示しているか</summary>
@@ -407,7 +407,13 @@ namespace BattleFight
             var damageable = enemy.Damageable;
             SetText(bossName, enemy.Profile.displayName);
             Show(bossPhase, enemy.IsPhase2);
-            string weakness = WeaknessText(enemy.Profile);
+            string weakness = WeaknessText(enemy);
+            var set = enemy.CurrentSkillSet;
+            if (set != null && enemy.Profile.skillSets.Count > 1)
+            {
+                // 型を切り替えるボスは、今の型も出す
+                weakness = $"<color=#{ColorUtility.ToHtmlStringRGB(set.color)}>{set.name}</color>   " + weakness;
+            }
             SetText(bossWeak, weakness.Length > 0 ? $"<color=#8A93A3>弱点</color> {weakness}" : "");
             SetFill(bossFill, damageable.Health / damageable.MaxHealth);
             Show(bossArmor, damageable.MaxArmor > 0f);
@@ -666,13 +672,29 @@ namespace BattleFight
                 SetFill(tag.fill, damageable.Health / damageable.MaxHealth);
                 Show(tag.armor, damageable.MaxArmor > 0f);
                 if (damageable.MaxArmor > 0f) SetFill(tag.armorFill, damageable.Armor / damageable.MaxArmor);
-                string weakness = WeaknessText(enemy.Profile);
-                bool weakNow = attackA != null && enemy.Profile.IsWeakTo(attackA.weapon);
+                string weakness = WeaknessText(enemy);
+                bool weakNow = attackA != null && enemy.IsWeakTo(attackA.weapon);
                 Show(tag.weak, weakness.Length > 0);
                 SetText(tag.weak, (weakNow ? "弱点 " : "弱 ") + weakness);
                 tag.weak.EnableInClassList("now", weakNow);
                 Show(tag.alert, enemy.IsTelegraphing);
                 tag.alert.style.color = enemy.Profile.telegraphColor;
+
+                // プレイヤーと同じスキルを使うときは、予備動作中に技の名前を出す
+                var skill = enemy.IsTelegraphing && enemy.CurrentAttack != null ? enemy.CurrentAttack.sourceSkill : null;
+                var set = enemy.CurrentSkillSet;
+                bool swapped = set != null && Time.time - enemy.SkillSetChangedAt < 1.5f;
+                Show(tag.skill, skill != null || swapped);
+                if (skill != null)
+                {
+                    SetText(tag.skill, skill.displayName);
+                    tag.skill.style.color = WeaponColor(skill);
+                }
+                else if (swapped)
+                {
+                    SetText(tag.skill, $"⇄ {set.name}");
+                    tag.skill.style.color = set.color;
+                }
             }
             for (int i = used; i < enemyTags.Count; i++) Show(enemyTags[i].root, false);
 
@@ -739,6 +761,7 @@ namespace BattleFight
             {
                 var tag = new EnemyTag { root = Classed(new VisualElement(), "enemy-tag") };
                 tag.alert = Classed(new Label("!"), "enemy-tag__alert");
+                tag.skill = Classed(new Label(), "enemy-tag__skill");
                 tag.weak = Classed(new Label(), "enemy-tag__weak");
                 var bar = Classed(Classed(new VisualElement(), "bar"), "enemy-tag__bar");
                 tag.fill = Classed(new VisualElement(), "bar__fill");
@@ -747,6 +770,7 @@ namespace BattleFight
                 tag.armorFill = Classed(new VisualElement(), "bar__fill");
                 tag.armor.Add(tag.armorFill);
                 tag.root.Add(tag.alert);
+                tag.root.Add(tag.skill);
                 tag.root.Add(tag.weak);
                 tag.root.Add(bar);
                 tag.root.Add(tag.armor);
@@ -784,11 +808,13 @@ namespace BattleFight
 
         // ---------- 補助 ----------
 
-        string WeaknessText(EnemyProfile profile)
+        /// <summary>今の弱点(型を切り替える敵は、今の型の弱点)</summary>
+        string WeaknessText(EnemyController enemy)
         {
-            if (profile == null || profile.weaknesses == null || profile.weaknesses.Length == 0) return "";
+            var weaknesses = enemy != null ? enemy.Weaknesses : null;
+            if (weaknesses == null || weaknesses.Length == 0) return "";
             builder.Clear();
-            foreach (var weapon in profile.weaknesses)
+            foreach (var weapon in weaknesses)
             {
                 var data = slots.GetWeaponData(weapon);
                 if (data == null) continue;

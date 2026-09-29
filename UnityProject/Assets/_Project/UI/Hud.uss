@@ -663,6 +663,12 @@
     background-color: #FFB84D;
 }
 
+.enemy-tag__skill {
+    font-size: 20px;
+    margin-bottom: 2px;
+    -unity-text-align: middle-center;
+}
+
 .enemy-tag__alert {
     position: absolute;
     top: -46px;

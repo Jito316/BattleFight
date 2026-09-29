@@ -160,6 +160,24 @@ namespace BattleFight.EditorTools
             EnsureWeaknesses(armoredDummy, WeaponType.Hammer);
             EnsureWeaknesses(flyingDummy, WeaponType.Gun);
 
+            // プレイヤーと同じスキルを使う敵「写し身」。型(武器種ごとのスキルの組)を切り替え、そのたびに弱点が変わる
+            var mirrorBlade = Asset<EnemyProfile>("Enemies/Enemy_MirrorBlade", resetData, p => PrototypeDefaults.MirrorBlade(p,
+                SkillSet("剣の型", sword, new[] { WeaponType.Hammer, WeaponType.Gauntlet }, swordCombo, swordIai, swordStep),
+                SkillSet("大槌の型", hammer, new[] { WeaponType.Sword, WeaponType.Gun }, hammerCombo, hammerQuake, hammerJump)));
+            var mirrorCaster = Asset<EnemyProfile>("Enemies/Enemy_MirrorCaster", resetData, p => PrototypeDefaults.MirrorCaster(p,
+                SkillSet("杖の型", staff, new[] { WeaponType.Sword, WeaponType.Gauntlet }, staffBolt, staffThunder, staffBlink),
+                SkillSet("銃の型", gun, new[] { WeaponType.Chain, WeaponType.Staff }, gunRapid, gunGrenade, gunSlide)));
+            var mirrorBrawler = Asset<EnemyProfile>("Enemies/Enemy_MirrorBrawler", resetData, p => PrototypeDefaults.MirrorBrawler(p,
+                SkillSet("拳の型", gauntlet, new[] { WeaponType.Hammer, WeaponType.Staff }, gauntletRush, gauntletUppercut, gauntletDash),
+                SkillSet("鎖の型", chain, new[] { WeaponType.Gauntlet, WeaponType.Gun }, chainCombo, chainBind, chainWire)));
+
+            // ボスにもプレイヤーのスキルを混ぜる(弱点はボスのまま)。影刃は型を切り替える
+            EnsureSkillSets(boss, 0f, SkillSet("大槌の技", hammer, null, hammerQuake, hammerJump));
+            EnsureSkillSets(magus, 0f, SkillSet("杖の技", staff, null, staffThunder, staffBolt));
+            EnsureSkillSets(shadow, 8f,
+                SkillSet("剣の型", sword, null, swordIai, swordWave, swordPhantom),
+                SkillSet("鎖の型", chain, null, chainBind, chainRing));
+
             EnsureFolder(DataRoot, "Stages");
             var stages = new Object[]
             {
@@ -170,12 +188,19 @@ namespace BattleFight.EditorTools
                     s => PrototypeDefaults.Act3(s, bomber, dasher, shooter, armored, flyer, boss, magus)),
                 Asset<StageData>("Stages/Stage_4_Shadow", resetData,
                     s => PrototypeDefaults.Act4(s, dasher, shooter, flyer, armored, bomber, shadow)),
+                Asset<StageData>("Stages/Stage_5_Mirror", resetData,
+                    s => PrototypeDefaults.Act5(s, grunt, shooter, mirrorBlade, mirrorCaster, mirrorBrawler, shadow)),
                 Asset<StageData>("Stages/Stage_9_Endless", resetData,
                     s => PrototypeDefaults.Endless(s, grunt, dasher, shooter, bomber, flyer, armored, boss, magus)),
                 Asset<StageData>("Stages/Stage_10_Explore", resetData, PrototypeDefaults.ExplorationStage),
             };
             // 既にあるエンドレスにも、新しいボスを加える
-            EnsureEndlessBoss((StageData)stages[stages.Length - 2], shadow);
+            var endless = (StageData)stages[stages.Length - 2];
+            EnsureEndlessBoss(endless, shadow);
+            // 写し身もエンドレスに混ぜる
+            EnsureEndlessEntry(endless, mirrorBlade, 3f, 4);
+            EnsureEndlessEntry(endless, mirrorCaster, 3f, 5);
+            EnsureEndlessEntry(endless, mirrorBrawler, 3f, 6);
 
             AssetDatabase.SaveAssets();
 
@@ -481,6 +506,31 @@ namespace BattleFight.EditorTools
             if (bosses.Contains(boss)) return;
             bosses.Add(boss);
             endless.endlessBosses = bosses.ToArray();
+            EditorUtility.SetDirty(endless);
+        }
+
+        static EnemySkillSet SkillSet(string name, WeaponTypeData weapon, WeaponType[] weaknesses, params SkillData[] skills) => new EnemySkillSet
+        {
+            name = name,
+            weapon = weapon.weapon,
+            color = weapon.color,
+            skills = skills,
+            weaknesses = weaknesses ?? new WeaponType[0],
+        };
+
+        /// <summary>まだスキルを持っていない敵にだけ、プレイヤーのスキルの型を入れる(既にある調整を上書きしない)</summary>
+        static void EnsureSkillSets(EnemyProfile profile, float swapInterval, params EnemySkillSet[] sets)
+        {
+            if (profile == null || (profile.skillSets != null && profile.skillSets.Count > 0)) return;
+            profile.skillSets = new System.Collections.Generic.List<EnemySkillSet>(sets);
+            profile.skillSwapInterval = swapInterval;
+            EditorUtility.SetDirty(profile);
+        }
+
+        static void EnsureEndlessEntry(StageData endless, EnemyProfile profile, float cost, int minWave)
+        {
+            if (endless == null || profile == null || endless.endlessPool.Exists(e => e.profile == profile)) return;
+            endless.endlessPool.Add(new EndlessEntry { profile = profile, cost = cost, minWave = minWave });
             EditorUtility.SetDirty(endless);
         }
 
