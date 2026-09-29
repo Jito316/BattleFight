@@ -543,5 +543,30 @@ namespace BattleFight.Tests
                 foreach (var swap in swaps) yield return Tap(swap);
             }
         }
+
+        [UnityTest]
+        public IEnumerator HelpKey0_TogglesGuide_AndGuideFollowsLastDevice()
+        {
+            var gamepad = InputSystem.AddDevice<Gamepad>();
+            yield return LoadArena();
+            var hud = Object.FindFirstObjectByType<BattleHud>();
+
+            Assert.IsTrue(hud.IsHelpShown);
+            yield return Tap(keyboard.digit0Key);
+            Assert.IsFalse(hud.IsHelpShown, "0 キーで操作説明が閉じない");
+            yield return Tap(keyboard.digit0Key);
+            Assert.IsTrue(hud.IsHelpShown, "0 キーで操作説明が開かない");
+
+            // 0 は切り替えに使っていないので、スキルは変わらない
+            Assert.AreEqual("連斬", slots.GetCurrent(SlotType.AttackA).displayName);
+
+            yield return Tap(gamepad.buttonSouth);
+            Assert.IsTrue(hud.UsingGamepad, "ゲームパッドを押しても表示がゲームパッド用にならない");
+            yield return Tap(gamepad.rightStickButton);
+            Assert.IsFalse(hud.IsHelpShown, "R3 で操作説明が閉じない");
+
+            yield return Tap(keyboard.wKey);
+            Assert.IsFalse(hud.UsingGamepad, "キーボードを押しても表示がキーボード用に戻らない");
+        }
     }
 }
