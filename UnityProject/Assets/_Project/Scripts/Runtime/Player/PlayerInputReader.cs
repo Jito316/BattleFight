@@ -121,6 +121,25 @@ namespace BattleFight
 
         public bool IsHeld(PlayerAction action) => buttons[(int)action].IsPressed();
 
+        /// <summary>
+        /// フォーカスが外れると、押していたキーを離したことが届かず移動しっぱなしになるので、
+        /// 入力をすべて離した状態に戻す。
+        /// </summary>
+        void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus) ReleaseAll();
+        }
+
+        /// <summary>キーボード・マウス・ゲームパッドをすべて離した状態に戻し、先行入力も捨てる</summary>
+        public void ReleaseAll()
+        {
+            foreach (var device in InputSystem.devices)
+            {
+                if (device is Keyboard || device is Mouse || device is Gamepad) InputSystem.ResetDevice(device);
+            }
+            ClearBuffer();
+        }
+
         /// <summary>先行入力をすべて捨てる(編成画面を閉じたときのクリックなどが技として出ないように)</summary>
         public void ClearBuffer()
         {

@@ -74,6 +74,29 @@
       };
       document.body.appendChild(script);
       canvas.addEventListener("pointerdown", () => canvas.focus());
+
+      // Tab(ロックオン)でブラウザがフォーカスを移さないようにする
+      canvas.addEventListener("keydown", (e) => { if (e.code === "Tab") e.preventDefault(); });
+
+      // フォーカスが外れると、押していたキーを離したことが Unity に届かず、移動しっぱなしになる。
+      // 外れたときに、押したままのキーの keyup を送って離したことにする。
+      const heldKeys = new Map();
+      canvas.addEventListener("keydown", (e) => heldKeys.set(e.code, { key: e.key, keyCode: e.keyCode }));
+      canvas.addEventListener("keyup", (e) => heldKeys.delete(e.code));
+      function releaseHeldKeys() {
+        const released = [...heldKeys];
+        heldKeys.clear();
+        for (const [code, { key, keyCode }] of released) {
+          const up = new KeyboardEvent("keyup", { code, key, bubbles: true, cancelable: true });
+          // 古い読み方(keyCode / which)で判定する処理にも届くようにする
+          Object.defineProperty(up, "keyCode", { get: () => keyCode });
+          Object.defineProperty(up, "which", { get: () => keyCode });
+          canvas.dispatchEvent(up);
+        }
+      }
+      canvas.addEventListener("blur", releaseHeldKeys);
+      window.addEventListener("blur", releaseHeldKeys);
+      document.addEventListener("visibilitychange", () => { if (document.hidden) releaseHeldKeys(); });
     </script>
   </body>
 </html>

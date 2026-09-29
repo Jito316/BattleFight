@@ -545,6 +545,22 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator LosingFocus_ReleasesHeldMoveKey()
+        {
+            yield return LoadArena();
+            var reader = Object.FindFirstObjectByType<PlayerInputReader>();
+
+            Press(keyboard.wKey);
+            yield return null;
+            Assert.Greater(reader.Move.y, 0.5f, "W を押しても前進の入力にならない");
+
+            // ロックオン(Tab)やウィンドウ切り替えでフォーカスが外れ、W を離したことが届かなかった状況
+            reader.SendMessage("OnApplicationFocus", false);
+            yield return null;
+            Assert.AreEqual(Vector2.zero, reader.Move, "フォーカスが外れても移動の入力が残っている");
+        }
+
+        [UnityTest]
         public IEnumerator HelpKey0_TogglesGuide_AndGuideFollowsLastDevice()
         {
             var gamepad = InputSystem.AddDevice<Gamepad>();
