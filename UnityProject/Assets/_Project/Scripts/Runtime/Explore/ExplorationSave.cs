@@ -7,11 +7,11 @@ namespace BattleFight
 {
     /// <summary>
     /// 探索の進み具合の保存。集めたスキル、壊した壁・取ったアイテム・倒した敵の集団(フラグ)、最後に触れた祭壇。
-    /// スキルとフラグはアセット名 / ID の文字列で持つ。WebGL では PlayerPrefs がブラウザに保存される。
+    /// スキルとフラグはアセット名 / ID の文字列で持つ。今のセーブスロット(SaveProfiles)に保存する。
     /// </summary>
     public static class ExplorationSave
     {
-        public const string PrefsKey = "BattleFight.Explore.v1";
+        public const string SaveName = "Explore.v1";
 
         [Serializable]
         class SavedData
@@ -24,6 +24,8 @@ namespace BattleFight
         }
 
         static SavedData mCache;
+        /// <summary>mCache を読んだときの SaveProfiles.Revision。スロットが変わったり消されたりしたら読み直す</summary>
+        static int mCacheRevision = -1;
 
         /// <summary>新しくスキルを手に入れた</summary>
         public static event Action<SkillData> SkillUnlocked;
@@ -32,6 +34,7 @@ namespace BattleFight
         static void ResetStatics()
         {
             mCache = null;
+            mCacheRevision = -1;
             SkillUnlocked = null;
         }
 
@@ -39,7 +42,11 @@ namespace BattleFight
         {
             get
             {
-                if (mCache == null) mCache = Deserialize(PlayerPrefs.GetString(PrefsKey, null)) ?? new SavedData();
+                if (mCache == null || mCacheRevision != SaveProfiles.Revision)
+                {
+                    mCache = Deserialize(SaveProfiles.GetString(SaveName)) ?? new SavedData();
+                    mCacheRevision = SaveProfiles.Revision;
+                }
                 return mCache;
             }
         }
@@ -97,14 +104,23 @@ namespace BattleFight
         public static void Reset()
         {
             mCache = new SavedData();
-            PlayerPrefs.DeleteKey(PrefsKey);
-            PlayerPrefs.Save();
+            mCacheRevision = SaveProfiles.Revision;
+            SaveProfiles.DeleteKey(SaveName);
+            SaveProfiles.Save();
+        }
+
+        /// <summary>探索をはじめからにする: 進み具合・探索の編成・探索ステージの記録を消す</summary>
+        public static void StartOver(string iStageId)
+        {
+            Reset();
+            LoadoutStorage.ClearExploration();
+            if (!string.IsNullOrEmpty(iStageId)) StageRecords.Clear(iStageId);
         }
 
         static void Save()
         {
-            PlayerPrefs.SetString(PrefsKey, Serialize());
-            PlayerPrefs.Save();
+            SaveProfiles.SetString(SaveName, Serialize());
+            SaveProfiles.Save();
         }
 
         public static string Serialize() => JsonUtility.ToJson(mData);
@@ -128,6 +144,10 @@ namespace BattleFight
         }
 
         /// <summary>テスト用: 保存された文字列から読み直す</summary>
-        public static void LoadFrom(string iJson) => mCache = Deserialize(iJson) ?? new SavedData();
+        public static void LoadFrom(string iJson)
+        {
+            mCache = Deserialize(iJson) ?? new SavedData();
+            mCacheRevision = SaveProfiles.Revision;
+        }
     }
 }

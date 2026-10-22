@@ -81,9 +81,9 @@ namespace BattleFight
         public bool IsWeakTo(WeaponType iWeapon)
         {
             if (Weaknesses == null) return false;
-            foreach (var aW in Weaknesses)
+            foreach (var aWeapon in Weaknesses)
             {
-                if (aW == iWeapon) return true;
+                if (aWeapon == iWeapon) return true;
             }
             return false;
         }
