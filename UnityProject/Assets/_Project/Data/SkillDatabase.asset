@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6dfe011b2537d5043bfc0af1d8b5ed1a, type: 3}
   m_Name: SkillDatabase
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillDatabase
-  skills:
+  Skills:
   - {fileID: 11400000, guid: 89ae6a5687e4a3540b4e6d141eb9d4b9, type: 2}
   - {fileID: 11400000, guid: 2f3f24d239fb5874b9307788a0df5296, type: 2}
   - {fileID: 11400000, guid: a31bbe219dadd034ea7df6b5827a1ce1, type: 2}

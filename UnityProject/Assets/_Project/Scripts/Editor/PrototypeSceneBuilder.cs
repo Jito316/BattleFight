@@ -244,10 +244,15 @@ namespace BattleFight.EditorTools
             aController.stepOffset = 0.3f;
             aController.skinWidth = 0.05f;
 
-            var aBody = Part(PrimitiveType.Capsule, "Body", aPlayer.transform, new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f),
-                Mat("Player", new Color(0.9f, 0.9f, 0.95f)));
-            Part(PrimitiveType.Cube, "Visor", aBody, new Vector3(0f, 0.5f, 0.4f), new Vector3(0.7f, 0.15f, 0.3f),
-                Mat("Visor", new Color(0.1f, 0.6f, 1f)));
+            // 人型モデル(Quaternius)。見つからないときは仮の形にする
+            var aCharacter = BuildPlayerModel(aPlayer);
+            if (aCharacter == null)
+            {
+                var aBody = Part(PrimitiveType.Capsule, "Body", aPlayer.transform, new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f),
+                    Mat("Player", new Color(0.9f, 0.9f, 0.95f)));
+                Part(PrimitiveType.Cube, "Visor", aBody, new Vector3(0f, 0.5f, 0.4f), new Vector3(0.7f, 0.15f, 0.3f),
+                    Mat("Visor", new Color(0.1f, 0.6f, 1f)));
+            }
             var aHand = new GameObject("HandAnchor").transform;
             aHand.SetParent(aPlayer.transform, false);
             aHand.localPosition = new Vector3(0.45f, 1.15f, 0.25f);
@@ -302,6 +307,17 @@ namespace BattleFight.EditorTools
                 SetPreset(aPresets, 2, "ガンナー", aGunRapid, aGunGrenade, aGunJet);
                 SetPreset(aPresets, 3, "混成", aGauntletRush, aHammerQuake, aChainWire);
             });
+            if (aCharacter != null)
+            {
+                Configure(aCharacter, iSo =>
+                {
+                    iSo.FindProperty("mAnimator").objectReferenceValue = aPlayer.GetComponentInChildren<Animator>();
+                    iSo.FindProperty("mExecutor").objectReferenceValue = aExecutor;
+                    iSo.FindProperty("mMotor").objectReferenceValue = aMotor;
+                    iSo.FindProperty("mSelf").objectReferenceValue = aDamageable;
+                    iSo.FindProperty("mHandAnchor").objectReferenceValue = aHand;
+                });
+            }
             Configure(aWeaponHolder, iSo =>
             {
                 iSo.FindProperty("mHandAnchor").objectReferenceValue = aHand;

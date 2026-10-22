@@ -124,6 +124,10 @@ namespace BattleFight
 
         public SkillData Current => mCurrent;
         public bool IsBusy => mCurrent != null;
+        /// <summary>技の何段目か(0 から)</summary>
+        public int StepIndex => mStepIndex;
+        /// <summary>段が始まるたびに 1 増える(見た目のモーションを切り替えるのに使う)</summary>
+        public int StepSerial { get; private set; }
         public bool IsFinisherActive => mCurrent != null && mIsFinisher;
         public bool IsStunned => Time.time < mStunnedUntil;
         public bool SwapStrikeReady => Time.time <= mSwapStrikeUntil;
@@ -551,6 +555,7 @@ namespace BattleFight
         void BeginStep(int iIndex)
         {
             mStepIndex = iIndex;
+            StepSerial++;
             mPhase = Phase.Startup;
             mPhaseTime = 0f;
             mChainQueued = false;

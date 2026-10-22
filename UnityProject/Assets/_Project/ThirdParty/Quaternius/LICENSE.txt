@@ -1,0 +1,9 @@
+Quaternius (https://quaternius.com) のアセット。すべて CC0 1.0 Universal(パブリックドメイン)。
+
+- Characters/Superhero_Male_FullBody.fbx … Universal Base Characters [Standard]
+- Hair/Hair_SimpleParted.fbx            … Universal Base Characters [Standard](Hairstyles / Origin at 0)
+- Animations/UAL1_Standard.fbx          … Universal Animation Library [Standard](ルートモーションなし版)
+- Animations/UAL2_Standard.fbx          … Universal Animation Library 2 [Standard](ルートモーションなし版)
+
+License: CC0 1.0 Universal https://creativecommons.org/publicdomain/zero/1.0/
+Models by @Quaternius
