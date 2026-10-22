@@ -12,6 +12,11 @@
         <!-- 敵の体力・弱点・目印・ダメージ数字など、3D の位置に合わせて動くもの -->
         <ui:VisualElement name="world-layer" class="layer" picking-mode="Ignore" />
 
+        <!-- 見切り(ジャスト回避で敵だけ遅くなっている間)の色 -->
+        <ui:VisualElement name="witch" class="witch" picking-mode="Ignore">
+            <ui:Label text="見切り" class="witch__label" picking-mode="Ignore" />
+        </ui:VisualElement>
+
         <!-- 左上: 体力・刻片・切り替え方式 -->
         <ui:VisualElement name="status" class="status panel" picking-mode="Ignore">
             <ui:VisualElement class="status__row" picking-mode="Ignore">
@@ -65,6 +70,7 @@
             <ui:VisualElement class="bar bar--rank" picking-mode="Ignore">
                 <ui:VisualElement name="rank-fill" class="bar__fill" picking-mode="Ignore" />
             </ui:VisualElement>
+            <ui:Label name="rank-power" class="style__power" picking-mode="Ignore" />
             <ui:VisualElement name="announcements" class="announcements" picking-mode="Ignore" />
             <ui:VisualElement name="chain" class="chain" picking-mode="Ignore">
                 <ui:Label name="chain-count" class="chain__count" picking-mode="Ignore" />
@@ -74,6 +80,16 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Label name="chain-hint" text="CHAIN  切り替え → ヒットでつながる" class="chain__hint" picking-mode="Ignore" />
+            <ui:VisualElement name="combo" class="combo" picking-mode="Ignore">
+                <ui:VisualElement class="combo__row" picking-mode="Ignore">
+                    <ui:Label name="combo-count" class="combo__count" picking-mode="Ignore" />
+                    <ui:Label text="HITS" class="combo__hits" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement class="bar bar--combo" picking-mode="Ignore">
+                    <ui:VisualElement name="combo-fill" class="bar__fill" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="combo-result" class="combo__result" picking-mode="Ignore" />
             <ui:Label name="debug" class="style__debug" picking-mode="Ignore" />
         </ui:VisualElement>
 
@@ -99,6 +115,13 @@
                     <ui:Instance template="SlotCard" name="slot-m" picking-mode="Ignore" />
                 </ui:VisualElement>
                 <ui:VisualElement name="change-attack" class="change-attack" picking-mode="Ignore">
+                    <!-- チェンジドライブ(切り替えの必殺技)のゲージ -->
+                    <ui:VisualElement name="drive" class="drive" picking-mode="Ignore">
+                        <ui:Label name="drive-label" class="drive__label" picking-mode="Ignore" />
+                        <ui:VisualElement class="bar bar--drive" picking-mode="Ignore">
+                            <ui:VisualElement name="drive-fill" class="bar__fill" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                     <ui:Label name="change-attack-label" class="change-attack__label" picking-mode="Ignore" />
                     <ui:VisualElement class="bar bar--change" picking-mode="Ignore">
                         <ui:VisualElement name="change-attack-fill" class="bar__fill" picking-mode="Ignore" />

@@ -195,7 +195,8 @@ namespace BattleFight
         void Update()
         {
             if (profile == null) return;
-            float dt = Time.deltaTime;
+            // 「見切り」(ジャスト回避)の間は敵だけ遅くなる
+            float dt = EnemyTime.DeltaTime;
 
             if (state == State.Dead)
             {
@@ -573,6 +574,13 @@ namespace BattleFight
             stateTime = 0f;
             controller.enabled = false;
             Active.Remove(this);
+            // 砕け散って、刻片がプレイヤーへ飛んでいく
+            if (CombatFeedback.Instance != null)
+            {
+                int shards = Mathf.Clamp(Mathf.RoundToInt(profile.shardValue * 3f), 2, 12);
+                CombatFeedback.Instance.SpawnDefeatBurst(CenterPoint, profile.color, Mathf.Max(0.6f, profile.scale), target, shards);
+                CombatFeedback.Instance.Shake(profile.isBoss ? 0.45f : 0.12f);
+            }
         }
 
         // ---------- 補助 ----------

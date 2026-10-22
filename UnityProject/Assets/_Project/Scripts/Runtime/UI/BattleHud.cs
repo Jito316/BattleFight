@@ -35,13 +35,13 @@ namespace BattleFight
         {
             ("移動", "W・A・S・D"), ("カメラ", "マウス"), ("攻撃A", "左クリック・J"), ("攻撃B", "右クリック・K"),
             ("移動スキル", "Shift・L"), ("ジャンプ", "Space"), ("ロックオン", "Tab・中クリック"), ("フィニッシャー", "F"),
-            ("スキル編成", "P"), ("もう一度 / 選択へ", "R・T"), ("切り替え", "1・2・3・4"),
+            ("スキル編成", "P"), ("もう一度 / 選択へ", "R・T"), ("チェンジドライブ", "V"), ("切り替え", "1・2・3・4"),
         };
         static readonly (string action, string keys)[] GamepadGuide =
         {
             ("移動", "左スティック"), ("カメラ", "右スティック"), ("攻撃A", "□"), ("攻撃B", "△"),
             ("移動スキル", "○"), ("ジャンプ", "×"), ("ロックオン", "L1"), ("フィニッシャー", "R1"),
-            ("スキル編成", "Select"), ("もう一度", "Start"), ("切り替え", "十字キー"),
+            ("スキル編成", "Select"), ("もう一度", "Start"), ("チェンジドライブ", "L2"), ("切り替え", "十字キー"),
         };
         static readonly string[] Tips =
         {
@@ -52,6 +52,9 @@ namespace BattleFight
             "切り替え → ヒットで CHAIN(最大×5、ダメージ +50%)",
             "切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)",
             "居合は長押しで溜め。ワイヤーは視界内で一番近い ◎ へ飛ぶ",
+            "移動スキルで攻撃をギリギリに避けると、敵だけが遅くなる(見切り)",
+            "切り替えて当てると DRIVE がたまる。満タンで全プリセットの武器で連続攻撃",
+            "スタイルランクが高いほど攻撃力が上がる(SSS で +30%)",
         };
 
         [SerializeField] SkillSlotController slots;
@@ -80,6 +83,9 @@ namespace BattleFight
         Label bossName, bossPhase, bossWeak, rank, chainCount, chainBonus, chainHint, debugLabel, bonus, changeAttackLabel;
         VisualElement rankFill, announcements, chain, chainFill, swapStrike, swapStrikeFill, presetsRoot, changeAttack, changeAttackFill;
         Label ready, phaseTitle, phaseSub, toast;
+        Label rankPower, comboCount, comboResult, driveLabel;
+        VisualElement witch, combo, comboFill, drive, driveFill;
+        int lastComboCount;
         VisualElement phaseBanner, toastWrap, result, worldLayer;
         Label resultTitle, resultBody;
         Button resultNext, resultRetry, resultSelect;
@@ -108,7 +114,7 @@ namespace BattleFight
         class EnemyTag
         {
             public VisualElement root, fill, armor, armorFill;
-            public Label weak, alert, skill;
+            public Label weak, alert, skill, elite;
         }
 
         /// <summary>操作説明を表示しているか</summary>
@@ -188,6 +194,15 @@ namespace BattleFight
             resultRetry = root.Q<Button>("result-retry");
             resultSelect = root.Q<Button>("result-select");
             worldLayer = root.Q("world-layer");
+            witch = root.Q("witch");
+            rankPower = root.Q<Label>("rank-power");
+            combo = root.Q("combo");
+            comboCount = root.Q<Label>("combo-count");
+            comboFill = root.Q("combo-fill");
+            comboResult = root.Q<Label>("combo-result");
+            drive = root.Q("drive");
+            driveLabel = root.Q<Label>("drive-label");
+            driveFill = root.Q("drive-fill");
 
             for (int i = 0; i < 3; i++)
             {
@@ -435,6 +450,29 @@ namespace BattleFight
             }
             lastRank = meter.RankIndex;
 
+            // ランクによる攻撃力の強化
+            int power = Mathf.RoundToInt((style.Config.DamageMultiplier(meter.RankIndex) - 1f) * 100f);
+            Show(rankPower, power > 0);
+            SetText(rankPower, $"攻撃力 +{power}%");
+
+            // コンボ(2ヒットから出す)。途切れたら評価を少し出す
+            var counter = executor.Combo;
+            Show(combo, counter.Count >= 2);
+            if (counter.Count >= 2)
+            {
+                SetText(comboCount, counter.Count.ToString());
+                SetFill(comboFill, counter.Remaining(Time.time));
+                if (counter.Count > lastComboCount)
+                {
+                    comboCount.AddToClassList("pulse");
+                    comboCount.schedule.Execute(() => comboCount.RemoveFromClassList("pulse")).StartingIn(40);
+                }
+            }
+            lastComboCount = counter.Count;
+            bool showResult = counter.Count == 0 && counter.LastFinished >= 10 && Time.time - counter.LastFinishedTime < 1.6f;
+            Show(comboResult, showResult);
+            if (showResult) SetText(comboResult, $"{counter.LastFinished} HITS  {ComboCounter.Rating(counter.LastFinished)}");
+
             // お知らせ(新しいものを上に)
             int count = style.Announcements.Count;
             while (announcementLabels.Count < count)
@@ -575,6 +613,12 @@ namespace BattleFight
                 }
             }
 
+            // チェンジドライブ
+            bool full = executor.Drive.IsFull;
+            drive.EnableInClassList("full", full && Mathf.PingPong(Time.unscaledTime * 3f, 1f) > 0.3f);
+            SetFill(driveFill, executor.Drive.Value);
+            SetText(driveLabel, full ? $"[{(UsingGamepad ? "L2" : "V")}] CHANGE DRIVE" : executor.IsDriving ? "CHANGE DRIVE!" : "DRIVE");
+
             // チェンジアタック
             bool readyNow = executor.ChangeAttackReady;
             changeAttack.EnableInClassList("ready", readyNow);
@@ -586,6 +630,10 @@ namespace BattleFight
         {
             var state = director.State;
             Show(ready, state == ArenaDirector.GameState.Starting);
+
+            // 見切り(敵だけ遅くなっている間)
+            Show(witch, EnemyTime.IsSlowed);
+            if (EnemyTime.IsSlowed) witch.style.opacity = Mathf.Clamp01(EnemyTime.Remaining * 2.5f);
 
             // ボスの第二形態の告知(2秒)
             float sincePhase = Time.unscaledTime - phaseAnnouncedAt;
@@ -677,6 +725,8 @@ namespace BattleFight
                 Show(tag.weak, weakness.Length > 0);
                 SetText(tag.weak, (weakNow ? "弱点 " : "弱 ") + weakness);
                 tag.weak.EnableInClassList("now", weakNow);
+                Show(tag.elite, enemy.Profile.elite != EliteAffix.None);
+                if (enemy.Profile.elite != EliteAffix.None) SetText(tag.elite, $"精鋭・{EliteMaker.Label(enemy.Profile.elite)}");
                 Show(tag.alert, enemy.IsTelegraphing);
                 tag.alert.style.color = enemy.Profile.telegraphColor;
 
@@ -762,6 +812,7 @@ namespace BattleFight
                 var tag = new EnemyTag { root = Classed(new VisualElement(), "enemy-tag") };
                 tag.alert = Classed(new Label("!"), "enemy-tag__alert");
                 tag.skill = Classed(new Label(), "enemy-tag__skill");
+                tag.elite = Classed(new Label(), "enemy-tag__elite");
                 tag.weak = Classed(new Label(), "enemy-tag__weak");
                 var bar = Classed(Classed(new VisualElement(), "bar"), "enemy-tag__bar");
                 tag.fill = Classed(new VisualElement(), "bar__fill");
@@ -770,6 +821,7 @@ namespace BattleFight
                 tag.armorFill = Classed(new VisualElement(), "bar__fill");
                 tag.armor.Add(tag.armorFill);
                 tag.root.Add(tag.alert);
+                tag.root.Add(tag.elite);
                 tag.root.Add(tag.skill);
                 tag.root.Add(tag.weak);
                 tag.root.Add(bar);

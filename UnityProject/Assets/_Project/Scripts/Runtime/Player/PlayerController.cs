@@ -60,6 +60,13 @@ namespace BattleFight
             if (executor.TryConsumeJustDodge())
             {
                 style.AddBonus(style.Config.justDodgeBonus, "JUST DODGE", new Color(0.6f, 1f, 0.6f));
+                // 見切り: しばらく敵だけが遅くなる。避けてから反撃する時間
+                EnemyTime.Slow();
+                if (CombatFeedback.Instance != null)
+                {
+                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 3.5f, new Color(0.75f, 0.5f, 1f));
+                    CombatFeedback.Instance.Shake(0.15f);
+                }
             }
         }
     }

@@ -64,6 +64,11 @@ namespace BattleFight
         [SerializeField] float changeAttackKnockback = 6f;
         [SerializeField] float changeAttackStylePoints = 20f;
 
+        [Header("チェンジドライブ(切り替えの必殺技)")]
+        [SerializeField, Tooltip("周りのこの半径の敵に、各プリセットの武器で順に攻撃する")] float driveRadius = 6.5f;
+        [SerializeField, Tooltip("1回ごとの威力(攻撃A の1段目に掛ける)")] float driveMultiplier = 2.4f;
+        [SerializeField, Tooltip("次の武器に持ち替えるまでの秒数")] float driveInterval = 0.2f;
+
         [Header("溜め・カウンター")]
         [SerializeField] float minChargeMultiplier = 0.6f;
         [SerializeField] float maxChargeMultiplier = 1.5f;
@@ -127,6 +132,12 @@ namespace BattleFight
         public GrapplePoint GrapplePreview { get; private set; }
 
         public SwapChainMeter SwapChain => chain ??= new SwapChainMeter(chainLinkWindow, chainKeepTime, maxChain, chainBonusPerStep);
+        /// <summary>途切れずに当てた数</summary>
+        public ComboCounter Combo { get; } = new ComboCounter();
+        /// <summary>チェンジドライブのゲージ(切り替えて当てるとたまる)</summary>
+        public DriveGauge Drive { get; } = new DriveGauge();
+        /// <summary>チェンジドライブを出している最中</summary>
+        public bool IsDriving { get; private set; }
         public bool ChangeAttackReady => changeAttackEnabled && Time.time >= changeAttackReadyAt;
         /// <summary>チェンジアタックの準備(0 → 1 で使える)</summary>
         public float ChangeAttackCharge => !changeAttackEnabled || changeAttackCooldown <= 0f
@@ -155,6 +166,17 @@ namespace BattleFight
             }
 
             SwapChain.Tick(Time.time);
+            TickCombo();
+
+            // チェンジドライブ中は、ほかの技や切り替えを受け付けない
+            if (IsDriving)
+            {
+                motor.LocomotionEnabled = false;
+                self.Invulnerable = true;
+                return;
+            }
+            if (input.Consume(PlayerAction.Drive) && Drive.IsFull && !IsStunned) StartCoroutine(ChangeDrive());
+
             HandleSwaps();
 
             if (IsStunned)
@@ -294,6 +316,89 @@ namespace BattleFight
         }
 
         static readonly Color WeakColor = new Color(1f, 0.55f, 0.1f);
+
+        /// <summary>コンボが時間切れで途切れたら、数に応じてスタイルのボーナス</summary>
+        void TickCombo()
+        {
+            int finished = Combo.Tick(Time.time);
+            if (finished < 10) return;
+            style.AddBonus(finished * style.Config.comboBonusPerHit, $"{finished} HITS  {ComboCounter.Rating(finished)}", new Color(1f, 0.85f, 0.4f));
+        }
+
+        /// <summary>
+        /// チェンジドライブ: 各プリセットの攻撃A の武器に次々と持ち替え、周りの敵をまとめて攻撃する。
+        /// 武器種が違う攻撃が続くので、どの敵にも弱点が入りやすい。出している間は無敵。
+        /// </summary>
+        System.Collections.IEnumerator ChangeDrive()
+        {
+            if (!Drive.TryConsume()) yield break;
+            IsDriving = true;
+            if (current != null) EndSkill();
+            style.AddBonus(100f, "CHANGE DRIVE", new Color(0.9f, 0.95f, 1f));
+            if (CombatFeedback.Instance != null)
+            {
+                CombatFeedback.Instance.SlowMotion(0.5f, 1.4f);
+                CombatFeedback.Instance.Shake(0.3f);
+            }
+
+            foreach (var skill in DriveSkills())
+            {
+                yield return new WaitForSeconds(driveInterval);
+                if (self.IsDead) break;
+                weapons.SetMainWeapon(skill.weapon);
+                var data = slots.GetWeaponData(skill.weapon);
+                var color = data != null ? data.color : Color.white;
+                if (CombatFeedback.Instance != null)
+                {
+                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, driveRadius, color);
+                    CombatFeedback.Instance.SpawnSparks(transform.position + Vector3.up, color, 14, 11f);
+                }
+
+                int count = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up, driveRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+                targetBuffer.Clear();
+                for (int i = 0; i < count; i++)
+                {
+                    var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
+                    if (target == null || target.Team == self.Team || target.IsDead || targetBuffer.Contains(target)) continue;
+                    targetBuffer.Add(target);
+                }
+                // 持ち替えるたびにチェインがつながる
+                SwapChain.OnSwap(Time.time);
+                if (targetBuffer.Count > 0)
+                {
+                    ResolveHits(new SkillHitContext { skill = skill, stepIndex = 0, multiplier = driveMultiplier, swapStrikeId = -1 },
+                        new List<Damageable>(targetBuffer), transform.position);
+                }
+            }
+
+            yield return new WaitForSeconds(driveInterval);
+            var main = slots.GetCurrent(SlotType.AttackA);
+            if (main != null) weapons.SetMainWeapon(main.weapon);
+            extraInvulnerableUntil = Time.time + 0.4f;
+            IsDriving = false;
+        }
+
+        /// <summary>チェンジドライブで使う技: プリセット方式は各プリセットの攻撃A、ラック方式は攻撃A のラック</summary>
+        List<SkillData> DriveSkills()
+        {
+            var skills = new List<SkillData>();
+            if (slots.Mode == SwapMode.Preset)
+            {
+                foreach (var preset in slots.Presets)
+                {
+                    if (preset.attackA != null) skills.Add(preset.attackA);
+                }
+            }
+            else
+            {
+                foreach (var skill in slots.GetRack(SlotType.AttackA).Skills)
+                {
+                    if (skill != null) skills.Add(skill);
+                }
+            }
+            if (skills.Count == 0 && slots.GetCurrent(SlotType.AttackA) != null) skills.Add(slots.GetCurrent(SlotType.AttackA));
+            return skills;
+        }
 
         static bool IsWeak(Damageable target, WeaponType weapon)
         {
@@ -696,12 +801,16 @@ namespace BattleFight
             var weaponData = slots.GetWeaponData(skill.weapon);
 
             bool anyWeak = false;
+            int landed = 0;
+            int weakLanded = 0;
+            // スタイルランクが高いほど攻撃力が上がる(格好よく戦うほど強い)
+            float rankMultiplier = style.Config.DamageMultiplier(style.Meter.RankIndex);
             foreach (var target in targets)
             {
                 if (target == null || target.IsDead) continue;
 
                 bool weak = IsWeak(target, skill.weapon);
-                float damage = step.damage * context.multiplier * SwapChain.DamageMultiplier;
+                float damage = step.damage * context.multiplier * SwapChain.DamageMultiplier * rankMultiplier;
                 float stagger = step.stagger * context.multiplier;
                 if (weak)
                 {
@@ -730,6 +839,8 @@ namespace BattleFight
 
                 anyLanded = true;
                 anyWeak |= weak;
+                landed++;
+                if (weak) weakLanded++;
                 hitstop = Mathf.Max(hitstop, step.hitstop * (outcome == HitOutcome.ArmorBroken ? 2f : 1f));
 
                 // 近接の1段は1回だけ登録する。同じ段で複数の敵に当てた分は少しだけ加点
@@ -755,10 +866,19 @@ namespace BattleFight
                         : outcome == HitOutcome.Armored ? new Color(0.7f, 0.7f, 0.7f)
                         : Color.white;
                     CombatFeedback.Instance.SpawnDamageNumber(target.transform.position + Vector3.up * 2.2f, target.LastDamage, color);
+
+                    // 火花(弱点・アーマー破壊・重い一撃は多く)。重い一撃は画面も大きく揺らす
+                    bool heavy = target.LastDamage >= 25f || outcome == HitOutcome.ArmorBroken;
+                    var sparkColor = weak || swapStrike ? color : weaponData != null ? Color.Lerp(weaponData.color, Color.white, 0.4f) : Color.white;
+                    var hitPoint = Vector3.Lerp(target.transform.position + Vector3.up * 1.1f, sourcePosition + Vector3.up * 1.1f, 0.25f);
+                    CombatFeedback.Instance.SpawnSparks(hitPoint, sparkColor, heavy || weak ? 9 : 5, heavy ? 9f : 7f);
+                    if (heavy) CombatFeedback.Instance.Shake(0.22f);
                 }
             }
 
             if (!anyLanded) return;
+            Combo.AddHit(Time.time, landed);
+            Drive.AddFromAttack(landed, weakLanded, swapStrike);
             if (swapStrike)
             {
                 swapStrikeUntil = -1f;
@@ -1099,8 +1219,9 @@ namespace BattleFight
         public void Interrupt(float stunDuration, float invulnerableDuration)
         {
             if (current != null) EndSkill();
-            // 被弾するとチェンジチェインが途切れる
+            // 被弾するとチェンジチェインとコンボが途切れる
             SwapChain.Reset();
+            Combo.Break(Time.time);
             stunnedUntil = Time.time + stunDuration;
             extraInvulnerableUntil = Time.time + invulnerableDuration;
         }

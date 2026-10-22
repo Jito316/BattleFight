@@ -625,6 +625,109 @@
     margin: 0 10px;
 }
 
+/* ---------- 見切り・コンボ・ランクの強化・ドライブ ---------- */
+
+.witch {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(120, 70, 220, 0.16);
+    border-width: 18px;
+    border-color: rgba(170, 110, 255, 0.35);
+    align-items: center;
+}
+
+.witch__label {
+    margin-top: 130px;
+    font-size: 44px;
+    letter-spacing: 12px;
+    color: #D8B8FF;
+}
+
+.style__power {
+    font-size: 16px;
+    color: var(--bf-gold);
+    margin-top: 4px;
+}
+
+.combo {
+    margin-top: 14px;
+    align-items: flex-end;
+}
+
+.combo__row {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.combo__count {
+    font-size: 56px;
+    color: #FFFFFF;
+    transform-origin: right;
+    transition-property: scale;
+    transition-duration: 0.15s;
+}
+
+/* 当てた瞬間だけ大きくし、transition で戻す */
+.combo__count.pulse {
+    scale: 1.25 1.25;
+    transition-duration: 0s;
+}
+
+.combo__hits {
+    font-size: 20px;
+    color: var(--bf-text-sub);
+    margin-left: 6px;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+}
+
+.bar--combo {
+    width: 180px;
+    height: 4px;
+}
+
+.bar--combo > .bar__fill {
+    background-color: #FFFFFF;
+}
+
+.combo__result {
+    font-size: 26px;
+    color: #FFD76A;
+    margin-top: 10px;
+}
+
+.drive {
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+
+.drive__label {
+    font-size: 16px;
+    color: var(--bf-text-sub);
+}
+
+.bar--drive {
+    width: 200px;
+    height: 8px;
+    margin-top: 3px;
+}
+
+.bar--drive > .bar__fill {
+    background-color: #B98CFF;
+}
+
+.drive.full > .drive__label {
+    color: #FFFFFF;
+    font-size: 18px;
+}
+
+.drive.full .bar__fill {
+    background-color: #FFFFFF;
+}
+
 /* ---------- 3D の位置に出すもの ---------- */
 
 .enemy-tag {
@@ -661,6 +764,12 @@
 
 .enemy-tag__armor > .bar__fill {
     background-color: #FFB84D;
+}
+
+.enemy-tag__elite {
+    font-size: 16px;
+    color: #FFD24D;
+    margin-bottom: 1px;
 }
 
 .enemy-tag__skill {

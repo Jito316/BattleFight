@@ -24,6 +24,8 @@ namespace BattleFight.Tests
         public override void Setup()
         {
             base.Setup();
+            // エリートはランダムに出るので、ここでは出さない(FunPlayTests で確かめる)
+            ArenaDirector.EliteChanceOverride = 0f;
             keyboard = InputSystem.AddDevice<Keyboard>();
             InputSystem.AddDevice<Mouse>();
         }
@@ -33,6 +35,8 @@ namespace BattleFight.Tests
             if (GamePause.IsPaused) GamePause.Set(false);
             LoadoutStorage.Clear();
             ExplorationSave.Reset();
+            ArenaDirector.EliteChanceOverride = -1f;
+            EnemyTime.Clear();
             base.TearDown();
         }
 

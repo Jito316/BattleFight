@@ -37,5 +37,14 @@ namespace BattleFight
         [Header("報酬")]
         [Tooltip("ランクごとの刻片ドロップ倍率")]
         public float[] rewardMultiplier = { 1f, 1.2f, 1.5f, 2f, 2.5f, 3f, 4f };
+
+        [Header("ランクによる強化")]
+        [Tooltip("ランクごとの攻撃力の倍率(格好よく戦うほど強くなる)")]
+        public float[] damageMultiplier = { 1f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f };
+        [Tooltip("コンボが途切れたとき、1ヒットあたりに入るスタイルのボーナス(10ヒット以上)")]
+        public float comboBonusPerHit = 1.5f;
+
+        public float DamageMultiplier(int rank) =>
+            damageMultiplier == null || damageMultiplier.Length == 0 ? 1f : damageMultiplier[Mathf.Clamp(rank, 0, damageMultiplier.Length - 1)];
     }
 }
