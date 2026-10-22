@@ -63,7 +63,8 @@ namespace BattleFight
 
         void Update()
         {
-            float dt = Time.deltaTime;
+            // 敵の弾も「見切り」の間は遅くなる
+            float dt = EnemyTime.DeltaTime;
             age += dt;
 
             if (delay > 0f)

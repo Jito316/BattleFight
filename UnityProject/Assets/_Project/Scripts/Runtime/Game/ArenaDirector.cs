@@ -55,6 +55,20 @@ namespace BattleFight
             selectedStage = -1;
             startImmediately = false;
             Instance = null;
+            EliteChanceOverride = -1f;
+        }
+
+        /// <summary>エリートが出る確率を固定する(0 以上のとき。テストで出ないようにする/必ず出す)</summary>
+        public static float EliteChanceOverride { get; set; } = -1f;
+
+        /// <summary>ウェーブの敵がエリートになる確率(エンドレスは進むほど上がる)</summary>
+        float EliteChance()
+        {
+            if (EliteChanceOverride >= 0f) return EliteChanceOverride;
+            if (CurrentStage == null) return 0f;
+            if (CurrentStage.kind == StageKind.Waves) return 0.12f;
+            if (CurrentStage.kind == StageKind.Endless) return Mathf.Min(0.3f, 0.08f + WaveNumber * 0.01f);
+            return 0f;
         }
 
         public static ArenaDirector Instance { get; private set; }
@@ -216,7 +230,10 @@ namespace BattleFight
                 if (enemies[i] == null) continue;
                 float angle = (baseAngle - spread * 0.5f + (count > 1 ? spread * i / (count - 1) : 0f)) * Mathf.Deg2Rad;
                 Vector3 position = arenaCenter + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * spawnRadius;
-                SpawnEnemy(enemies[i], position);
+                // ときどきエリート(巨大・俊足・分裂・障壁)になる
+                var affix = EliteMaker.Roll(enemies[i], EliteChance(), random);
+                if (affix != EliteAffix.None) SpawnElite(enemies[i], affix, position);
+                else SpawnEnemy(enemies[i], position);
             }
         }
 
@@ -232,6 +249,17 @@ namespace BattleFight
             offset.y = 0f;
             if (offset.magnitude > 26f) position = arenaCenter + offset.normalized * 26f;
             return SpawnEnemy(profile, position);
+        }
+
+        /// <summary>エリートを出す(元のデータは変えず、強化した複製を使う)</summary>
+        public EnemyController SpawnElite(EnemyProfile profile, EliteAffix affix, Vector3 position)
+        {
+            if (profile == null || State == GameState.GameOver) return null;
+            var elite = EliteMaker.Create(profile, affix);
+            var enemy = SpawnEnemy(elite, position, IsExploring);
+            // 敵が消えたら、複製したデータも消す
+            DestroyWithOwner.Attach(enemy.gameObject, elite);
+            return enemy;
         }
 
         /// <summary>探索: 部屋の敵をその場所(高さもそのまま)に出す</summary>
@@ -268,6 +296,30 @@ namespace BattleFight
             alive.Remove(enemy);
             float multiplier = style != null ? style.RewardMultiplier : 1f;
             Shards += Mathf.RoundToInt(baseShardReward * profile.shardValue * multiplier);
+
+            if (profile.elite != EliteAffix.None)
+            {
+                if (style != null) style.AddBonus(80f, "ELITE DOWN", new Color(1f, 0.82f, 0.3f));
+                // 分裂: 小さな分身が2体出る
+                if (profile.elite == EliteAffix.Splitter && State != GameState.GameOver && enemy != null)
+                {
+                    var split = EliteMaker.CreateSplit(profile.eliteSource != null ? profile.eliteSource : profile);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Vector3 offset = Quaternion.Euler(0f, 90f + 180f * i, 0f) * enemy.transform.forward * 1.2f;
+                        var child = SpawnEnemy(split, enemy.transform.position + offset, true);
+                        DestroyWithOwner.Attach(child.gameObject, split);
+                    }
+                }
+            }
+
+            // ウェーブ最後の1体を倒した瞬間はスローモーション
+            bool waveStage = CurrentStage != null && (CurrentStage.kind == StageKind.Waves || CurrentStage.kind == StageKind.Endless);
+            if (waveStage && State == GameState.Fighting && alive.Count == 0 && CombatFeedback.Instance != null)
+            {
+                CombatFeedback.Instance.SlowMotion(0.25f, 0.9f);
+                CombatFeedback.Instance.Shake(0.35f);
+            }
 
             if (CurrentStage != null && CurrentStage.kind == StageKind.Training && State == GameState.Fighting)
             {

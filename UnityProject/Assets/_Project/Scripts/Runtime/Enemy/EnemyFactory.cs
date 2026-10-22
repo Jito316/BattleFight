@@ -52,6 +52,16 @@ namespace BattleFight
                 weapon.localScale = new Vector3(0.14f, 0.14f, 1.3f);
             }
 
+            // エリートは金の冠をかぶる
+            if (profile.elite != EliteAffix.None)
+            {
+                var crown = CreatePart(PrimitiveType.Cube, root.transform, surfaceMaterial, new Color(1f, 0.82f, 0.25f));
+                crown.name = "Crown";
+                crown.localPosition = new Vector3(0f, 2.25f, 0f);
+                crown.localRotation = Quaternion.Euler(0f, 45f, 0f);
+                crown.localScale = new Vector3(0.45f, 0.22f, 0.45f);
+            }
+
             var damageable = root.AddComponent<Damageable>();
             damageable.Configure(Team.Enemy, profile.maxHealth, profile.maxArmor, profile.armorRegenDelay);
 

@@ -22,6 +22,8 @@ namespace BattleFight
         Finisher,
         Restart,
         OpenLoadout,
+        /// <summary>チェンジドライブ(切り替えの必殺技)</summary>
+        Drive,
     }
 
     /// <summary>
@@ -73,6 +75,7 @@ namespace BattleFight
             Bind(PlayerAction.Finisher, "<Gamepad>/rightShoulder", "<Keyboard>/f");
             Bind(PlayerAction.Restart, "<Gamepad>/start", "<Keyboard>/r");
             Bind(PlayerAction.OpenLoadout, "<Gamepad>/select", "<Keyboard>/p");
+            Bind(PlayerAction.Drive, "<Gamepad>/leftTrigger", "<Keyboard>/v");
         }
 
         void Bind(PlayerAction action, params string[] paths)

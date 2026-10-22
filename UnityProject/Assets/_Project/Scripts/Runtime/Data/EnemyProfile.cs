@@ -129,6 +129,11 @@ namespace BattleFight
         public List<EnemyAttack> phase2Attacks = new List<EnemyAttack>();
         public string phase2Message = "本気になった!";
 
+        [Header("エリート(実行時に EliteMaker が複製に入れる)")]
+        public EliteAffix elite;
+        [Tooltip("エリートの元の敵(分裂したときの分身を作るのに使う)")]
+        public EnemyProfile eliteSource;
+
         [Header("見た目・報酬")]
         public PrimitiveType bodyShape = PrimitiveType.Capsule;
         public float scale = 1f;
