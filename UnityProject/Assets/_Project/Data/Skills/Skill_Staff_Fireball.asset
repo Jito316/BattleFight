@@ -12,46 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Staff_Fireball
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u706B\u7403"
-  description: "\u3086\u3063\u304F\u308A\u98DB\u3076\u706B\u306E\u7389\u3002\u5F53\u305F\u308B\u3068\u7206\u767A\u3057\u3066\u5468\u308A\u3082\u5DFB\u304D\u8FBC\u3080\u3002"
-  slot: 1
-  weapon: 3
-  behavior: 6
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 18
-  projectileLifetime: 1.4
-  projectileRadius: 0.5
-  projectilePierce: 0
-  explosionRadius: 3.2
-  homing: 0
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 16
-    activeFrames: 2
-    recoveryFrames: 26
-    chainFrame: 0
-    cancelFrame: 16
-    damage: 26
-    stagger: 40
-    armorBreak: 20
-    stylePoints: 40
-    knockback: 6
-    launch: 0
-    hitstop: 0.08
-    hitboxOffset: {x: 0, y: 0, z: 0}
-    hitboxRadius: 0
-    forwardMove: 0
+  DisplayName: "\u706B\u7403"
+  Description: "\u3086\u3063\u304F\u308A\u98DB\u3076\u706B\u306E\u7389\u3002\u5F53\u305F\u308B\u3068\u7206\u767A\u3057\u3066\u5468\u308A\u3082\u5DFB\u304D\u8FBC\u3080\u3002"
+  Slot: 1
+  Weapon: 3
+  Behavior: 6
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 18
+  ProjectileLifetime: 1.4
+  ProjectileRadius: 0.5
+  ProjectilePierce: 0
+  ExplosionRadius: 3.2
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 16
+    ActiveFrames: 2
+    RecoveryFrames: 26
+    ChainFrame: 0
+    CancelFrame: 16
+    Damage: 26
+    Stagger: 40
+    ArmorBreak: 20
+    StylePoints: 40
+    Knockback: 6
+    Launch: 0
+    Hitstop: 0.08
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  ChargeMotion: 
+  Motions:
+  - Spell_Simple_Shoot

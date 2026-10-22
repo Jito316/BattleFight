@@ -12,34 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Chain_Pull
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u5F15\u304D\u5BC4\u305B"
-  description: "\u8EFD\u3044\u6575\u306F\u624B\u5143\u306B\u5F15\u304D\u5BC4\u305B\u3001\u91CD\u3044\u6575\u306B\u306F\u81EA\u5206\u304C\u98DB\u3073\u3064\u304F\u3002"
-  slot: 1
-  weapon: 2
-  behavior: 5
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 14
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 30
-  steps:
-  - startupFrames: 4
-    activeFrames: 4
-    recoveryFrames: 18
-    chainFrame: 0
-    cancelFrame: 10
-    damage: 6
-    stagger: 30
-    armorBreak: 5
-    stylePoints: 30
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 1.3}
-    hitboxRadius: 1.4
-    forwardMove: 0
+  DisplayName: "\u5F15\u304D\u5BC4\u305B"
+  Description: "\u8EFD\u3044\u6575\u306F\u624B\u5143\u306B\u5F15\u304D\u5BC4\u305B\u3001\u91CD\u3044\u6575\u306B\u306F\u81EA\u5206\u304C\u98DB\u3073\u3064\u304F\u3002"
+  Slot: 1
+  Weapon: 2
+  Behavior: 5
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 14
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 30
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 4
+    ActiveFrames: 4
+    RecoveryFrames: 18
+    ChainFrame: 0
+    CancelFrame: 10
+    Damage: 6
+    Stagger: 30
+    ArmorBreak: 5
+    StylePoints: 30
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 1.3}
+    HitboxRadius: 1.4
+    ForwardMove: 0
+  ChargeMotion: OverhandThrow
+  Motions:
+  - Melee_Hook

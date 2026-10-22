@@ -148,6 +148,7 @@ namespace BattleFight.EditorTools
             var aShadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", iResetData, PrototypeDefaults.Shadow);
 
             // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
+            EnsureSkillMotions();
             EnsureWeaknesses(aGrunt, WeaponType.Sword, WeaponType.Gauntlet);
             EnsureWeaknesses(aArmored, WeaponType.Hammer, WeaponType.Gauntlet);
             EnsureWeaknesses(aShooter, WeaponType.Chain, WeaponType.Sword);

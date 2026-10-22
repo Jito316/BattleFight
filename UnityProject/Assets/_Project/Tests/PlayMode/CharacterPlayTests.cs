@@ -79,12 +79,54 @@ namespace BattleFight.Tests
             Release(mKeyboard.jKey);
             yield return null;
             Assert.IsTrue(mExecutor.IsBusy, "攻撃が出ていない");
-            Assert.AreEqual(CharacterAnimator.ActionFor(mExecutor.Current, mExecutor.StepIndex), mCharacter.CurrentState);
+            Assert.AreEqual("Sword_Regular_A", mCharacter.CurrentState, "連斬の1段目のモーションになっていない");
 
             float aStart = Time.realtimeSinceStartup;
             while (mExecutor.IsBusy && Time.realtimeSinceStartup - aStart < 5f) yield return null;
             yield return null;
             Assert.AreEqual(CharacterAnimator.LocomotionState, mCharacter.CurrentState, "技が終わっても移動のモーションに戻らない");
+        }
+
+        [UnityTest]
+        public IEnumerator EverySkill_HasItsOwnMotion_InTheAnimator()
+        {
+            yield return Load();
+            var aSlots = mExecutor.GetComponent<SkillSlotController>();
+            var aSkills = new System.Collections.Generic.List<SkillData>(aSlots.Database.Skills);
+            foreach (var aWeapon in aSlots.Weapons)
+            {
+                if (aWeapon != null && aWeapon.MasteryFinisher != null) aSkills.Add(aWeapon.MasteryFinisher);
+            }
+            Assert.Greater(aSkills.Count, 30);
+            foreach (var aSkill in aSkills)
+            {
+                Assert.IsNotNull(aSkill.Motions, $"{aSkill.name} にモーションが決まっていない");
+                Assert.AreEqual(aSkill.StepCount, aSkill.Motions.Length, $"{aSkill.name} のモーションの数が段の数と合わない");
+                foreach (var aMotion in aSkill.Motions)
+                {
+                    Assert.IsTrue(mCharacter.Animator.HasState(0, Animator.StringToHash(aMotion)), $"{aSkill.name} の {aMotion} がアニメーターにない");
+                }
+                if (aSkill.HasChargeMotion)
+                {
+                    Assert.IsTrue(mCharacter.Animator.HasState(0, Animator.StringToHash(aSkill.ChargeMotion)), $"{aSkill.name} の {aSkill.ChargeMotion} がアニメーターにない");
+                }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Iai_ShowsAGuardWhileCharging_ThenADashSlash()
+        {
+            yield return Load();
+            yield return new WaitForSeconds(0.3f);
+            Assert.AreEqual("Skill_Sword_Iai", mExecutor.GetComponent<SkillSlotController>().GetCurrent(SlotType.AttackB).name);
+
+            Press(mKeyboard.kKey);
+            yield return new WaitForSeconds(0.3f);
+            Assert.AreEqual("Sword_Block", mCharacter.CurrentState, "溜めている間に構えのモーションになっていない");
+            Release(mKeyboard.kKey);
+            float aStart = Time.realtimeSinceStartup;
+            while (mCharacter.CurrentState == "Sword_Block" && Time.realtimeSinceStartup - aStart < 2f) yield return null;
+            Assert.AreEqual("Sword_Dash", mCharacter.CurrentState, "放したときに斬りのモーションにならない");
         }
 
         [UnityTest]

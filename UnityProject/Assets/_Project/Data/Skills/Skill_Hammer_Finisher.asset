@@ -12,34 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Hammer_Finisher
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u5929\u5D29"
-  description: "\u5927\u69CC\u30DE\u30B9\u30BF\u30EA\u30FC\u306E\u30D5\u30A3\u30CB\u30C3\u30B7\u30E3\u30FC\u3002\u5E83\u7BC4\u56F2\u3092\u53E9\u304D\u6F70\u3059\u3002"
-  slot: 0
-  weapon: 1
-  behavior: 0
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 40
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  steps:
-  - startupFrames: 30
-    activeFrames: 8
-    recoveryFrames: 40
-    chainFrame: 0
-    cancelFrame: 24
-    damage: 70
-    stagger: 120
-    armorBreak: 120
-    stylePoints: 90
-    knockback: 6
-    launch: 12
-    hitstop: 0.15
-    hitboxOffset: {x: 0, y: 0.5, z: 1}
-    hitboxRadius: 5.5
-    forwardMove: 0.5
+  DisplayName: "\u5929\u5D29"
+  Description: "\u5927\u69CC\u30DE\u30B9\u30BF\u30EA\u30FC\u306E\u30D5\u30A3\u30CB\u30C3\u30B7\u30E3\u30FC\u3002\u5E83\u7BC4\u56F2\u3092\u53E9\u304D\u6F70\u3059\u3002"
+  Slot: 0
+  Weapon: 1
+  Behavior: 0
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 40
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 30
+    ActiveFrames: 8
+    RecoveryFrames: 40
+    ChainFrame: 0
+    CancelFrame: 24
+    Damage: 70
+    Stagger: 120
+    ArmorBreak: 120
+    StylePoints: 90
+    Knockback: 6
+    Launch: 12
+    Hitstop: 0.15
+    HitboxOffset: {x: 0, y: 0.5, z: 1}
+    HitboxRadius: 5.5
+    ForwardMove: 0.5
+  ChargeMotion: 
+  Motions:
+  - Sword_Attack

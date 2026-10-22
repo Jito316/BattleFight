@@ -12,46 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Sword_Phantom
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u6B8B\u5F71"
-  description: "\u5165\u529B\u65B9\u5411\u3078\u4E00\u77AC\u3067\u79FB\u52D5\u3059\u308B\u3002\u7121\u6575\u304C\u3042\u308B\u3002"
-  slot: 2
-  weapon: 0
-  behavior: 9
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 12
-  airGravityScale: 0
-  range: 0
-  dashDistance: 6
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 25
-  projectileLifetime: 1.2
-  projectileRadius: 0.35
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 0
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 0
-    activeFrames: 2
-    recoveryFrames: 10
-    chainFrame: 0
-    cancelFrame: 4
-    damage: 0
-    stagger: 0
-    armorBreak: 0
-    stylePoints: 0
-    knockback: 2
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 0, z: 0}
-    hitboxRadius: 0
-    forwardMove: 0
+  DisplayName: "\u6B8B\u5F71"
+  Description: "\u5165\u529B\u65B9\u5411\u3078\u4E00\u77AC\u3067\u79FB\u52D5\u3059\u308B\u3002\u7121\u6575\u304C\u3042\u308B\u3002"
+  Slot: 2
+  Weapon: 0
+  Behavior: 9
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 12
+  AirGravityScale: 0
+  Range: 0
+  DashDistance: 6
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 0
+    ActiveFrames: 2
+    RecoveryFrames: 10
+    ChainFrame: 0
+    CancelFrame: 4
+    Damage: 0
+    Stagger: 0
+    ArmorBreak: 0
+    StylePoints: 0
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  ChargeMotion: 
+  Motions:
+  - Roll

@@ -12,46 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Chain_Bind
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u7E1B\u9396"
-  description: "\u6575\u3092\u8FFD\u3046\u9396\u3092\u98DB\u3070\u3059\u3002\u5A01\u529B\u306F\u4F4E\u3044\u304C\u3001\u5927\u304D\u304F\u3072\u308B\u307E\u305B\u308B\u3002"
-  slot: 1
-  weapon: 2
-  behavior: 6
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 40
-  projectileLifetime: 0.5
-  projectileRadius: 0.5
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 360
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 6
-    activeFrames: 2
-    recoveryFrames: 20
-    chainFrame: 0
-    cancelFrame: 12
-    damage: 8
-    stagger: 80
-    armorBreak: 10
-    stylePoints: 32
-    knockback: 0
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 0, z: 0}
-    hitboxRadius: 0
-    forwardMove: 0
+  DisplayName: "\u7E1B\u9396"
+  Description: "\u6575\u3092\u8FFD\u3046\u9396\u3092\u98DB\u3070\u3059\u3002\u5A01\u529B\u306F\u4F4E\u3044\u304C\u3001\u5927\u304D\u304F\u3072\u308B\u307E\u305B\u308B\u3002"
+  Slot: 1
+  Weapon: 2
+  Behavior: 6
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 40
+  ProjectileLifetime: 0.5
+  ProjectileRadius: 0.5
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 360
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 6
+    ActiveFrames: 2
+    RecoveryFrames: 20
+    ChainFrame: 0
+    CancelFrame: 12
+    Damage: 8
+    Stagger: 80
+    ArmorBreak: 10
+    StylePoints: 32
+    Knockback: 0
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  ChargeMotion: 
+  Motions:
+  - OverhandThrow

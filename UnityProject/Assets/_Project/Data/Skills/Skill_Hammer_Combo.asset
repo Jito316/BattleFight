@@ -12,64 +12,81 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Hammer_Combo
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u91CD\u6483"
-  description: "\u9045\u30443\u6BB5\u30B3\u30F3\u30DC\u3002\u30A2\u30FC\u30DE\u30FC\u3092\u5927\u304D\u304F\u524A\u308B\u3002"
-  slot: 0
-  weapon: 1
-  behavior: 0
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  steps:
-  - startupFrames: 16
-    activeFrames: 6
-    recoveryFrames: 22
-    chainFrame: 0
-    cancelFrame: 13
-    damage: 18
-    stagger: 35
-    armorBreak: 30
-    stylePoints: 28
-    knockback: 4
-    launch: 0
-    hitstop: 0.07
-    hitboxOffset: {x: 0, y: 1, z: 1.6}
-    hitboxRadius: 1.6
-    forwardMove: 0.8
-  - startupFrames: 18
-    activeFrames: 6
-    recoveryFrames: 24
-    chainFrame: 0
-    cancelFrame: 14
-    damage: 22
-    stagger: 40
-    armorBreak: 35
-    stylePoints: 30
-    knockback: 4
-    launch: 0
-    hitstop: 0.07
-    hitboxOffset: {x: 0, y: 1, z: 1.6}
-    hitboxRadius: 1.6
-    forwardMove: 0.8
-  - startupFrames: 26
-    activeFrames: 8
-    recoveryFrames: 34
-    chainFrame: 0
-    cancelFrame: 22
-    damage: 34
-    stagger: 70
-    armorBreak: 60
-    stylePoints: 45
-    knockback: 8
-    launch: 0
-    hitstop: 0.11
-    hitboxOffset: {x: 0, y: 1, z: 1.7}
-    hitboxRadius: 2
-    forwardMove: 1
+  DisplayName: "\u91CD\u6483"
+  Description: "\u9045\u30443\u6BB5\u30B3\u30F3\u30DC\u3002\u30A2\u30FC\u30DE\u30FC\u3092\u5927\u304D\u304F\u524A\u308B\u3002"
+  Slot: 0
+  Weapon: 1
+  Behavior: 0
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 16
+    ActiveFrames: 6
+    RecoveryFrames: 22
+    ChainFrame: 0
+    CancelFrame: 13
+    Damage: 18
+    Stagger: 35
+    ArmorBreak: 30
+    StylePoints: 28
+    Knockback: 4
+    Launch: 0
+    Hitstop: 0.07
+    HitboxOffset: {x: 0, y: 1, z: 1.6}
+    HitboxRadius: 1.6
+    ForwardMove: 0.8
+  - StartupFrames: 18
+    ActiveFrames: 6
+    RecoveryFrames: 24
+    ChainFrame: 0
+    CancelFrame: 14
+    Damage: 22
+    Stagger: 40
+    ArmorBreak: 35
+    StylePoints: 30
+    Knockback: 4
+    Launch: 0
+    Hitstop: 0.07
+    HitboxOffset: {x: 0, y: 1, z: 1.6}
+    HitboxRadius: 1.6
+    ForwardMove: 0.8
+  - StartupFrames: 26
+    ActiveFrames: 8
+    RecoveryFrames: 34
+    ChainFrame: 0
+    CancelFrame: 22
+    Damage: 34
+    Stagger: 70
+    ArmorBreak: 60
+    StylePoints: 45
+    Knockback: 8
+    Launch: 0
+    Hitstop: 0.11
+    HitboxOffset: {x: 0, y: 1, z: 1.7}
+    HitboxRadius: 2
+    ForwardMove: 1
+  ChargeMotion: 
+  Motions:
+  - Sword_Attack
+  - TreeChopping_Loop
+  - Sword_Heavy_Combo
