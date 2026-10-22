@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -6,45 +7,45 @@ namespace BattleFight
     public class StyleRankConfig : ScriptableObject
     {
         [Header("ランク")]
-        public string[] rankNames = { "D", "C", "B", "A", "S", "SS", "SSS" };
+        [FormerlySerializedAs("rankNames")] public string[] RankNames = { "D", "C", "B", "A", "S", "SS", "SSS" };
         [Tooltip("各ランクに到達する累計ポイント")]
-        public float[] rankThresholds = { 0f, 100f, 250f, 450f, 700f, 1000f, 1400f };
-        public float maxPoints = 1800f;
+        [FormerlySerializedAs("rankThresholds")] public float[] RankThresholds = { 0f, 100f, 250f, 450f, 700f, 1000f, 1400f };
+        [FormerlySerializedAs("maxPoints")] public float MaxPoints = 1800f;
 
         [Header("減衰")]
         [Tooltip("最後に加点してから減衰が始まるまでの秒数")]
-        public float idleDelay = 1.5f;
+        [FormerlySerializedAs("idleDelay")] public float IdleDelay = 1.5f;
         [Tooltip("ランクごとの毎秒の減衰量")]
-        public float[] decayPerSecond = { 10f, 15f, 20f, 30f, 40f, 55f, 70f };
+        [FormerlySerializedAs("decayPerSecond")] public float[] DecayPerSecond = { 10f, 15f, 20f, 30f, 40f, 55f, 70f };
         [Tooltip("被弾で下がるランク数")]
-        public int ranksLostOnDamage = 2;
+        [FormerlySerializedAs("ranksLostOnDamage")] public int RanksLostOnDamage = 2;
 
         [Header("同じ技の繰り返し")]
-        public int repeatHistory = 6;
-        public float repeatPenaltyPerUse = 0.2f;
-        public float minRepeatMultiplier = 0.2f;
+        [FormerlySerializedAs("repeatHistory")] public int RepeatHistory = 6;
+        [FormerlySerializedAs("repeatPenaltyPerUse")] public float RepeatPenaltyPerUse = 0.2f;
+        [FormerlySerializedAs("minRepeatMultiplier")] public float MinRepeatMultiplier = 0.2f;
 
         [Header("ボーナス")]
         [Tooltip("直前と違う武器種で当てたときの倍率")]
-        public float weaponVarietyMultiplier = 1.25f;
+        [FormerlySerializedAs("weaponVarietyMultiplier")] public float WeaponVarietyMultiplier = 1.25f;
         [Tooltip("アーセナル(3スロットすべて違う武器種)時の倍率")]
-        public float arsenalMultiplier = 1.2f;
-        public float swapStrikeBonus = 40f;
-        public float swapCancelBonus = 25f;
-        public float justDodgeBonus = 60f;
-        public float counterBonus = 80f;
+        [FormerlySerializedAs("arsenalMultiplier")] public float ArsenalMultiplier = 1.2f;
+        [FormerlySerializedAs("swapStrikeBonus")] public float SwapStrikeBonus = 40f;
+        [FormerlySerializedAs("swapCancelBonus")] public float SwapCancelBonus = 25f;
+        [FormerlySerializedAs("justDodgeBonus")] public float JustDodgeBonus = 60f;
+        [FormerlySerializedAs("counterBonus")] public float CounterBonus = 80f;
 
         [Header("報酬")]
         [Tooltip("ランクごとの刻片ドロップ倍率")]
-        public float[] rewardMultiplier = { 1f, 1.2f, 1.5f, 2f, 2.5f, 3f, 4f };
+        [FormerlySerializedAs("rewardMultiplier")] public float[] RewardMultiplier = { 1f, 1.2f, 1.5f, 2f, 2.5f, 3f, 4f };
 
         [Header("ランクによる強化")]
         [Tooltip("ランクごとの攻撃力の倍率(格好よく戦うほど強くなる)")]
-        public float[] damageMultiplier = { 1f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f };
+        [FormerlySerializedAs("damageMultiplier")] public float[] DamageMultipliers = { 1f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.3f };
         [Tooltip("コンボが途切れたとき、1ヒットあたりに入るスタイルのボーナス(10ヒット以上)")]
-        public float comboBonusPerHit = 1.5f;
+        [FormerlySerializedAs("comboBonusPerHit")] public float ComboBonusPerHit = 1.5f;
 
-        public float DamageMultiplier(int rank) =>
-            damageMultiplier == null || damageMultiplier.Length == 0 ? 1f : damageMultiplier[Mathf.Clamp(rank, 0, damageMultiplier.Length - 1)];
+        public float DamageMultiplier(int iRank) =>
+            DamageMultipliers == null || DamageMultipliers.Length == 0 ? 1f : DamageMultipliers[Mathf.Clamp(iRank, 0, DamageMultipliers.Length - 1)];
     }
 }

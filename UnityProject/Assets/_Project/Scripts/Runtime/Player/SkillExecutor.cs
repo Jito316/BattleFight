@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -25,133 +26,133 @@ namespace BattleFight
             Hang,
         }
 
-        [SerializeField] PlayerInputReader input;
-        [SerializeField] PlayerMotor motor;
-        [SerializeField] SkillSlotController slots;
-        [SerializeField] WeaponHolder weapons;
-        [SerializeField] LockOnSystem lockOn;
-        [SerializeField] StyleRankSystem style;
-        [SerializeField] Damageable self;
-        [SerializeField, Tooltip("ワイヤーの対象を「視界内」で選ぶためのカメラ")] Camera view;
+        [SerializeField, FormerlySerializedAs("input")] PlayerInputReader mInput;
+        [SerializeField, FormerlySerializedAs("motor")] PlayerMotor mMotor;
+        [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
+        [SerializeField, FormerlySerializedAs("weapons")] WeaponHolder mWeapons;
+        [SerializeField, FormerlySerializedAs("lockOn")] LockOnSystem mLockOn;
+        [SerializeField, FormerlySerializedAs("style")] StyleRankSystem mStyle;
+        [SerializeField, FormerlySerializedAs("self")] Damageable mSelf;
+        [SerializeField, Tooltip("ワイヤーの対象を「視界内」で選ぶためのカメラ"), FormerlySerializedAs("view")] Camera mView;
 
         [Header("スワップ")]
-        [SerializeField] float swapStrikeWindow = 1f;
-        [SerializeField] float swapStrikeDamageMultiplier = 1.3f;
-        [SerializeField] float swapStrikeStaggerMultiplier = 1.5f;
-        [SerializeField, Tooltip("同じスロットで連続してスワップキャンセルすると、硬直のこの割合×回数だけ受付が遅くなる")]
-        float swapCancelStreakPenalty = 0.35f;
-        [SerializeField] float swapCancelStreakReset = 1.5f;
+        [SerializeField, FormerlySerializedAs("swapStrikeWindow")] float mSwapStrikeWindow = 1f;
+        [SerializeField, FormerlySerializedAs("swapStrikeDamageMultiplier")] float mSwapStrikeDamageMultiplier = 1.3f;
+        [SerializeField, FormerlySerializedAs("swapStrikeStaggerMultiplier")] float mSwapStrikeStaggerMultiplier = 1.5f;
+        [SerializeField, Tooltip("同じスロットで連続してスワップキャンセルすると、硬直のこの割合×回数だけ受付が遅くなる"), FormerlySerializedAs("swapCancelStreakPenalty")]
+        float mSwapCancelStreakPenalty = 0.35f;
+        [SerializeField, FormerlySerializedAs("swapCancelStreakReset")] float mSwapCancelStreakReset = 1.5f;
 
         [Header("切り替えのメリット: 弱点")]
-        [SerializeField] float weaknessDamageMultiplier = 1.5f;
-        [SerializeField] float weaknessStaggerMultiplier = 1.5f;
-        [SerializeField] float weaknessStyleBonus = 10f;
+        [SerializeField, FormerlySerializedAs("weaknessDamageMultiplier")] float mWeaknessDamageMultiplier = 1.5f;
+        [SerializeField, FormerlySerializedAs("weaknessStaggerMultiplier")] float mWeaknessStaggerMultiplier = 1.5f;
+        [SerializeField, FormerlySerializedAs("weaknessStyleBonus")] float mWeaknessStyleBonus = 10f;
 
         [Header("切り替えのメリット: チェンジチェイン")]
-        [SerializeField, Tooltip("切り替えてから何秒以内に当てるとチェインがつながるか")] float chainLinkWindow = 2.5f;
-        [SerializeField, Tooltip("最後につないでから何秒で途切れるか")] float chainKeepTime = 4f;
-        [SerializeField] int maxChain = 5;
-        [SerializeField, Tooltip("1段ごとのダメージ増加")] float chainBonusPerStep = 0.1f;
-        [SerializeField] float chainStyleBonusPerStep = 12f;
+        [SerializeField, Tooltip("切り替えてから何秒以内に当てるとチェインがつながるか"), FormerlySerializedAs("chainLinkWindow")] float mChainLinkWindow = 2.5f;
+        [SerializeField, Tooltip("最後につないでから何秒で途切れるか"), FormerlySerializedAs("chainKeepTime")] float mChainKeepTime = 4f;
+        [SerializeField, FormerlySerializedAs("maxChain")] int mMaxChain = 5;
+        [SerializeField, Tooltip("1段ごとのダメージ増加"), FormerlySerializedAs("chainBonusPerStep")] float mChainBonusPerStep = 0.1f;
+        [SerializeField, FormerlySerializedAs("chainStyleBonusPerStep")] float mChainStyleBonusPerStep = 12f;
 
         [Header("切り替えのメリット: チェンジアタック")]
-        [SerializeField, Tooltip("切り替えた瞬間に、新しい武器で周りを攻撃する")] bool changeAttackEnabled = true;
-        [SerializeField] float changeAttackCooldown = 3f;
-        [SerializeField] float changeAttackRadius = 2.6f;
-        [SerializeField] float changeAttackDamage = 10f;
-        [SerializeField] float changeAttackStagger = 30f;
-        [SerializeField] float changeAttackArmorBreak = 10f;
-        [SerializeField] float changeAttackKnockback = 6f;
-        [SerializeField] float changeAttackStylePoints = 20f;
+        [SerializeField, Tooltip("切り替えた瞬間に、新しい武器で周りを攻撃する"), FormerlySerializedAs("changeAttackEnabled")] bool mChangeAttackEnabled = true;
+        [SerializeField, FormerlySerializedAs("changeAttackCooldown")] float mChangeAttackCooldown = 3f;
+        [SerializeField, FormerlySerializedAs("changeAttackRadius")] float mChangeAttackRadius = 2.6f;
+        [SerializeField, FormerlySerializedAs("changeAttackDamage")] float mChangeAttackDamage = 10f;
+        [SerializeField, FormerlySerializedAs("changeAttackStagger")] float mChangeAttackStagger = 30f;
+        [SerializeField, FormerlySerializedAs("changeAttackArmorBreak")] float mChangeAttackArmorBreak = 10f;
+        [SerializeField, FormerlySerializedAs("changeAttackKnockback")] float mChangeAttackKnockback = 6f;
+        [SerializeField, FormerlySerializedAs("changeAttackStylePoints")] float mChangeAttackStylePoints = 20f;
 
         [Header("チェンジドライブ(切り替えの必殺技)")]
-        [SerializeField, Tooltip("周りのこの半径の敵に、各プリセットの武器で順に攻撃する")] float driveRadius = 6.5f;
-        [SerializeField, Tooltip("1回ごとの威力(攻撃A の1段目に掛ける)")] float driveMultiplier = 2.4f;
-        [SerializeField, Tooltip("次の武器に持ち替えるまでの秒数")] float driveInterval = 0.2f;
+        [SerializeField, Tooltip("周りのこの半径の敵に、各プリセットの武器で順に攻撃する"), FormerlySerializedAs("driveRadius")] float mDriveRadius = 6.5f;
+        [SerializeField, Tooltip("1回ごとの威力(攻撃A の1段目に掛ける)"), FormerlySerializedAs("driveMultiplier")] float mDriveMultiplier = 2.4f;
+        [SerializeField, Tooltip("次の武器に持ち替えるまでの秒数"), FormerlySerializedAs("driveInterval")] float mDriveInterval = 0.2f;
 
         [Header("溜め・カウンター")]
-        [SerializeField] float minChargeMultiplier = 0.6f;
-        [SerializeField] float maxChargeMultiplier = 1.5f;
-        [SerializeField] float counterMultiplier = 2f;
-        [SerializeField] float counterInvulnerableTime = 0.5f;
+        [SerializeField, FormerlySerializedAs("minChargeMultiplier")] float mMinChargeMultiplier = 0.6f;
+        [SerializeField, FormerlySerializedAs("maxChargeMultiplier")] float mMaxChargeMultiplier = 1.5f;
+        [SerializeField, FormerlySerializedAs("counterMultiplier")] float mCounterMultiplier = 2f;
+        [SerializeField, FormerlySerializedAs("counterInvulnerableTime")] float mCounterInvulnerableTime = 0.5f;
 
         [Header("移動系")]
-        [SerializeField, Tooltip("移動が壁などで止まったときに打ち切るまでの余裕(秒)")] float travelTimeMargin = 0.3f;
-        [SerializeField, Tooltip("ロックオン対象にこれ以上近いと前進しない")] float stopDistance = 1.4f;
+        [SerializeField, Tooltip("移動が壁などで止まったときに打ち切るまでの余裕(秒)"), FormerlySerializedAs("travelTimeMargin")] float mTravelTimeMargin = 0.3f;
+        [SerializeField, Tooltip("ロックオン対象にこれ以上近いと前進しない"), FormerlySerializedAs("stopDistance")] float mStopDistance = 1.4f;
 
         [Header("ワイヤー")]
-        [SerializeField, Tooltip("ポイントに着いてからぶら下がる秒数")] float grappleHangTime = 0.6f;
-        [SerializeField] float grappleJumpVelocity = 11f;
-        [SerializeField] float grappleJumpForward = 6f;
-        [SerializeField, Tooltip("画面端のこの割合はポイントの対象から外す")] float grappleViewMargin = 0.05f;
-        [SerializeField, Tooltip("これより近いポイントは「今ぶら下がっているポイント」とみなして対象から外す")] float grappleMinDistance = 2.5f;
+        [SerializeField, Tooltip("ポイントに着いてからぶら下がる秒数"), FormerlySerializedAs("grappleHangTime")] float mGrappleHangTime = 0.6f;
+        [SerializeField, FormerlySerializedAs("grappleJumpVelocity")] float mGrappleJumpVelocity = 11f;
+        [SerializeField, FormerlySerializedAs("grappleJumpForward")] float mGrappleJumpForward = 6f;
+        [SerializeField, Tooltip("画面端のこの割合はポイントの対象から外す"), FormerlySerializedAs("grappleViewMargin")] float mGrappleViewMargin = 0.05f;
+        [SerializeField, Tooltip("これより近いポイントは「今ぶら下がっているポイント」とみなして対象から外す"), FormerlySerializedAs("grappleMinDistance")] float mGrappleMinDistance = 2.5f;
 
-        static readonly Collider[] OverlapBuffer = new Collider[32];
-        readonly HashSet<Damageable> hitThisStep = new HashSet<Damageable>();
-        readonly List<Damageable> targetBuffer = new List<Damageable>();
+        static readonly Collider[] mOverlapBuffer = new Collider[32];
+        readonly HashSet<Damageable> mHitThisStep = new HashSet<Damageable>();
+        readonly List<Damageable> mTargetBuffer = new List<Damageable>();
 
-        SkillData current;
-        int stepIndex;
-        Phase phase;
-        float phaseTime;
-        float skillTime;
-        bool chainQueued;
-        bool isFinisher;
-        bool hitsEnabled;
-        bool styleRegisteredThisStep;
-        bool justDodgeAwarded;
-        float damageMultiplier = 1f;
-        Vector3 moveDirection;
+        SkillData mCurrent;
+        int mStepIndex;
+        Phase mPhase;
+        float mPhaseTime;
+        float mSkillTime;
+        bool mChainQueued;
+        bool mIsFinisher;
+        bool mHitsEnabled;
+        bool mStyleRegisteredThisStep;
+        bool mJustDodgeAwarded;
+        float mDamageMultiplier = 1f;
+        Vector3 mMoveDirection;
 
-        float stunnedUntil = -1f;
-        float extraInvulnerableUntil = -1f;
-        float swapStrikeUntil = -1f;
+        float mStunnedUntil = -1f;
+        float mExtraInvulnerableUntil = -1f;
+        float mSwapStrikeUntil = -1f;
         /// <summary>切り替えるたびに増える。弾が「どの切り替えのスワップストライクか」を覚えておくのに使う</summary>
-        int swapStrikeId;
-        SwapChainMeter chain;
-        float changeAttackReadyAt;
-        float lastWeakAnnounce = -99f;
+        int mSwapStrikeId;
+        SwapChainMeter mChain;
+        float mChangeAttackReadyAt;
+        float mLastWeakAnnounce = -99f;
 
-        EnemyController travelEnemy;
-        Vector3 travelTarget;
-        bool travelToPoint;
-        float travelTimeout;
+        EnemyController mTravelEnemy;
+        Vector3 mTravelTarget;
+        bool mTravelToPoint;
+        float mTravelTimeout;
 
-        SlotType lastSwapCancelSlot;
-        int swapCancelStreak;
-        float lastSwapCancelTime = -99f;
+        SlotType mLastSwapCancelSlot;
+        int mSwapCancelStreak;
+        float mLastSwapCancelTime = -99f;
 
-        public SkillData Current => current;
-        public bool IsBusy => current != null;
-        public bool IsFinisherActive => current != null && isFinisher;
-        public bool IsStunned => Time.time < stunnedUntil;
-        public bool SwapStrikeReady => Time.time <= swapStrikeUntil;
+        public SkillData Current => mCurrent;
+        public bool IsBusy => mCurrent != null;
+        public bool IsFinisherActive => mCurrent != null && mIsFinisher;
+        public bool IsStunned => Time.time < mStunnedUntil;
+        public bool SwapStrikeReady => Time.time <= mSwapStrikeUntil;
         /// <summary>スワップストライクの残り時間(1 → 0)</summary>
-        public float SwapStrikeRemaining => swapStrikeWindow <= 0f ? 0f : Mathf.Clamp01((swapStrikeUntil - Time.time) / swapStrikeWindow);
+        public float SwapStrikeRemaining => mSwapStrikeWindow <= 0f ? 0f : Mathf.Clamp01((mSwapStrikeUntil - Time.time) / mSwapStrikeWindow);
         /// <summary>移動スロットがワイヤーのとき、今押したら飛ぶポイント(HUD の表示用)</summary>
         public GrapplePoint GrapplePreview { get; private set; }
 
-        public SwapChainMeter SwapChain => chain ??= new SwapChainMeter(chainLinkWindow, chainKeepTime, maxChain, chainBonusPerStep);
+        public SwapChainMeter SwapChain => mChain ??= new SwapChainMeter(mChainLinkWindow, mChainKeepTime, mMaxChain, mChainBonusPerStep);
         /// <summary>途切れずに当てた数</summary>
         public ComboCounter Combo { get; } = new ComboCounter();
         /// <summary>チェンジドライブのゲージ(切り替えて当てるとたまる)</summary>
         public DriveGauge Drive { get; } = new DriveGauge();
         /// <summary>チェンジドライブを出している最中</summary>
         public bool IsDriving { get; private set; }
-        public bool ChangeAttackReady => changeAttackEnabled && Time.time >= changeAttackReadyAt;
+        public bool ChangeAttackReady => mChangeAttackEnabled && Time.time >= mChangeAttackReadyAt;
         /// <summary>チェンジアタックの準備(0 → 1 で使える)</summary>
-        public float ChangeAttackCharge => !changeAttackEnabled || changeAttackCooldown <= 0f
+        public float ChangeAttackCharge => !mChangeAttackEnabled || mChangeAttackCooldown <= 0f
             ? 1f
-            : Mathf.Clamp01(1f - (changeAttackReadyAt - Time.time) / changeAttackCooldown);
+            : Mathf.Clamp01(1f - (mChangeAttackReadyAt - Time.time) / mChangeAttackCooldown);
 
         /// <summary>今このスロットを切り替えるとスワップキャンセルになるか(HUD の表示用)</summary>
-        public bool CanSwapCancelNow(SlotType slot) => CanSwapCancel(slot);
+        public bool CanSwapCancelNow(SlotType iSlot) => CanSwapCancel(iSlot);
 
-        public string DebugLabel => current == null
+        public string DebugLabel => mCurrent == null
             ? (IsStunned ? "被弾" : "待機")
-            : $"{current.displayName} {stepIndex + 1}/{current.StepCount}段 [{phase}]";
+            : $"{mCurrent.DisplayName} {mStepIndex + 1}/{mCurrent.StepCount}段 [{mPhase}]";
 
-        SkillStep Step => current.GetStep(stepIndex);
+        SkillStep mStep => mCurrent.GetStep(mStepIndex);
 
         void Update()
         {
@@ -159,9 +160,9 @@ namespace BattleFight
             // ステージ選択中は技も切り替えも受け付けない(メニュー操作のキーで技が出ないように)
             // (先行入力は消さない。編成画面を開く P などは別のコンポーネントが読む)
             if (ArenaDirector.Instance != null && ArenaDirector.Instance.State == ArenaDirector.GameState.StageSelect) return;
-            if (self.IsDead)
+            if (mSelf.IsDead)
             {
-                motor.LocomotionEnabled = false;
+                mMotor.LocomotionEnabled = false;
                 return;
             }
 
@@ -171,143 +172,143 @@ namespace BattleFight
             // チェンジドライブ中は、ほかの技や切り替えを受け付けない
             if (IsDriving)
             {
-                motor.LocomotionEnabled = false;
-                self.Invulnerable = true;
+                mMotor.LocomotionEnabled = false;
+                mSelf.Invulnerable = true;
                 return;
             }
-            if (input.Consume(PlayerAction.Drive) && Drive.IsFull && !IsStunned) StartCoroutine(ChangeDrive());
+            if (mInput.Consume(PlayerAction.Drive) && Drive.IsFull && !IsStunned) StartCoroutine(ChangeDrive());
 
             HandleSwaps();
 
             if (IsStunned)
             {
-                motor.LocomotionEnabled = false;
+                mMotor.LocomotionEnabled = false;
             }
             else
             {
-                if (current == null) TryStartFromInput();
+                if (mCurrent == null) TryStartFromInput();
                 else TickSkill(Time.deltaTime);
-                motor.LocomotionEnabled = current == null;
+                mMotor.LocomotionEnabled = mCurrent == null;
             }
 
-            if (current == null) self.Invulnerable = Time.time < extraInvulnerableUntil;
+            if (mCurrent == null) mSelf.Invulnerable = Time.time < mExtraInvulnerableUntil;
             UpdateWeaponPose();
 
-            var movement = slots.GetCurrent(SlotType.Movement);
-            GrapplePreview = movement != null && movement.behavior == SkillBehavior.Grapple ? FindGrapplePoint(movement.range) : null;
+            var aMovement = mSlots.GetCurrent(SlotType.Movement);
+            GrapplePreview = aMovement != null && aMovement.Behavior == SkillBehavior.Grapple ? FindGrapplePoint(aMovement.Range) : null;
         }
 
         // ---------- 切り替え ----------
 
         void HandleSwaps()
         {
-            if (slots.Mode == SwapMode.Rack)
+            if (mSlots.Mode == SwapMode.Rack)
             {
                 TrySwap(SlotType.AttackA, PlayerAction.Swap1);
                 TrySwap(SlotType.AttackB, PlayerAction.Swap2);
                 TrySwap(SlotType.Movement, PlayerAction.Swap3);
-                input.Consume(PlayerAction.Swap4);
+                mInput.Consume(PlayerAction.Swap4);
                 return;
             }
 
-            for (int i = 0; i < SkillSlotController.PresetCount; i++)
+            for (int aI = 0; aI < SkillSlotController.PresetCount; aI++)
             {
-                if (input.Consume(PlayerInputReader.SwapAction(i))) TrySelectPreset(i);
+                if (mInput.Consume(PlayerInputReader.SwapAction(aI))) TrySelectPreset(aI);
             }
         }
 
         /// <summary>ラック方式: 1スロットだけ切り替える</summary>
-        void TrySwap(SlotType slot, PlayerAction action)
+        void TrySwap(SlotType iSlot, PlayerAction iAction)
         {
-            if (!input.Consume(action)) return;
+            if (!mInput.Consume(iAction)) return;
 
-            bool cancel = CanSwapCancel(slot);
-            if (!slots.Cycle(slot)) return;
+            bool aCancel = CanSwapCancel(iSlot);
+            if (!mSlots.Cycle(iSlot)) return;
 
-            OnSwapped(slots.GetCurrent(slot), slot == SlotType.AttackA);
-            if (cancel) SwapCancel(slot);
+            OnSwapped(mSlots.GetCurrent(iSlot), iSlot == SlotType.AttackA);
+            if (aCancel) SwapCancel(iSlot);
         }
 
         /// <summary>プリセット方式: 3スロットをまとめて切り替える</summary>
-        void TrySelectPreset(int index)
+        void TrySelectPreset(int iIndex)
         {
-            bool cancel = CanPresetCancel(index);
-            SlotType? cancelSlot = current != null ? current.slot : null;
-            if (!slots.SelectPreset(index)) return;
+            bool aCancel = CanPresetCancel(iIndex);
+            SlotType? aCancelSlot = mCurrent != null ? mCurrent.Slot : null;
+            if (!mSlots.SelectPreset(iIndex)) return;
 
-            OnSwapped(slots.GetCurrent(SlotType.AttackA), true);
-            if (cancel && cancelSlot.HasValue) SwapCancel(cancelSlot.Value);
+            OnSwapped(mSlots.GetCurrent(SlotType.AttackA), true);
+            if (aCancel && aCancelSlot.HasValue) SwapCancel(aCancelSlot.Value);
         }
 
-        void OnSwapped(SkillData shown, bool updateMainWeapon)
+        void OnSwapped(SkillData iShown, bool iUpdateMainWeapon)
         {
-            swapStrikeUntil = Time.time + swapStrikeWindow;
-            swapStrikeId++;
+            mSwapStrikeUntil = Time.time + mSwapStrikeWindow;
+            mSwapStrikeId++;
             SwapChain.OnSwap(Time.time);
-            if (shown == null) return;
-            if (updateMainWeapon) weapons.SetMainWeapon(shown.weapon);
+            if (iShown == null) return;
+            if (iUpdateMainWeapon) mWeapons.SetMainWeapon(iShown.Weapon);
 
             // 切り替えた武器種の色で足元を光らせる
-            var weaponData = slots.GetWeaponData(shown.weapon);
-            if (CombatFeedback.Instance != null && weaponData != null)
+            var aWeaponData = mSlots.GetWeaponData(iShown.Weapon);
+            if (CombatFeedback.Instance != null && aWeaponData != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, weaponData.color);
+                CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, aWeaponData.Color);
             }
 
-            TryChangeAttack(shown.weapon);
+            TryChangeAttack(iShown.Weapon);
         }
 
         /// <summary>
         /// チェンジアタック: 切り替えた瞬間、新しい武器で周りを一撃する(クールダウンあり)。
         /// 囲まれたときに切り替えで押し返せるようにする。これ自体はチェインを上げない。
         /// </summary>
-        void TryChangeAttack(WeaponType weapon)
+        void TryChangeAttack(WeaponType iWeapon)
         {
             if (!ChangeAttackReady) return;
-            changeAttackReadyAt = Time.time + changeAttackCooldown;
+            mChangeAttackReadyAt = Time.time + mChangeAttackCooldown;
 
-            var data = slots.GetWeaponData(weapon);
-            var color = data != null ? data.color : Color.white;
-            Vector3 center = transform.position + Vector3.up;
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, changeAttackRadius, color);
+            var aData = mSlots.GetWeaponData(iWeapon);
+            var aColor = aData != null ? aData.Color : Color.white;
+            Vector3 aCenter = transform.position + Vector3.up;
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, mChangeAttackRadius, aColor);
 
-            int count = Physics.OverlapSphereNonAlloc(center, changeAttackRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            bool anyLanded = false;
-            bool anyWeak = false;
-            targetBuffer.Clear();
-            for (int i = 0; i < count; i++)
+            int aCount = Physics.OverlapSphereNonAlloc(aCenter, mChangeAttackRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            bool aAnyLanded = false;
+            bool aAnyWeak = false;
+            mTargetBuffer.Clear();
+            for (int aI = 0; aI < aCount; aI++)
             {
-                var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
-                if (target == null || target.Team == self.Team || target.IsDead || targetBuffer.Contains(target)) continue;
-                targetBuffer.Add(target);
+                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                if (aTarget == null || aTarget.Team == mSelf.Team || aTarget.IsDead || mTargetBuffer.Contains(aTarget)) continue;
+                mTargetBuffer.Add(aTarget);
 
-                bool weak = IsWeak(target, weapon);
-                float damage = changeAttackDamage * SwapChain.DamageMultiplier * (weak ? weaknessDamageMultiplier : 1f);
-                float stagger = changeAttackStagger * (weak ? weaknessStaggerMultiplier : 1f);
-                Vector3 direction = Flat(target.transform.position - transform.position);
-                var outcome = target.ApplyHit(new HitInfo
+                bool aWeak = IsWeak(aTarget, iWeapon);
+                float aDamage = mChangeAttackDamage * SwapChain.DamageMultiplier * (aWeak ? mWeaknessDamageMultiplier : 1f);
+                float aStagger = mChangeAttackStagger * (aWeak ? mWeaknessStaggerMultiplier : 1f);
+                Vector3 aDirection = Flat(aTarget.transform.position - transform.position);
+                var aOutcome = aTarget.ApplyHit(new HitInfo
                 {
-                    damage = damage,
-                    stagger = stagger,
-                    armorBreak = changeAttackArmorBreak,
-                    knockback = changeAttackKnockback,
-                    direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
-                    source = gameObject,
+                    Damage = aDamage,
+                    Stagger = aStagger,
+                    ArmorBreak = mChangeAttackArmorBreak,
+                    Knockback = mChangeAttackKnockback,
+                    Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
+                    Source = gameObject,
                 });
-                if (!outcome.Landed()) continue;
-                anyLanded = true;
-                anyWeak |= weak;
+                if (!aOutcome.Landed()) continue;
+                aAnyLanded = true;
+                aAnyWeak |= aWeak;
                 if (CombatFeedback.Instance != null)
                 {
-                    CombatFeedback.Instance.SpawnDamageNumber(target.transform.position + Vector3.up * 2.2f, target.LastDamage,
-                        weak ? WeakColor : color);
+                    CombatFeedback.Instance.SpawnDamageNumber(aTarget.transform.position + Vector3.up * 2.2f, aTarget.LastDamage,
+                        aWeak ? mWeakColor : aColor);
                 }
             }
 
-            if (!anyLanded) return;
-            style.RegisterHit($"change#{weapon}", weapon, changeAttackStylePoints, slots.Bonus.Kind == WeaponBonusKind.Arsenal);
-            style.Announce("CHANGE ATTACK", color);
-            if (anyWeak) AnnounceWeak();
+            if (!aAnyLanded) return;
+            mStyle.RegisterHit($"change#{iWeapon}", iWeapon, mChangeAttackStylePoints, mSlots.Bonus.Kind == WeaponBonusKind.Arsenal);
+            mStyle.Announce("CHANGE ATTACK", aColor);
+            if (aAnyWeak) AnnounceWeak();
             if (CombatFeedback.Instance != null)
             {
                 CombatFeedback.Instance.HitStop(0.05f);
@@ -315,14 +316,14 @@ namespace BattleFight
             }
         }
 
-        static readonly Color WeakColor = new Color(1f, 0.55f, 0.1f);
+        static readonly Color mWeakColor = new Color(1f, 0.55f, 0.1f);
 
         /// <summary>コンボが時間切れで途切れたら、数に応じてスタイルのボーナス</summary>
         void TickCombo()
         {
-            int finished = Combo.Tick(Time.time);
-            if (finished < 10) return;
-            style.AddBonus(finished * style.Config.comboBonusPerHit, $"{finished} HITS  {ComboCounter.Rating(finished)}", new Color(1f, 0.85f, 0.4f));
+            int aFinished = Combo.Tick(Time.time);
+            if (aFinished < 10) return;
+            mStyle.AddBonus(aFinished * mStyle.Config.ComboBonusPerHit, $"{aFinished} HITS  {ComboCounter.Rating(aFinished)}", new Color(1f, 0.85f, 0.4f));
         }
 
         /// <summary>
@@ -333,127 +334,127 @@ namespace BattleFight
         {
             if (!Drive.TryConsume()) yield break;
             IsDriving = true;
-            if (current != null) EndSkill();
-            style.AddBonus(100f, "CHANGE DRIVE", new Color(0.9f, 0.95f, 1f));
+            if (mCurrent != null) EndSkill();
+            mStyle.AddBonus(100f, "CHANGE DRIVE", new Color(0.9f, 0.95f, 1f));
             if (CombatFeedback.Instance != null)
             {
                 CombatFeedback.Instance.SlowMotion(0.5f, 1.4f);
                 CombatFeedback.Instance.Shake(0.3f);
             }
 
-            foreach (var skill in DriveSkills())
+            foreach (var aSkill in DriveSkills())
             {
-                yield return new WaitForSeconds(driveInterval);
-                if (self.IsDead) break;
-                weapons.SetMainWeapon(skill.weapon);
-                var data = slots.GetWeaponData(skill.weapon);
-                var color = data != null ? data.color : Color.white;
+                yield return new WaitForSeconds(mDriveInterval);
+                if (mSelf.IsDead) break;
+                mWeapons.SetMainWeapon(aSkill.Weapon);
+                var aData = mSlots.GetWeaponData(aSkill.Weapon);
+                var aColor = aData != null ? aData.Color : Color.white;
                 if (CombatFeedback.Instance != null)
                 {
-                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, driveRadius, color);
-                    CombatFeedback.Instance.SpawnSparks(transform.position + Vector3.up, color, 14, 11f);
+                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, mDriveRadius, aColor);
+                    CombatFeedback.Instance.SpawnSparks(transform.position + Vector3.up, aColor, 14, 11f);
                 }
 
-                int count = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up, driveRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-                targetBuffer.Clear();
-                for (int i = 0; i < count; i++)
+                int aCount = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up, mDriveRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+                mTargetBuffer.Clear();
+                for (int aI = 0; aI < aCount; aI++)
                 {
-                    var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
-                    if (target == null || target.Team == self.Team || target.IsDead || targetBuffer.Contains(target)) continue;
-                    targetBuffer.Add(target);
+                    var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                    if (aTarget == null || aTarget.Team == mSelf.Team || aTarget.IsDead || mTargetBuffer.Contains(aTarget)) continue;
+                    mTargetBuffer.Add(aTarget);
                 }
                 // 持ち替えるたびにチェインがつながる
                 SwapChain.OnSwap(Time.time);
-                if (targetBuffer.Count > 0)
+                if (mTargetBuffer.Count > 0)
                 {
-                    ResolveHits(new SkillHitContext { skill = skill, stepIndex = 0, multiplier = driveMultiplier, swapStrikeId = -1 },
-                        new List<Damageable>(targetBuffer), transform.position);
+                    ResolveHits(new SkillHitContext { Skill = aSkill, StepIndex = 0, Multiplier = mDriveMultiplier, SwapStrikeId = -1 },
+                        new List<Damageable>(mTargetBuffer), transform.position);
                 }
             }
 
-            yield return new WaitForSeconds(driveInterval);
-            var main = slots.GetCurrent(SlotType.AttackA);
-            if (main != null) weapons.SetMainWeapon(main.weapon);
-            extraInvulnerableUntil = Time.time + 0.4f;
+            yield return new WaitForSeconds(mDriveInterval);
+            var aMain = mSlots.GetCurrent(SlotType.AttackA);
+            if (aMain != null) mWeapons.SetMainWeapon(aMain.Weapon);
+            mExtraInvulnerableUntil = Time.time + 0.4f;
             IsDriving = false;
         }
 
         /// <summary>チェンジドライブで使う技: プリセット方式は各プリセットの攻撃A、ラック方式は攻撃A のラック</summary>
         List<SkillData> DriveSkills()
         {
-            var skills = new List<SkillData>();
-            if (slots.Mode == SwapMode.Preset)
+            var aSkills = new List<SkillData>();
+            if (mSlots.Mode == SwapMode.Preset)
             {
-                foreach (var preset in slots.Presets)
+                foreach (var aPreset in mSlots.Presets)
                 {
-                    if (preset.attackA != null) skills.Add(preset.attackA);
+                    if (aPreset.AttackA != null) aSkills.Add(aPreset.AttackA);
                 }
             }
             else
             {
-                foreach (var skill in slots.GetRack(SlotType.AttackA).Skills)
+                foreach (var aSkill in mSlots.GetRack(SlotType.AttackA).Skills)
                 {
-                    if (skill != null) skills.Add(skill);
+                    if (aSkill != null) aSkills.Add(aSkill);
                 }
             }
-            if (skills.Count == 0 && slots.GetCurrent(SlotType.AttackA) != null) skills.Add(slots.GetCurrent(SlotType.AttackA));
-            return skills;
+            if (aSkills.Count == 0 && mSlots.GetCurrent(SlotType.AttackA) != null) aSkills.Add(mSlots.GetCurrent(SlotType.AttackA));
+            return aSkills;
         }
 
-        static bool IsWeak(Damageable target, WeaponType weapon)
+        static bool IsWeak(Damageable iTarget, WeaponType iWeapon)
         {
-            var enemy = target.GetComponent<EnemyController>();
+            var aEnemy = iTarget.GetComponent<EnemyController>();
             // 型を切り替える敵は、今の型の弱点で判定する
-            return enemy != null && enemy.Profile != null && enemy.IsWeakTo(weapon);
+            return aEnemy != null && aEnemy.Profile != null && aEnemy.IsWeakTo(iWeapon);
         }
 
         void AnnounceWeak()
         {
-            if (Time.unscaledTime - lastWeakAnnounce < 0.6f) return;
-            lastWeakAnnounce = Time.unscaledTime;
-            style.AddBonus(weaknessStyleBonus, "WEAK!", WeakColor);
+            if (Time.unscaledTime - mLastWeakAnnounce < 0.6f) return;
+            mLastWeakAnnounce = Time.unscaledTime;
+            mStyle.AddBonus(mWeaknessStyleBonus, "WEAK!", mWeakColor);
         }
 
-        void SwapCancel(SlotType slot)
+        void SwapCancel(SlotType iSlot)
         {
-            bool continuing = lastSwapCancelSlot == slot && Time.time - lastSwapCancelTime < swapCancelStreakReset;
-            swapCancelStreak = continuing ? swapCancelStreak + 1 : 1;
-            lastSwapCancelSlot = slot;
-            lastSwapCancelTime = Time.time;
+            bool aContinuing = mLastSwapCancelSlot == iSlot && Time.time - mLastSwapCancelTime < mSwapCancelStreakReset;
+            mSwapCancelStreak = aContinuing ? mSwapCancelStreak + 1 : 1;
+            mLastSwapCancelSlot = iSlot;
+            mLastSwapCancelTime = Time.time;
             EndSkill();
-            style.AddBonus(style.Config.swapCancelBonus, "SWAP CANCEL", new Color(0.4f, 0.9f, 1f));
+            mStyle.AddBonus(mStyle.Config.SwapCancelBonus, "SWAP CANCEL", new Color(0.4f, 0.9f, 1f));
         }
 
         /// <summary>このプリセットに切り替えると、実行中の技のスロットの中身が変わってスワップキャンセルになるか</summary>
-        public bool CanPresetCancel(int index)
+        public bool CanPresetCancel(int iIndex)
         {
-            if (current == null || slots.Mode != SwapMode.Preset || index == slots.PresetIndex) return false;
-            if (index < 0 || index >= slots.Presets.Count) return false;
-            if (slots.Presets[index].Get(current.slot) == current) return false;
-            return CanSwapCancel(current.slot);
+            if (mCurrent == null || mSlots.Mode != SwapMode.Preset || iIndex == mSlots.PresetIndex) return false;
+            if (iIndex < 0 || iIndex >= mSlots.Presets.Count) return false;
+            if (mSlots.Presets[iIndex].Get(mCurrent.Slot) == mCurrent) return false;
+            return CanSwapCancel(mCurrent.Slot);
         }
 
-        bool CanSwapCancel(SlotType slot)
+        bool CanSwapCancel(SlotType iSlot)
         {
-            if (current == null || isFinisher || current.slot != slot || phase != Phase.Recovery) return false;
+            if (mCurrent == null || mIsFinisher || mCurrent.Slot != iSlot || mPhase != Phase.Recovery) return false;
 
-            bool continuing = lastSwapCancelSlot == slot && Time.time - lastSwapCancelTime < swapCancelStreakReset;
-            int streak = continuing ? swapCancelStreak : 0;
-            float recovery = FrameTime.ToSeconds(Step.recoveryFrames);
-            float required = Mathf.Max(
-                FrameTime.ToSeconds(current.swapCancelFrame),
-                recovery * Mathf.Min(0.9f, swapCancelStreakPenalty * streak));
-            return phaseTime >= required;
+            bool aContinuing = mLastSwapCancelSlot == iSlot && Time.time - mLastSwapCancelTime < mSwapCancelStreakReset;
+            int aStreak = aContinuing ? mSwapCancelStreak : 0;
+            float aRecovery = FrameTime.ToSeconds(mStep.RecoveryFrames);
+            float aRequired = Mathf.Max(
+                FrameTime.ToSeconds(mCurrent.SwapCancelFrame),
+                aRecovery * Mathf.Min(0.9f, mSwapCancelStreakPenalty * aStreak));
+            return mPhaseTime >= aRequired;
         }
 
         // ---------- 発動 ----------
 
         bool TryStartFromInput()
         {
-            var finisher = slots.MasteryFinisher;
-            if (finisher != null && input.Consume(PlayerAction.Finisher))
+            var aFinisher = mSlots.MasteryFinisher;
+            if (aFinisher != null && mInput.Consume(PlayerAction.Finisher))
             {
-                StartSkill(finisher, true);
+                StartSkill(aFinisher, true);
                 return true;
             }
 
@@ -461,70 +462,70 @@ namespace BattleFight
             if (TryStartSlot(SlotType.AttackA)) return true;
             if (TryStartSlot(SlotType.AttackB)) return true;
 
-            if (input.Peek(PlayerAction.Jump) && motor.IsGrounded)
+            if (mInput.Peek(PlayerAction.Jump) && mMotor.IsGrounded)
             {
-                input.Consume(PlayerAction.Jump);
-                if (current != null) EndSkill();
-                return motor.TryJump();
+                mInput.Consume(PlayerAction.Jump);
+                if (mCurrent != null) EndSkill();
+                return mMotor.TryJump();
             }
             return false;
         }
 
-        bool TryStartSlot(SlotType slot)
+        bool TryStartSlot(SlotType iSlot)
         {
-            var action = PlayerInputReader.ActionFor(slot);
-            if (!input.Peek(action)) return false;
+            var aAction = PlayerInputReader.ActionFor(iSlot);
+            if (!mInput.Peek(aAction)) return false;
 
-            var skill = slots.GetCurrent(slot);
-            if (skill == null) return false;
+            var aSkill = mSlots.GetCurrent(iSlot);
+            if (aSkill == null) return false;
             // 空中で使えない技は、着地まで先行入力として残す
-            if (!skill.usableInAir && !motor.IsGrounded) return false;
+            if (!aSkill.UsableInAir && !mMotor.IsGrounded) return false;
 
-            input.Consume(action);
-            if (current != null) EndSkill();
-            StartSkill(skill, false);
+            mInput.Consume(aAction);
+            if (mCurrent != null) EndSkill();
+            StartSkill(aSkill, false);
             return true;
         }
 
-        void StartSkill(SkillData skill, bool finisher)
+        void StartSkill(SkillData iSkill, bool iFinisher)
         {
-            current = skill;
-            isFinisher = finisher;
-            skillTime = 0f;
-            damageMultiplier = 1f;
-            hitsEnabled = true;
-            justDodgeAwarded = false;
-            travelEnemy = null;
-            travelToPoint = false;
+            mCurrent = iSkill;
+            mIsFinisher = iFinisher;
+            mSkillTime = 0f;
+            mDamageMultiplier = 1f;
+            mHitsEnabled = true;
+            mJustDodgeAwarded = false;
+            mTravelEnemy = null;
+            mTravelToPoint = false;
 
-            weapons.ShowTemporary(skill.weapon);
+            mWeapons.ShowTemporary(iSkill.Weapon);
 
-            var target = lockOn.Target;
-            Vector3 desired = Flat(motor.DesiredDirection);
-            if (skill.behavior == SkillBehavior.DashStrike || skill.behavior == SkillBehavior.Blink)
-                moveDirection = desired.sqrMagnitude > 0.01f ? desired.normalized : transform.forward;
-            else if (target != null)
-                moveDirection = DirectionTo(target.transform.position);
+            var aTarget = mLockOn.Target;
+            Vector3 aDesired = Flat(mMotor.DesiredDirection);
+            if (iSkill.Behavior == SkillBehavior.DashStrike || iSkill.Behavior == SkillBehavior.Blink)
+                mMoveDirection = aDesired.sqrMagnitude > 0.01f ? aDesired.normalized : transform.forward;
+            else if (aTarget != null)
+                mMoveDirection = DirectionTo(aTarget.transform.position);
             else
-                moveDirection = desired.sqrMagnitude > 0.01f ? desired.normalized : transform.forward;
-            motor.FaceDirection(moveDirection);
+                mMoveDirection = aDesired.sqrMagnitude > 0.01f ? aDesired.normalized : transform.forward;
+            mMotor.FaceDirection(mMoveDirection);
 
-            if (motor.IsGrounded)
+            if (mMotor.IsGrounded)
             {
-                motor.GravityScale = 1f;
+                mMotor.GravityScale = 1f;
             }
             else
             {
-                motor.GravityScale = skill.airGravityScale;
-                if (motor.VerticalVelocity < 0f) motor.SetVerticalVelocity(0f);
+                mMotor.GravityScale = iSkill.AirGravityScale;
+                if (mMotor.VerticalVelocity < 0f) mMotor.SetVerticalVelocity(0f);
             }
 
-            switch (skill.behavior)
+            switch (iSkill.Behavior)
             {
                 case SkillBehavior.ChargeCounter:
-                    phase = Phase.Charging;
-                    phaseTime = 0f;
-                    self.CounterHandler = OnCounter;
+                    mPhase = Phase.Charging;
+                    mPhaseTime = 0f;
+                    mSelf.CounterHandler = OnCounter;
                     break;
                 case SkillBehavior.Grapple:
                     BeginGrapple();
@@ -537,8 +538,8 @@ namespace BattleFight
                     BeginStep(0);
                     break;
                 case SkillBehavior.Boost:
-                    motor.GravityScale = skill.airGravityScale;
-                    motor.SetVerticalVelocity(skill.jumpVelocity);
+                    mMotor.GravityScale = iSkill.AirGravityScale;
+                    mMotor.SetVerticalVelocity(iSkill.JumpVelocity);
                     BeginStep(0);
                     break;
                 default:
@@ -547,72 +548,72 @@ namespace BattleFight
             }
         }
 
-        void BeginStep(int index)
+        void BeginStep(int iIndex)
         {
-            stepIndex = index;
-            phase = Phase.Startup;
-            phaseTime = 0f;
-            chainQueued = false;
-            styleRegisteredThisStep = false;
-            hitThisStep.Clear();
+            mStepIndex = iIndex;
+            mPhase = Phase.Startup;
+            mPhaseTime = 0f;
+            mChainQueued = false;
+            mStyleRegisteredThisStep = false;
+            mHitThisStep.Clear();
 
-            if (!motor.IsGrounded && current.behavior != SkillBehavior.HammerJump && motor.VerticalVelocity < 0f)
+            if (!mMotor.IsGrounded && mCurrent.Behavior != SkillBehavior.HammerJump && mMotor.VerticalVelocity < 0f)
             {
-                motor.SetVerticalVelocity(0f);
+                mMotor.SetVerticalVelocity(0f);
             }
         }
 
         // ---------- 実行中 ----------
 
-        void TickSkill(float dt)
+        void TickSkill(float iDt)
         {
-            phaseTime += dt;
-            skillTime += dt;
+            mPhaseTime += iDt;
+            mSkillTime += iDt;
 
-            self.Invulnerable = skillTime < FrameTime.ToSeconds(current.invulnerableFrames)
-                                || Time.time < extraInvulnerableUntil
-                                || (phase == Phase.Travel && current.behavior == SkillBehavior.Grapple);
+            mSelf.Invulnerable = mSkillTime < FrameTime.ToSeconds(mCurrent.InvulnerableFrames)
+                                || Time.time < mExtraInvulnerableUntil
+                                || (mPhase == Phase.Travel && mCurrent.Behavior == SkillBehavior.Grapple);
 
             // 同じボタンで次の段を予約
-            bool inStep = phase == Phase.Startup || phase == Phase.Active || phase == Phase.Recovery;
-            if (inStep && !chainQueued && !current.autoChain && stepIndex + 1 < current.StepCount
-                && input.Consume(PlayerInputReader.ActionFor(current.slot)))
+            bool aInStep = mPhase == Phase.Startup || mPhase == Phase.Active || mPhase == Phase.Recovery;
+            if (aInStep && !mChainQueued && !mCurrent.AutoChain && mStepIndex + 1 < mCurrent.StepCount
+                && mInput.Consume(PlayerInputReader.ActionFor(mCurrent.Slot)))
             {
-                chainQueued = true;
+                mChainQueued = true;
             }
 
-            switch (phase)
+            switch (mPhase)
             {
                 case Phase.Startup:
                 {
-                    ApplyForward(dt);
-                    float duration = FrameTime.ToSeconds(Step.startupFrames);
-                    if (phaseTime >= duration)
+                    ApplyForward(iDt);
+                    float aDuration = FrameTime.ToSeconds(mStep.StartupFrames);
+                    if (mPhaseTime >= aDuration)
                     {
-                        phaseTime -= duration;
-                        phase = Phase.Active;
+                        mPhaseTime -= aDuration;
+                        mPhase = Phase.Active;
                         OnActiveStart();
                     }
                     break;
                 }
                 case Phase.Active:
                 {
-                    ApplyForward(dt);
+                    ApplyForward(iDt);
                     DoHitbox();
-                    float duration = FrameTime.ToSeconds(Step.activeFrames);
-                    if (phaseTime >= duration)
+                    float aDuration = FrameTime.ToSeconds(mStep.ActiveFrames);
+                    if (mPhaseTime >= aDuration)
                     {
-                        phaseTime -= duration;
-                        if (current.behavior == SkillBehavior.HammerJump && stepIndex == 0)
+                        mPhaseTime -= aDuration;
+                        if (mCurrent.Behavior == SkillBehavior.HammerJump && mStepIndex == 0)
                         {
-                            motor.GravityScale = 1f;
-                            motor.SetVerticalVelocity(current.jumpVelocity);
-                            phase = Phase.Airborne;
-                            phaseTime = 0f;
+                            mMotor.GravityScale = 1f;
+                            mMotor.SetVerticalVelocity(mCurrent.JumpVelocity);
+                            mPhase = Phase.Airborne;
+                            mPhaseTime = 0f;
                         }
                         else
                         {
-                            phase = Phase.Recovery;
+                            mPhase = Phase.Recovery;
                         }
                     }
                     break;
@@ -622,26 +623,26 @@ namespace BattleFight
                     break;
                 case Phase.Charging:
                 {
-                    float max = FrameTime.ToSeconds(current.chargeFrames);
-                    if (!input.IsHeld(PlayerInputReader.ActionFor(current.slot)) || phaseTime >= max)
+                    float aMax = FrameTime.ToSeconds(mCurrent.ChargeFrames);
+                    if (!mInput.IsHeld(PlayerInputReader.ActionFor(mCurrent.Slot)) || mPhaseTime >= aMax)
                     {
                         ReleaseCharge(false);
                     }
                     break;
                 }
                 case Phase.Airborne:
-                    motor.Displace(moveDirection * (current.dashDistance / 0.8f) * dt);
-                    if (phaseTime > 0.1f && motor.IsGrounded)
+                    mMotor.Displace(mMoveDirection * (mCurrent.DashDistance / 0.8f) * iDt);
+                    if (mPhaseTime > 0.1f && mMotor.IsGrounded)
                     {
-                        if (current.StepCount > 1) BeginStep(1);
+                        if (mCurrent.StepCount > 1) BeginStep(1);
                         else EndSkill();
                     }
                     break;
                 case Phase.Travel:
-                    TickTravel(dt);
+                    TickTravel(iDt);
                     break;
                 case Phase.PullWait:
-                    if (travelEnemy == null || !travelEnemy.IsBeingPulled || phaseTime > 0.5f) BeginStep(0);
+                    if (mTravelEnemy == null || !mTravelEnemy.IsBeingPulled || mPhaseTime > 0.5f) BeginStep(0);
                     break;
                 case Phase.Hang:
                     TickHang();
@@ -652,371 +653,371 @@ namespace BattleFight
         /// <summary>ポイントにぶら下がっている間。次のワイヤー・ジャンプ・空中攻撃につなげられる。</summary>
         void TickHang()
         {
-            motor.GravityScale = 0f;
-            motor.SetVerticalVelocity(0f);
+            mMotor.GravityScale = 0f;
+            mMotor.SetVerticalVelocity(0f);
 
-            if (input.Consume(PlayerAction.Jump))
+            if (mInput.Consume(PlayerAction.Jump))
             {
-                Vector3 forward = Flat(motor.DesiredDirection);
-                if (forward.sqrMagnitude < 0.01f) forward = transform.forward;
+                Vector3 aForward = Flat(mMotor.DesiredDirection);
+                if (aForward.sqrMagnitude < 0.01f) aForward = transform.forward;
                 EndSkill();
-                motor.SetVerticalVelocity(grappleJumpVelocity);
-                motor.AddImpulse(forward.normalized * grappleJumpForward);
+                mMotor.SetVerticalVelocity(mGrappleJumpVelocity);
+                mMotor.AddImpulse(aForward.normalized * mGrappleJumpForward);
                 return;
             }
 
             if (TryStartFromInput()) return;
-            if (phaseTime >= grappleHangTime) EndSkill();
+            if (mPhaseTime >= mGrappleHangTime) EndSkill();
         }
 
         void TickRecovery()
         {
-            var step = Step;
-            float duration = FrameTime.ToSeconds(step.recoveryFrames);
-            bool hasNext = stepIndex + 1 < current.StepCount;
+            var aStep = mStep;
+            float aDuration = FrameTime.ToSeconds(aStep.RecoveryFrames);
+            bool aHasNext = mStepIndex + 1 < mCurrent.StepCount;
 
-            if (hasNext && (chainQueued || current.autoChain))
+            if (aHasNext && (mChainQueued || mCurrent.AutoChain))
             {
-                float chainAt = current.autoChain ? duration : FrameTime.ToSeconds(step.chainFrame);
-                if (phaseTime >= chainAt)
+                float aChainAt = mCurrent.AutoChain ? aDuration : FrameTime.ToSeconds(aStep.ChainFrame);
+                if (mPhaseTime >= aChainAt)
                 {
-                    BeginStep(stepIndex + 1);
+                    BeginStep(mStepIndex + 1);
                     return;
                 }
             }
 
-            if (!isFinisher && phaseTime >= FrameTime.ToSeconds(step.cancelFrame) && TryStartFromInput()) return;
+            if (!mIsFinisher && mPhaseTime >= FrameTime.ToSeconds(aStep.CancelFrame) && TryStartFromInput()) return;
 
-            if (phaseTime >= duration && !(hasNext && current.autoChain)) EndSkill();
+            if (mPhaseTime >= aDuration && !(aHasNext && mCurrent.AutoChain)) EndSkill();
         }
 
-        void ApplyForward(float dt)
+        void ApplyForward(float iDt)
         {
-            var step = Step;
-            float total = FrameTime.ToSeconds(step.startupFrames + step.activeFrames);
-            if (total <= 0f || Mathf.Approximately(step.forwardMove, 0f)) return;
+            var aStep = mStep;
+            float aTotal = FrameTime.ToSeconds(aStep.StartupFrames + aStep.ActiveFrames);
+            if (aTotal <= 0f || Mathf.Approximately(aStep.ForwardMove, 0f)) return;
 
-            var target = lockOn.Target;
-            if (target != null && current.behavior != SkillBehavior.DashStrike)
+            var aTarget = mLockOn.Target;
+            if (aTarget != null && mCurrent.Behavior != SkillBehavior.DashStrike)
             {
-                float distance = Flat(target.transform.position - transform.position).magnitude;
-                if (distance <= stopDistance + target.Radius) return;
+                float aDistance = Flat(aTarget.transform.position - transform.position).magnitude;
+                if (aDistance <= mStopDistance + aTarget.Radius) return;
             }
-            motor.Displace(moveDirection * (step.forwardMove * dt / total));
+            mMotor.Displace(mMoveDirection * (aStep.ForwardMove * iDt / aTotal));
         }
 
         void OnActiveStart()
         {
-            var step = Step;
-            var data = slots.GetWeaponData(current.weapon);
-            var color = data != null ? data.color : Color.white;
+            var aStep = mStep;
+            var aData = mSlots.GetWeaponData(mCurrent.Weapon);
+            var aColor = aData != null ? aData.Color : Color.white;
 
-            switch (current.behavior)
+            switch (mCurrent.Behavior)
             {
                 case SkillBehavior.Projectile:
-                    FireProjectiles(color);
+                    FireProjectiles(aColor);
                     return;
                 case SkillBehavior.TargetedStrike:
-                    FireStrike(color);
+                    FireStrike(aColor);
                     return;
                 case SkillBehavior.Beam:
                     if (CombatFeedback.Instance != null)
                     {
-                        GetBeam(out var from, out var to);
-                        CombatFeedback.Instance.SpawnBeam(from, to, current.beamRadius, color,
-                            Mathf.Max(0.05f, FrameTime.ToSeconds(step.activeFrames)));
+                        GetBeam(out var aFrom, out var aTo);
+                        CombatFeedback.Instance.SpawnBeam(aFrom, aTo, mCurrent.BeamRadius, aColor,
+                            Mathf.Max(0.05f, FrameTime.ToSeconds(aStep.ActiveFrames)));
                     }
                     break;
             }
 
-            if (step.hitboxRadius >= 2.5f && current.behavior != SkillBehavior.Beam && CombatFeedback.Instance != null)
+            if (aStep.HitboxRadius >= 2.5f && mCurrent.Behavior != SkillBehavior.Beam && CombatFeedback.Instance != null)
             {
-                var center = transform.TransformPoint(step.hitboxOffset);
-                CombatFeedback.Instance.SpawnShockwave(new Vector3(center.x, transform.position.y + 0.05f, center.z),
-                    step.hitboxRadius, color);
+                var aCenter = transform.TransformPoint(aStep.HitboxOffset);
+                CombatFeedback.Instance.SpawnShockwave(new Vector3(aCenter.x, transform.position.y + 0.05f, aCenter.z),
+                    aStep.HitboxRadius, aColor);
             }
             DoHitbox();
         }
 
         SkillHitContext CurrentContext() => new SkillHitContext
         {
-            skill = current,
-            stepIndex = stepIndex,
-            multiplier = damageMultiplier,
-            swapStrikeId = SwapStrikeReady ? swapStrikeId : -1,
+            Skill = mCurrent,
+            StepIndex = mStepIndex,
+            Multiplier = mDamageMultiplier,
+            SwapStrikeId = SwapStrikeReady ? mSwapStrikeId : -1,
         };
 
         void DoHitbox()
         {
-            var step = Step;
-            if (!hitsEnabled) return;
-            if (current.behavior == SkillBehavior.Projectile || current.behavior == SkillBehavior.TargetedStrike) return;
+            var aStep = mStep;
+            if (!mHitsEnabled) return;
+            if (mCurrent.Behavior == SkillBehavior.Projectile || mCurrent.Behavior == SkillBehavior.TargetedStrike) return;
 
-            int count;
-            if (current.behavior == SkillBehavior.Beam)
+            int aCount;
+            if (mCurrent.Behavior == SkillBehavior.Beam)
             {
-                GetBeam(out var from, out var to);
-                count = Physics.OverlapCapsuleNonAlloc(from, to, current.beamRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+                GetBeam(out var aFrom, out var aTo);
+                aCount = Physics.OverlapCapsuleNonAlloc(aFrom, aTo, mCurrent.BeamRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
             }
             else
             {
-                if (step.hitboxRadius <= 0f) return;
-                Vector3 center = transform.TransformPoint(step.hitboxOffset);
-                count = Physics.OverlapSphereNonAlloc(center, step.hitboxRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+                if (aStep.HitboxRadius <= 0f) return;
+                Vector3 aCenter = transform.TransformPoint(aStep.HitboxOffset);
+                aCount = Physics.OverlapSphereNonAlloc(aCenter, aStep.HitboxRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
             }
 
-            targetBuffer.Clear();
-            for (int i = 0; i < count; i++)
+            mTargetBuffer.Clear();
+            for (int aI = 0; aI < aCount; aI++)
             {
                 // 探索: ひび割れた壁(決まった武器種の技で崩れる)
-                var wall = OverlapBuffer[i].GetComponentInParent<BreakableWall>();
-                if (wall != null)
+                var aWall = mOverlapBuffer[aI].GetComponentInParent<BreakableWall>();
+                if (aWall != null)
                 {
-                    wall.TryBreak(current);
+                    aWall.TryBreak(mCurrent);
                     continue;
                 }
 
-                var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
-                if (target == null || target.Team == self.Team || target.IsDead || !hitThisStep.Add(target)) continue;
-                targetBuffer.Add(target);
+                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                if (aTarget == null || aTarget.Team == mSelf.Team || aTarget.IsDead || !mHitThisStep.Add(aTarget)) continue;
+                mTargetBuffer.Add(aTarget);
             }
-            if (targetBuffer.Count > 0) ResolveHits(CurrentContext(), targetBuffer, transform.position);
+            if (mTargetBuffer.Count > 0) ResolveHits(CurrentContext(), mTargetBuffer, transform.position);
         }
 
         /// <summary>
         /// 技のヒットをまとめて処理する(近接の判定・弾・爆発のすべてがここを通る)。
         /// ダメージ、武器種ボーナス、スワップストライク、スタイル、演出を反映する。
         /// </summary>
-        public void ResolveHits(SkillHitContext context, List<Damageable> targets, Vector3 sourcePosition)
+        public void ResolveHits(SkillHitContext iContext, List<Damageable> iTargets, Vector3 iSourcePosition)
         {
-            if (context.skill == null || targets.Count == 0) return;
+            if (iContext.Skill == null || iTargets.Count == 0) return;
 
-            var skill = context.skill;
-            var step = context.Step;
-            bool swapStrike = context.swapStrikeId >= 0 && context.swapStrikeId == swapStrikeId && SwapStrikeReady;
-            bool anyLanded = false;
-            bool styleRegistered = false;
-            float hitstop = 0f;
-            var bonus = slots.Bonus;
-            var weaponData = slots.GetWeaponData(skill.weapon);
+            var aSkill = iContext.Skill;
+            var aStep = iContext.Step;
+            bool aSwapStrike = iContext.SwapStrikeId >= 0 && iContext.SwapStrikeId == mSwapStrikeId && SwapStrikeReady;
+            bool aAnyLanded = false;
+            bool aStyleRegistered = false;
+            float aHitstop = 0f;
+            var aBonus = mSlots.Bonus;
+            var aWeaponData = mSlots.GetWeaponData(aSkill.Weapon);
 
-            bool anyWeak = false;
-            int landed = 0;
-            int weakLanded = 0;
+            bool aAnyWeak = false;
+            int aLanded = 0;
+            int aWeakLanded = 0;
             // スタイルランクが高いほど攻撃力が上がる(格好よく戦うほど強い)
-            float rankMultiplier = style.Config.DamageMultiplier(style.Meter.RankIndex);
-            foreach (var target in targets)
+            float aRankMultiplier = mStyle.Config.DamageMultiplier(mStyle.Meter.RankIndex);
+            foreach (var aTarget in iTargets)
             {
-                if (target == null || target.IsDead) continue;
+                if (aTarget == null || aTarget.IsDead) continue;
 
-                bool weak = IsWeak(target, skill.weapon);
-                float damage = step.damage * context.multiplier * SwapChain.DamageMultiplier * rankMultiplier;
-                float stagger = step.stagger * context.multiplier;
-                if (weak)
+                bool aWeak = IsWeak(aTarget, aSkill.Weapon);
+                float aDamage = aStep.Damage * iContext.Multiplier * SwapChain.DamageMultiplier * aRankMultiplier;
+                float aStagger = aStep.Stagger * iContext.Multiplier;
+                if (aWeak)
                 {
-                    damage *= weaknessDamageMultiplier;
-                    stagger *= weaknessStaggerMultiplier;
+                    aDamage *= mWeaknessDamageMultiplier;
+                    aStagger *= mWeaknessStaggerMultiplier;
                 }
-                if (bonus.Boosts(skill.weapon) && weaponData != null) stagger *= 1f + weaponData.synergyStaggerBonus;
-                if (swapStrike)
+                if (aBonus.Boosts(aSkill.Weapon) && aWeaponData != null) aStagger *= 1f + aWeaponData.SynergyStaggerBonus;
+                if (aSwapStrike)
                 {
-                    damage *= swapStrikeDamageMultiplier;
-                    stagger *= swapStrikeStaggerMultiplier;
+                    aDamage *= mSwapStrikeDamageMultiplier;
+                    aStagger *= mSwapStrikeStaggerMultiplier;
                 }
 
-                Vector3 direction = Flat(target.transform.position - sourcePosition);
-                var outcome = target.ApplyHit(new HitInfo
+                Vector3 aDirection = Flat(aTarget.transform.position - iSourcePosition);
+                var aOutcome = aTarget.ApplyHit(new HitInfo
                 {
-                    damage = damage,
-                    stagger = stagger,
-                    armorBreak = step.armorBreak * context.multiplier,
-                    knockback = step.knockback,
-                    launch = step.launch,
-                    direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
-                    source = gameObject,
+                    Damage = aDamage,
+                    Stagger = aStagger,
+                    ArmorBreak = aStep.ArmorBreak * iContext.Multiplier,
+                    Knockback = aStep.Knockback,
+                    Launch = aStep.Launch,
+                    Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
+                    Source = gameObject,
                 });
-                if (!outcome.Landed()) continue;
+                if (!aOutcome.Landed()) continue;
 
-                anyLanded = true;
-                anyWeak |= weak;
-                landed++;
-                if (weak) weakLanded++;
-                hitstop = Mathf.Max(hitstop, step.hitstop * (outcome == HitOutcome.ArmorBroken ? 2f : 1f));
+                aAnyLanded = true;
+                aAnyWeak |= aWeak;
+                aLanded++;
+                if (aWeak) aWeakLanded++;
+                aHitstop = Mathf.Max(aHitstop, aStep.Hitstop * (aOutcome == HitOutcome.ArmorBroken ? 2f : 1f));
 
                 // 近接の1段は1回だけ登録する。同じ段で複数の敵に当てた分は少しだけ加点
-                bool firstForStep = context.skill == current && context.stepIndex == stepIndex ? !styleRegisteredThisStep : !styleRegistered;
-                if (firstForStep)
+                bool aFirstForStep = iContext.Skill == mCurrent && iContext.StepIndex == mStepIndex ? !mStyleRegisteredThisStep : !aStyleRegistered;
+                if (aFirstForStep)
                 {
-                    if (context.skill == current && context.stepIndex == stepIndex) styleRegisteredThisStep = true;
-                    styleRegistered = true;
-                    style.RegisterHit($"{skill.name}#{context.stepIndex}", skill.weapon, step.stylePoints * context.multiplier,
-                        bonus.Kind == WeaponBonusKind.Arsenal);
+                    if (iContext.Skill == mCurrent && iContext.StepIndex == mStepIndex) mStyleRegisteredThisStep = true;
+                    aStyleRegistered = true;
+                    mStyle.RegisterHit($"{aSkill.name}#{iContext.StepIndex}", aSkill.Weapon, aStep.StylePoints * iContext.Multiplier,
+                        aBonus.Kind == WeaponBonusKind.Arsenal);
                 }
                 else
                 {
-                    style.AddBonus(step.stylePoints * 0.3f);
+                    mStyle.AddBonus(aStep.StylePoints * 0.3f);
                 }
 
-                if (outcome == HitOutcome.ArmorBroken) style.Announce("ARMOR BREAK", new Color(1f, 0.6f, 0.2f));
+                if (aOutcome == HitOutcome.ArmorBroken) mStyle.Announce("ARMOR BREAK", new Color(1f, 0.6f, 0.2f));
 
                 if (CombatFeedback.Instance != null)
                 {
-                    var color = swapStrike ? new Color(1f, 0.9f, 0.2f)
-                        : weak ? WeakColor
-                        : outcome == HitOutcome.Armored ? new Color(0.7f, 0.7f, 0.7f)
+                    var aColor = aSwapStrike ? new Color(1f, 0.9f, 0.2f)
+                        : aWeak ? mWeakColor
+                        : aOutcome == HitOutcome.Armored ? new Color(0.7f, 0.7f, 0.7f)
                         : Color.white;
-                    CombatFeedback.Instance.SpawnDamageNumber(target.transform.position + Vector3.up * 2.2f, target.LastDamage, color);
+                    CombatFeedback.Instance.SpawnDamageNumber(aTarget.transform.position + Vector3.up * 2.2f, aTarget.LastDamage, aColor);
 
                     // 火花(弱点・アーマー破壊・重い一撃は多く)。重い一撃は画面も大きく揺らす
-                    bool heavy = target.LastDamage >= 25f || outcome == HitOutcome.ArmorBroken;
-                    var sparkColor = weak || swapStrike ? color : weaponData != null ? Color.Lerp(weaponData.color, Color.white, 0.4f) : Color.white;
-                    var hitPoint = Vector3.Lerp(target.transform.position + Vector3.up * 1.1f, sourcePosition + Vector3.up * 1.1f, 0.25f);
-                    CombatFeedback.Instance.SpawnSparks(hitPoint, sparkColor, heavy || weak ? 9 : 5, heavy ? 9f : 7f);
-                    if (heavy) CombatFeedback.Instance.Shake(0.22f);
+                    bool aHeavy = aTarget.LastDamage >= 25f || aOutcome == HitOutcome.ArmorBroken;
+                    var aSparkColor = aWeak || aSwapStrike ? aColor : aWeaponData != null ? Color.Lerp(aWeaponData.Color, Color.white, 0.4f) : Color.white;
+                    var aHitPoint = Vector3.Lerp(aTarget.transform.position + Vector3.up * 1.1f, iSourcePosition + Vector3.up * 1.1f, 0.25f);
+                    CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, aHeavy || aWeak ? 9 : 5, aHeavy ? 9f : 7f);
+                    if (aHeavy) CombatFeedback.Instance.Shake(0.22f);
                 }
             }
 
-            if (!anyLanded) return;
-            Combo.AddHit(Time.time, landed);
-            Drive.AddFromAttack(landed, weakLanded, swapStrike);
-            if (swapStrike)
+            if (!aAnyLanded) return;
+            Combo.AddHit(Time.time, aLanded);
+            Drive.AddFromAttack(aLanded, aWeakLanded, aSwapStrike);
+            if (aSwapStrike)
             {
-                swapStrikeUntil = -1f;
-                style.AddBonus(style.Config.swapStrikeBonus, "SWAP STRIKE!", new Color(1f, 0.9f, 0.2f));
+                mSwapStrikeUntil = -1f;
+                mStyle.AddBonus(mStyle.Config.SwapStrikeBonus, "SWAP STRIKE!", new Color(1f, 0.9f, 0.2f));
             }
-            if (anyWeak) AnnounceWeak();
+            if (aAnyWeak) AnnounceWeak();
             if (SwapChain.OnHit(Time.time))
             {
-                style.AddBonus(chainStyleBonusPerStep * SwapChain.Chain, $"CHAIN ×{SwapChain.Chain}", new Color(0.55f, 1f, 0.9f));
+                mStyle.AddBonus(mChainStyleBonusPerStep * SwapChain.Chain, $"CHAIN ×{SwapChain.Chain}", new Color(0.55f, 1f, 0.9f));
             }
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.HitStop(hitstop);
-                CombatFeedback.Instance.Shake(0.05f + hitstop);
+                CombatFeedback.Instance.HitStop(aHitstop);
+                CombatFeedback.Instance.Shake(0.05f + aHitstop);
             }
         }
 
         // ---------- 飛び道具・ビーム ----------
 
         /// <summary>弾を撃つ方向。ロックオン中は対象の胸へ、それ以外は向いている方向へ水平に。</summary>
-        Vector3 AimDirection(Vector3 origin)
+        Vector3 AimDirection(Vector3 iOrigin)
         {
-            var target = lockOn.Target;
-            if (target != null && !target.IsDead)
+            var aTarget = mLockOn.Target;
+            if (aTarget != null && !aTarget.IsDead)
             {
-                Vector3 to = target.CenterPoint - origin;
-                if (to.sqrMagnitude > 0.01f) return to.normalized;
+                Vector3 aTo = aTarget.CenterPoint - iOrigin;
+                if (aTo.sqrMagnitude > 0.01f) return aTo.normalized;
             }
             return transform.forward;
         }
 
-        Vector3 MuzzlePosition => transform.position + Vector3.up * 1.2f + transform.forward * 0.8f;
+        Vector3 mMuzzlePosition => transform.position + Vector3.up * 1.2f + transform.forward * 0.8f;
 
-        void FireProjectiles(Color color)
+        void FireProjectiles(Color iColor)
         {
-            var context = CurrentContext();
-            Vector3 origin = MuzzlePosition;
-            Vector3 aim = AimDirection(origin);
-            int count = Mathf.Max(1, current.projectileCount);
-            bool fullCircle = current.projectileSpread >= 359f;
+            var aContext = CurrentContext();
+            Vector3 aOrigin = mMuzzlePosition;
+            Vector3 aAim = AimDirection(aOrigin);
+            int aCount = Mathf.Max(1, mCurrent.ProjectileCount);
+            bool aFullCircle = mCurrent.ProjectileSpread >= 359f;
 
-            for (int i = 0; i < count; i++)
+            for (int aI = 0; aI < aCount; aI++)
             {
-                float angle;
-                if (count == 1) angle = 0f;
-                else if (fullCircle) angle = 360f * i / count;
-                else angle = Mathf.Lerp(-current.projectileSpread * 0.5f, current.projectileSpread * 0.5f, i / (count - 1f));
+                float aAngle;
+                if (aCount == 1) aAngle = 0f;
+                else if (aFullCircle) aAngle = 360f * aI / aCount;
+                else aAngle = Mathf.Lerp(-mCurrent.ProjectileSpread * 0.5f, mCurrent.ProjectileSpread * 0.5f, aI / (aCount - 1f));
 
-                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * aim;
-                Vector3 spawn = fullCircle ? transform.position + Vector3.up * 1.2f + direction * 0.6f : origin;
-                SkillProjectile.Spawn(this, context, spawn, direction * current.projectileSpeed, lockOn.Target, color);
+                Vector3 aDirection = Quaternion.AngleAxis(aAngle, Vector3.up) * aAim;
+                Vector3 aSpawn = aFullCircle ? transform.position + Vector3.up * 1.2f + aDirection * 0.6f : aOrigin;
+                SkillProjectile.Spawn(this, aContext, aSpawn, aDirection * mCurrent.ProjectileSpeed, mLockOn.Target, iColor);
             }
         }
 
-        void FireStrike(Color color)
+        void FireStrike(Color iColor)
         {
-            var target = lockOn.Target;
-            Vector3 position;
-            if (target != null && !target.IsDead && Vector3.Distance(target.transform.position, transform.position) <= current.strikeDistance * 2f)
+            var aTarget = mLockOn.Target;
+            Vector3 aPosition;
+            if (aTarget != null && !aTarget.IsDead && Vector3.Distance(aTarget.transform.position, transform.position) <= mCurrent.StrikeDistance * 2f)
             {
-                position = target.transform.position;
+                aPosition = aTarget.transform.position;
             }
             else
             {
-                position = transform.position + transform.forward * current.strikeDistance;
+                aPosition = transform.position + transform.forward * mCurrent.StrikeDistance;
                 // 地面の高さに合わせる
-                if (Physics.Raycast(position + Vector3.up * 5f, Vector3.down, out var ground, 20f, ~0, QueryTriggerInteraction.Ignore))
+                if (Physics.Raycast(aPosition + Vector3.up * 5f, Vector3.down, out var aGround, 20f, ~0, QueryTriggerInteraction.Ignore))
                 {
-                    position = ground.point;
+                    aPosition = aGround.point;
                 }
             }
-            SkillProjectile.Spawn(this, CurrentContext(), position + Vector3.up * 0.1f, Vector3.zero, null, color, current.strikeDelay);
+            SkillProjectile.Spawn(this, CurrentContext(), aPosition + Vector3.up * 0.1f, Vector3.zero, null, iColor, mCurrent.StrikeDelay);
         }
 
-        void GetBeam(out Vector3 from, out Vector3 to)
+        void GetBeam(out Vector3 oFrom, out Vector3 oTo)
         {
-            from = transform.position + Vector3.up * 1.2f + transform.forward * 0.5f;
-            Vector3 direction = AimDirection(from);
-            float length = current.beamLength;
-            if (Physics.Raycast(from, direction, out var wall, length, ~0, QueryTriggerInteraction.Ignore)
-                && wall.collider.GetComponentInParent<Damageable>() == null)
+            oFrom = transform.position + Vector3.up * 1.2f + transform.forward * 0.5f;
+            Vector3 aDirection = AimDirection(oFrom);
+            float aLength = mCurrent.BeamLength;
+            if (Physics.Raycast(oFrom, aDirection, out var aWall, aLength, ~0, QueryTriggerInteraction.Ignore)
+                && aWall.collider.GetComponentInParent<Damageable>() == null)
             {
-                length = wall.distance;
+                aLength = aWall.distance;
             }
-            to = from + direction * length;
+            oTo = oFrom + aDirection * aLength;
         }
 
         // ---------- ブリンク ----------
 
         void Blink()
         {
-            Vector3 direction = moveDirection;
-            float distance = current.dashDistance;
-            Vector3 bottom = transform.position + Vector3.up * 0.5f;
-            Vector3 top = transform.position + Vector3.up * 1.5f;
-            if (Physics.CapsuleCast(bottom, top, 0.35f, direction, out var hit, distance, ~0, QueryTriggerInteraction.Ignore)
-                && !hit.collider.transform.IsChildOf(transform))
+            Vector3 aDirection = mMoveDirection;
+            float aDistance = mCurrent.DashDistance;
+            Vector3 aBottom = transform.position + Vector3.up * 0.5f;
+            Vector3 aTop = transform.position + Vector3.up * 1.5f;
+            if (Physics.CapsuleCast(aBottom, aTop, 0.35f, aDirection, out var aHit, aDistance, ~0, QueryTriggerInteraction.Ignore)
+                && !aHit.collider.transform.IsChildOf(transform))
             {
-                distance = Mathf.Max(0f, hit.distance - 0.2f);
+                aDistance = Mathf.Max(0f, aHit.distance - 0.2f);
             }
 
-            var data = slots.GetWeaponData(current.weapon);
-            var color = data != null ? data.color : Color.white;
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, 1.2f, color);
-            motor.Teleport(direction * distance);
+            var aData = mSlots.GetWeaponData(mCurrent.Weapon);
+            var aColor = aData != null ? aData.Color : Color.white;
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, 1.2f, aColor);
+            mMotor.Teleport(aDirection * aDistance);
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position + direction * distance, 1.6f, color);
+                CombatFeedback.Instance.SpawnShockwave(transform.position + aDirection * aDistance, 1.6f, aColor);
             }
         }
 
         // ---------- 溜め・カウンター(居合) ----------
 
-        bool OnCounter(HitInfo hit)
+        bool OnCounter(HitInfo iHit)
         {
-            if (current == null || phase != Phase.Charging) return false;
+            if (mCurrent == null || mPhase != Phase.Charging) return false;
             ReleaseCharge(true);
             return true;
         }
 
-        void ReleaseCharge(bool counter)
+        void ReleaseCharge(bool iCounter)
         {
-            self.CounterHandler = null;
-            float max = FrameTime.ToSeconds(current.chargeFrames);
-            float ratio = counter || max <= 0f ? 1f : Mathf.Clamp01(phaseTime / max);
-            damageMultiplier = Mathf.Lerp(minChargeMultiplier, maxChargeMultiplier, ratio) * (counter ? counterMultiplier : 1f);
+            mSelf.CounterHandler = null;
+            float aMax = FrameTime.ToSeconds(mCurrent.ChargeFrames);
+            float aRatio = iCounter || aMax <= 0f ? 1f : Mathf.Clamp01(mPhaseTime / aMax);
+            mDamageMultiplier = Mathf.Lerp(mMinChargeMultiplier, mMaxChargeMultiplier, aRatio) * (iCounter ? mCounterMultiplier : 1f);
 
-            if (counter)
+            if (iCounter)
             {
-                extraInvulnerableUntil = Time.time + counterInvulnerableTime;
-                style.AddBonus(style.Config.counterBonus, "COUNTER!", new Color(1f, 0.4f, 0.4f));
+                mExtraInvulnerableUntil = Time.time + mCounterInvulnerableTime;
+                mStyle.AddBonus(mStyle.Config.CounterBonus, "COUNTER!", new Color(1f, 0.4f, 0.4f));
             }
 
-            var target = lockOn.Target;
-            if (target != null)
+            var aTarget = mLockOn.Target;
+            if (aTarget != null)
             {
-                moveDirection = DirectionTo(target.transform.position);
-                motor.FaceDirection(moveDirection);
+                mMoveDirection = DirectionTo(aTarget.transform.position);
+                mMotor.FaceDirection(mMoveDirection);
             }
             BeginStep(0);
         }
@@ -1025,212 +1026,212 @@ namespace BattleFight
 
         void BeginGrapple()
         {
-            motor.GravityScale = 0f;
-            motor.SetVerticalVelocity(0f);
+            mMotor.GravityScale = 0f;
+            mMotor.SetVerticalVelocity(0f);
 
             // 優先順: 視界内で一番近いポイント → ロックオン中の敵 → 空中ダッシュ
-            var point = FindGrapplePoint(current.range);
-            var target = lockOn.Target;
-            if (point != null)
+            var aPoint = FindGrapplePoint(mCurrent.Range);
+            var aTarget = mLockOn.Target;
+            if (aPoint != null)
             {
-                travelToPoint = true;
-                travelTarget = point.transform.position - Vector3.up * 1.8f;
+                mTravelToPoint = true;
+                mTravelTarget = aPoint.transform.position - Vector3.up * 1.8f;
             }
-            else if (target != null && Vector3.Distance(target.transform.position, transform.position) <= current.range)
+            else if (aTarget != null && Vector3.Distance(aTarget.transform.position, transform.position) <= mCurrent.Range)
             {
-                travelEnemy = target;
+                mTravelEnemy = aTarget;
             }
             else
             {
-                travelTarget = transform.position + moveDirection * current.dashDistance + Vector3.up * 0.8f;
+                mTravelTarget = transform.position + mMoveDirection * mCurrent.DashDistance + Vector3.up * 0.8f;
             }
 
-            Vector3 destination = travelEnemy != null ? travelEnemy.transform.position : travelTarget;
-            BeginTravel(destination);
-            hitsEnabled = travelEnemy != null;
+            Vector3 aDestination = mTravelEnemy != null ? mTravelEnemy.transform.position : mTravelTarget;
+            BeginTravel(aDestination);
+            mHitsEnabled = mTravelEnemy != null;
         }
 
         /// <summary>
         /// 視界内(カメラに映っていて、途中に遮るものがない)にあるグラップルポイントのうち、一番近いもの。
         /// 今ぶら下がっているポイントは除く。
         /// </summary>
-        GrapplePoint FindGrapplePoint(float range)
+        GrapplePoint FindGrapplePoint(float iRange)
         {
-            Vector3 chest = transform.position + Vector3.up;
-            GrapplePoint best = null;
-            float bestDistance = float.MaxValue;
-            foreach (var point in GrapplePoint.All)
+            Vector3 aChest = transform.position + Vector3.up;
+            GrapplePoint aBest = null;
+            float aBestDistance = float.MaxValue;
+            foreach (var aPoint in GrapplePoint.All)
             {
-                Vector3 position = point.transform.position;
-                float distance = Vector3.Distance(chest, position);
-                if (distance > range || distance < grappleMinDistance || distance >= bestDistance) continue;
-                if (!IsInView(position)) continue;
-                if (Physics.Linecast(chest, position, out var hit, ~0, QueryTriggerInteraction.Ignore)
-                    && !hit.collider.transform.IsChildOf(transform))
+                Vector3 aPosition = aPoint.transform.position;
+                float aDistance = Vector3.Distance(aChest, aPosition);
+                if (aDistance > iRange || aDistance < mGrappleMinDistance || aDistance >= aBestDistance) continue;
+                if (!IsInView(aPosition)) continue;
+                if (Physics.Linecast(aChest, aPosition, out var aHit, ~0, QueryTriggerInteraction.Ignore)
+                    && !aHit.collider.transform.IsChildOf(transform))
                 {
                     continue;
                 }
-                best = point;
-                bestDistance = distance;
+                aBest = aPoint;
+                aBestDistance = aDistance;
             }
-            return best;
+            return aBest;
         }
 
-        bool IsInView(Vector3 position)
+        bool IsInView(Vector3 iPosition)
         {
-            if (view == null) return Vector3.Dot(Flat(position - transform.position).normalized, transform.forward) > 0.3f;
-            Vector3 viewport = view.WorldToViewportPoint(position);
-            return viewport.z > 0f
-                   && viewport.x >= grappleViewMargin && viewport.x <= 1f - grappleViewMargin
-                   && viewport.y >= grappleViewMargin && viewport.y <= 1f - grappleViewMargin;
+            if (mView == null) return Vector3.Dot(Flat(iPosition - transform.position).normalized, transform.forward) > 0.3f;
+            Vector3 aViewport = mView.WorldToViewportPoint(iPosition);
+            return aViewport.z > 0f
+                   && aViewport.x >= mGrappleViewMargin && aViewport.x <= 1f - mGrappleViewMargin
+                   && aViewport.y >= mGrappleViewMargin && aViewport.y <= 1f - mGrappleViewMargin;
         }
 
-        void BeginTravel(Vector3 destination)
+        void BeginTravel(Vector3 iDestination)
         {
-            phase = Phase.Travel;
-            phaseTime = 0f;
-            float speed = Mathf.Max(1f, current.moveSpeed);
-            travelTimeout = Vector3.Distance(transform.position, destination) / speed + travelTimeMargin;
+            mPhase = Phase.Travel;
+            mPhaseTime = 0f;
+            float aSpeed = Mathf.Max(1f, mCurrent.MoveSpeed);
+            mTravelTimeout = Vector3.Distance(transform.position, iDestination) / aSpeed + mTravelTimeMargin;
         }
 
         void BeginPull()
         {
-            var target = lockOn.Target;
-            if (target == null || Vector3.Distance(target.transform.position, transform.position) > current.range)
+            var aTarget = mLockOn.Target;
+            if (aTarget == null || Vector3.Distance(aTarget.transform.position, transform.position) > mCurrent.Range)
             {
-                target = FindEnemyInFront(current.range);
+                aTarget = FindEnemyInFront(mCurrent.Range);
             }
 
-            if (target == null)
+            if (aTarget == null)
             {
                 BeginStep(0);
                 return;
             }
 
-            travelEnemy = target;
-            moveDirection = DirectionTo(target.transform.position);
-            motor.FaceDirection(moveDirection);
+            mTravelEnemy = aTarget;
+            mMoveDirection = DirectionTo(aTarget.transform.position);
+            mMotor.FaceDirection(mMoveDirection);
 
-            if (target.IsHeavy)
+            if (aTarget.IsHeavy)
             {
                 // 重い敵には自分が飛びつく
-                motor.GravityScale = 0f;
-                motor.SetVerticalVelocity(0f);
-                BeginTravel(target.transform.position);
+                mMotor.GravityScale = 0f;
+                mMotor.SetVerticalVelocity(0f);
+                BeginTravel(aTarget.transform.position);
                 return;
             }
 
-            target.BeginPull(transform.position + moveDirection * 1.6f, current.moveSpeed);
-            phase = Phase.PullWait;
-            phaseTime = 0f;
+            aTarget.BeginPull(transform.position + mMoveDirection * 1.6f, mCurrent.MoveSpeed);
+            mPhase = Phase.PullWait;
+            mPhaseTime = 0f;
         }
 
-        void TickTravel(float dt)
+        void TickTravel(float iDt)
         {
-            motor.GravityScale = 0f;
-            motor.SetVerticalVelocity(0f);
+            mMotor.GravityScale = 0f;
+            mMotor.SetVerticalVelocity(0f);
 
-            if (travelEnemy != null && travelEnemy.IsDead)
+            if (mTravelEnemy != null && mTravelEnemy.IsDead)
             {
-                travelEnemy = null;
-                hitsEnabled = false;
+                mTravelEnemy = null;
+                mHitsEnabled = false;
                 ArriveTravel();
                 return;
             }
 
-            Vector3 destination = travelEnemy != null ? ApproachPoint(travelEnemy) : travelTarget;
-            Vector3 to = destination - transform.position;
-            float stepLength = current.moveSpeed * dt;
+            Vector3 aDestination = mTravelEnemy != null ? ApproachPoint(mTravelEnemy) : mTravelTarget;
+            Vector3 aTo = aDestination - transform.position;
+            float aStepLength = mCurrent.MoveSpeed * iDt;
 
-            Vector3 flat = Flat(to);
-            if (flat.sqrMagnitude > 0.01f)
+            Vector3 aFlat = Flat(aTo);
+            if (aFlat.sqrMagnitude > 0.01f)
             {
-                moveDirection = flat.normalized;
-                motor.FaceDirection(moveDirection);
+                mMoveDirection = aFlat.normalized;
+                mMotor.FaceDirection(mMoveDirection);
             }
 
-            if (to.magnitude <= stepLength + 0.3f || phaseTime >= travelTimeout)
+            if (aTo.magnitude <= aStepLength + 0.3f || mPhaseTime >= mTravelTimeout)
             {
-                motor.Displace(Vector3.ClampMagnitude(to, stepLength));
+                mMotor.Displace(Vector3.ClampMagnitude(aTo, aStepLength));
                 ArriveTravel();
             }
             else
             {
-                motor.Displace(to.normalized * stepLength);
+                mMotor.Displace(aTo.normalized * aStepLength);
             }
         }
 
         void ArriveTravel()
         {
-            if (travelToPoint)
+            if (mTravelToPoint)
             {
-                phase = Phase.Hang;
-                phaseTime = 0f;
+                mPhase = Phase.Hang;
+                mPhaseTime = 0f;
                 return;
             }
 
-            motor.GravityScale = current.airGravityScale;
-            if (travelEnemy != null) motor.FaceDirection(DirectionTo(travelEnemy.transform.position));
+            mMotor.GravityScale = mCurrent.AirGravityScale;
+            if (mTravelEnemy != null) mMotor.FaceDirection(DirectionTo(mTravelEnemy.transform.position));
             BeginStep(0);
         }
 
-        Vector3 ApproachPoint(EnemyController enemy)
+        Vector3 ApproachPoint(EnemyController iEnemy)
         {
-            Vector3 away = Flat(transform.position - enemy.transform.position);
-            away = away.sqrMagnitude > 0.01f ? away.normalized : -transform.forward;
-            return enemy.transform.position + away * (enemy.Radius + 1.0f);
+            Vector3 aAway = Flat(transform.position - iEnemy.transform.position);
+            aAway = aAway.sqrMagnitude > 0.01f ? aAway.normalized : -transform.forward;
+            return iEnemy.transform.position + aAway * (iEnemy.Radius + 1.0f);
         }
 
-        EnemyController FindEnemyInFront(float range)
+        EnemyController FindEnemyInFront(float iRange)
         {
-            EnemyController best = null;
-            float bestDistance = float.MaxValue;
-            foreach (var enemy in EnemyController.Active)
+            EnemyController aBest = null;
+            float aBestDistance = float.MaxValue;
+            foreach (var aEnemy in EnemyController.Active)
             {
-                if (enemy.IsDead) continue;
-                Vector3 to = enemy.transform.position - transform.position;
-                float distance = to.magnitude;
-                if (distance > range || Vector3.Dot(Flat(to).normalized, moveDirection) < 0.5f) continue;
-                if (distance < bestDistance)
+                if (aEnemy.IsDead) continue;
+                Vector3 aTo = aEnemy.transform.position - transform.position;
+                float aDistance = aTo.magnitude;
+                if (aDistance > iRange || Vector3.Dot(Flat(aTo).normalized, mMoveDirection) < 0.5f) continue;
+                if (aDistance < aBestDistance)
                 {
-                    bestDistance = distance;
-                    best = enemy;
+                    aBestDistance = aDistance;
+                    aBest = aEnemy;
                 }
             }
-            return best;
+            return aBest;
         }
 
         // ---------- 終了・割り込み ----------
 
         void EndSkill()
         {
-            self.CounterHandler = null;
-            current = null;
-            phase = Phase.None;
-            isFinisher = false;
-            chainQueued = false;
-            travelEnemy = null;
-            motor.GravityScale = 1f;
-            self.Invulnerable = Time.time < extraInvulnerableUntil;
-            weapons.ClearTemporary();
+            mSelf.CounterHandler = null;
+            mCurrent = null;
+            mPhase = Phase.None;
+            mIsFinisher = false;
+            mChainQueued = false;
+            mTravelEnemy = null;
+            mMotor.GravityScale = 1f;
+            mSelf.Invulnerable = Time.time < mExtraInvulnerableUntil;
+            mWeapons.ClearTemporary();
         }
 
         /// <summary>被弾などで技を中断する</summary>
-        public void Interrupt(float stunDuration, float invulnerableDuration)
+        public void Interrupt(float iStunDuration, float iInvulnerableDuration)
         {
-            if (current != null) EndSkill();
+            if (mCurrent != null) EndSkill();
             // 被弾するとチェンジチェインとコンボが途切れる
             SwapChain.Reset();
             Combo.Break(Time.time);
-            stunnedUntil = Time.time + stunDuration;
-            extraInvulnerableUntil = Time.time + invulnerableDuration;
+            mStunnedUntil = Time.time + iStunDuration;
+            mExtraInvulnerableUntil = Time.time + iInvulnerableDuration;
         }
 
         /// <summary>移動スキルの無敵で攻撃をかわしたとき、1回の発動につき1度だけ true を返す</summary>
         public bool TryConsumeJustDodge()
         {
-            if (current == null || current.slot != SlotType.Movement || justDodgeAwarded) return false;
-            justDodgeAwarded = true;
+            if (mCurrent == null || mCurrent.Slot != SlotType.Movement || mJustDodgeAwarded) return false;
+            mJustDodgeAwarded = true;
             return true;
         }
 
@@ -1238,32 +1239,32 @@ namespace BattleFight
 
         void UpdateWeaponPose()
         {
-            if (current == null)
+            if (mCurrent == null)
             {
-                weapons.SetIdle();
+                mWeapons.SetIdle();
                 return;
             }
 
-            var step = Step;
-            float normalized = phase switch
+            var aStep = mStep;
+            float aNormalized = mPhase switch
             {
-                Phase.Startup => -Progress(step.startupFrames),
-                Phase.Active => Mathf.Lerp(-1f, 1f, Progress(step.activeFrames)),
-                Phase.Recovery => Mathf.Lerp(1f, 0f, Progress(step.recoveryFrames)),
+                Phase.Startup => -Progress(aStep.StartupFrames),
+                Phase.Active => Mathf.Lerp(-1f, 1f, Progress(aStep.ActiveFrames)),
+                Phase.Recovery => Mathf.Lerp(1f, 0f, Progress(aStep.RecoveryFrames)),
                 Phase.Charging => -1f,
                 _ => -0.6f,
             };
-            weapons.SetSwing(normalized, current.weapon == WeaponType.Hammer, stepIndex % 2 == 0 ? 1f : -1f);
+            mWeapons.SetSwing(aNormalized, mCurrent.Weapon == WeaponType.Hammer, mStepIndex % 2 == 0 ? 1f : -1f);
         }
 
-        float Progress(int frames) => frames <= 0 ? 1f : Mathf.Clamp01(phaseTime / FrameTime.ToSeconds(frames));
+        float Progress(int iFrames) => iFrames <= 0 ? 1f : Mathf.Clamp01(mPhaseTime / FrameTime.ToSeconds(iFrames));
 
-        Vector3 DirectionTo(Vector3 position)
+        Vector3 DirectionTo(Vector3 iPosition)
         {
-            Vector3 direction = Flat(position - transform.position);
-            return direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward;
+            Vector3 aDirection = Flat(iPosition - transform.position);
+            return aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward;
         }
 
-        static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
+        static Vector3 Flat(Vector3 iV) => new Vector3(iV.x, 0f, iV.z);
     }
 }

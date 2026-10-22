@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -8,56 +9,56 @@ namespace BattleFight
     {
         public struct Announcement
         {
-            public string text;
-            public Color color;
-            public float time;
+            public string Text;
+            public Color Color;
+            public float Time;
         }
 
         public const float AnnouncementLifetime = 1.4f;
 
-        [SerializeField] StyleRankConfig config;
+        [SerializeField, FormerlySerializedAs("config")] StyleRankConfig mConfig;
 
-        public StyleRankConfig Config => config;
+        public StyleRankConfig Config => mConfig;
         public StyleRankMeter Meter { get; private set; }
         public int HighestRank { get; private set; }
         public List<Announcement> Announcements { get; } = new List<Announcement>();
 
         public float RewardMultiplier =>
-            config.rewardMultiplier[Mathf.Min(Meter.RankIndex, config.rewardMultiplier.Length - 1)];
+            mConfig.RewardMultiplier[Mathf.Min(Meter.RankIndex, mConfig.RewardMultiplier.Length - 1)];
 
         void Awake()
         {
-            if (config == null) config = ScriptableObject.CreateInstance<StyleRankConfig>();
-            Meter = new StyleRankMeter(config);
+            if (mConfig == null) mConfig = ScriptableObject.CreateInstance<StyleRankConfig>();
+            Meter = new StyleRankMeter(mConfig);
         }
 
         void Update()
         {
             Meter.Tick(Time.deltaTime);
-            Announcements.RemoveAll(a => Time.unscaledTime - a.time > AnnouncementLifetime);
+            Announcements.RemoveAll(iA => Time.unscaledTime - iA.Time > AnnouncementLifetime);
         }
 
-        public void RegisterHit(string moveKey, WeaponType weapon, float basePoints, bool arsenal)
+        public void RegisterHit(string iMoveKey, WeaponType iWeapon, float iBasePoints, bool iArsenal)
         {
-            Meter.RegisterHit(moveKey, weapon, basePoints, arsenal);
+            Meter.RegisterHit(iMoveKey, iWeapon, iBasePoints, iArsenal);
             TrackHighest();
         }
 
-        public void AddBonus(float points)
+        public void AddBonus(float iPoints)
         {
-            Meter.AddPoints(points);
+            Meter.AddPoints(iPoints);
             TrackHighest();
         }
 
-        public void AddBonus(float points, string label, Color color)
+        public void AddBonus(float iPoints, string iLabel, Color iColor)
         {
-            AddBonus(points);
-            Announce(label, color);
+            AddBonus(iPoints);
+            Announce(iLabel, iColor);
         }
 
-        public void Announce(string text, Color color)
+        public void Announce(string iText, Color iColor)
         {
-            Announcements.Add(new Announcement { text = text, color = color, time = Time.unscaledTime });
+            Announcements.Add(new Announcement { Text = iText, Color = iColor, Time = Time.unscaledTime });
             if (Announcements.Count > 5) Announcements.RemoveAt(0);
         }
 

@@ -15,16 +15,16 @@ namespace BattleFight.EditorTools
     /// </summary>
     public static partial class PrototypeSceneBuilder
     {
-        const string Root = "Assets/_Project";
-        const string DataRoot = Root + "/Data";
-        public const string ScenePath = Root + "/Scenes/Prototype_Arena.unity";
-        const string HudFontPath = Root + "/Fonts/NotoSansJP-Bold-Subset.otf";
+        const string mRoot = "Assets/_Project";
+        const string mDataRoot = mRoot + "/Data";
+        public const string ScenePath = mRoot + "/Scenes/Prototype_Arena.unity";
+        const string mHudFontPath = mRoot + "/Fonts/NotoSansJP-Bold-Subset.otf";
 
         [MenuItem("BattleFight/Build Prototype Arena")]
         public static void BuildFromMenu()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            Build(resetData: false);
+            Build(iResetData: false);
         }
 
         [MenuItem("BattleFight/Reset Data To Defaults")]
@@ -33,174 +33,174 @@ namespace BattleFight.EditorTools
             if (!EditorUtility.DisplayDialog("BattleFight", "スキル・武器・敵のアセットをたたき台の数値で上書きします。よろしいですか?", "上書き", "キャンセル"))
                 return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            Build(resetData: true);
+            Build(iResetData: true);
         }
 
         public static void BuildFromCommandLine()
         {
             try
             {
-                Build(resetData: false);
+                Build(iResetData: false);
             }
-            catch (Exception e)
+            catch (Exception aE)
             {
-                Debug.LogException(e);
+                Debug.LogException(aE);
                 EditorApplication.Exit(1);
             }
         }
 
-        static void Build(bool resetData)
+        static void Build(bool iResetData)
         {
-            EnsureFolder(Root, "Data");
-            EnsureFolder(DataRoot, "Skills");
-            EnsureFolder(DataRoot, "Weapons");
-            EnsureFolder(DataRoot, "Enemies");
-            EnsureFolder(Root, "Materials");
-            EnsureFolder(Root, "Scenes");
+            EnsureFolder(mRoot, "Data");
+            EnsureFolder(mDataRoot, "Skills");
+            EnsureFolder(mDataRoot, "Weapons");
+            EnsureFolder(mDataRoot, "Enemies");
+            EnsureFolder(mRoot, "Materials");
+            EnsureFolder(mRoot, "Scenes");
 
             // NewScene は未使用アセットを解放するので、アセットを読み込む前に作る
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var aScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             // ---------- データ ----------
-            var swordCombo = Asset<SkillData>("Skills/Skill_Sword_Combo", resetData, PrototypeDefaults.SwordCombo);
-            var swordIai = Asset<SkillData>("Skills/Skill_Sword_Iai", resetData, PrototypeDefaults.SwordIai);
-            var swordStep = Asset<SkillData>("Skills/Skill_Sword_Step", resetData, PrototypeDefaults.SwordStep);
-            var swordFinisher = Asset<SkillData>("Skills/Skill_Sword_Finisher", resetData, PrototypeDefaults.SwordFinisher);
+            var aSwordCombo = Asset<SkillData>("Skills/Skill_Sword_Combo", iResetData, PrototypeDefaults.SwordCombo);
+            var aSwordIai = Asset<SkillData>("Skills/Skill_Sword_Iai", iResetData, PrototypeDefaults.SwordIai);
+            var aSwordStep = Asset<SkillData>("Skills/Skill_Sword_Step", iResetData, PrototypeDefaults.SwordStep);
+            var aSwordFinisher = Asset<SkillData>("Skills/Skill_Sword_Finisher", iResetData, PrototypeDefaults.SwordFinisher);
 
-            var hammerCombo = Asset<SkillData>("Skills/Skill_Hammer_Combo", resetData, PrototypeDefaults.HammerCombo);
-            var hammerQuake = Asset<SkillData>("Skills/Skill_Hammer_Quake", resetData, PrototypeDefaults.HammerQuake);
-            var hammerJump = Asset<SkillData>("Skills/Skill_Hammer_Jump", resetData, PrototypeDefaults.HammerJump);
-            var hammerFinisher = Asset<SkillData>("Skills/Skill_Hammer_Finisher", resetData, PrototypeDefaults.HammerFinisher);
+            var aHammerCombo = Asset<SkillData>("Skills/Skill_Hammer_Combo", iResetData, PrototypeDefaults.HammerCombo);
+            var aHammerQuake = Asset<SkillData>("Skills/Skill_Hammer_Quake", iResetData, PrototypeDefaults.HammerQuake);
+            var aHammerJump = Asset<SkillData>("Skills/Skill_Hammer_Jump", iResetData, PrototypeDefaults.HammerJump);
+            var aHammerFinisher = Asset<SkillData>("Skills/Skill_Hammer_Finisher", iResetData, PrototypeDefaults.HammerFinisher);
 
-            var chainCombo = Asset<SkillData>("Skills/Skill_Chain_Combo", resetData, PrototypeDefaults.ChainCombo);
-            var chainPull = Asset<SkillData>("Skills/Skill_Chain_Pull", resetData, PrototypeDefaults.ChainPull);
-            var chainWire = Asset<SkillData>("Skills/Skill_Chain_Wire", resetData, PrototypeDefaults.ChainWire);
-            var chainFinisher = Asset<SkillData>("Skills/Skill_Chain_Finisher", resetData, PrototypeDefaults.ChainFinisher);
+            var aChainCombo = Asset<SkillData>("Skills/Skill_Chain_Combo", iResetData, PrototypeDefaults.ChainCombo);
+            var aChainPull = Asset<SkillData>("Skills/Skill_Chain_Pull", iResetData, PrototypeDefaults.ChainPull);
+            var aChainWire = Asset<SkillData>("Skills/Skill_Chain_Wire", iResetData, PrototypeDefaults.ChainWire);
+            var aChainFinisher = Asset<SkillData>("Skills/Skill_Chain_Finisher", iResetData, PrototypeDefaults.ChainFinisher);
 
             // 追加の候補(剣・大槌・鎖)
-            var swordThrust = Asset<SkillData>("Skills/Skill_Sword_Thrust", resetData, PrototypeDefaults.SwordThrust);
-            var swordWave = Asset<SkillData>("Skills/Skill_Sword_Wave", resetData, PrototypeDefaults.SwordWave);
-            var swordPhantom = Asset<SkillData>("Skills/Skill_Sword_Phantom", resetData, PrototypeDefaults.SwordPhantom);
-            var hammerSpin = Asset<SkillData>("Skills/Skill_Hammer_Spin", resetData, PrototypeDefaults.HammerSpin);
-            var hammerMeteor = Asset<SkillData>("Skills/Skill_Hammer_Meteor", resetData, PrototypeDefaults.HammerMeteor);
-            var hammerCharge = Asset<SkillData>("Skills/Skill_Hammer_Charge", resetData, PrototypeDefaults.HammerCharge);
-            var chainRing = Asset<SkillData>("Skills/Skill_Chain_Ring", resetData, PrototypeDefaults.ChainRing);
-            var chainBind = Asset<SkillData>("Skills/Skill_Chain_Bind", resetData, PrototypeDefaults.ChainBind);
+            var aSwordThrust = Asset<SkillData>("Skills/Skill_Sword_Thrust", iResetData, PrototypeDefaults.SwordThrust);
+            var aSwordWave = Asset<SkillData>("Skills/Skill_Sword_Wave", iResetData, PrototypeDefaults.SwordWave);
+            var aSwordPhantom = Asset<SkillData>("Skills/Skill_Sword_Phantom", iResetData, PrototypeDefaults.SwordPhantom);
+            var aHammerSpin = Asset<SkillData>("Skills/Skill_Hammer_Spin", iResetData, PrototypeDefaults.HammerSpin);
+            var aHammerMeteor = Asset<SkillData>("Skills/Skill_Hammer_Meteor", iResetData, PrototypeDefaults.HammerMeteor);
+            var aHammerCharge = Asset<SkillData>("Skills/Skill_Hammer_Charge", iResetData, PrototypeDefaults.HammerCharge);
+            var aChainRing = Asset<SkillData>("Skills/Skill_Chain_Ring", iResetData, PrototypeDefaults.ChainRing);
+            var aChainBind = Asset<SkillData>("Skills/Skill_Chain_Bind", iResetData, PrototypeDefaults.ChainBind);
 
             // 杖(魔法)
-            var staffBolt = Asset<SkillData>("Skills/Skill_Staff_Bolt", resetData, PrototypeDefaults.StaffBolt);
-            var staffMelee = Asset<SkillData>("Skills/Skill_Staff_Melee", resetData, PrototypeDefaults.StaffMelee);
-            var staffFireball = Asset<SkillData>("Skills/Skill_Staff_Fireball", resetData, PrototypeDefaults.StaffFireball);
-            var staffThunder = Asset<SkillData>("Skills/Skill_Staff_Thunder", resetData, PrototypeDefaults.StaffThunder);
-            var staffFrost = Asset<SkillData>("Skills/Skill_Staff_Frost", resetData, PrototypeDefaults.StaffFrost);
-            var staffBlink = Asset<SkillData>("Skills/Skill_Staff_Blink", resetData, PrototypeDefaults.StaffBlink);
-            var staffLevitate = Asset<SkillData>("Skills/Skill_Staff_Levitate", resetData, PrototypeDefaults.StaffLevitate);
-            var staffFinisher = Asset<SkillData>("Skills/Skill_Staff_Finisher", resetData, PrototypeDefaults.StaffFinisher);
+            var aStaffBolt = Asset<SkillData>("Skills/Skill_Staff_Bolt", iResetData, PrototypeDefaults.StaffBolt);
+            var aStaffMelee = Asset<SkillData>("Skills/Skill_Staff_Melee", iResetData, PrototypeDefaults.StaffMelee);
+            var aStaffFireball = Asset<SkillData>("Skills/Skill_Staff_Fireball", iResetData, PrototypeDefaults.StaffFireball);
+            var aStaffThunder = Asset<SkillData>("Skills/Skill_Staff_Thunder", iResetData, PrototypeDefaults.StaffThunder);
+            var aStaffFrost = Asset<SkillData>("Skills/Skill_Staff_Frost", iResetData, PrototypeDefaults.StaffFrost);
+            var aStaffBlink = Asset<SkillData>("Skills/Skill_Staff_Blink", iResetData, PrototypeDefaults.StaffBlink);
+            var aStaffLevitate = Asset<SkillData>("Skills/Skill_Staff_Levitate", iResetData, PrototypeDefaults.StaffLevitate);
+            var aStaffFinisher = Asset<SkillData>("Skills/Skill_Staff_Finisher", iResetData, PrototypeDefaults.StaffFinisher);
 
             // 銃(SF)
-            var gunRapid = Asset<SkillData>("Skills/Skill_Gun_Rapid", resetData, PrototypeDefaults.GunRapid);
-            var gunShotgun = Asset<SkillData>("Skills/Skill_Gun_Shotgun", resetData, PrototypeDefaults.GunShotgun);
-            var gunLaser = Asset<SkillData>("Skills/Skill_Gun_Laser", resetData, PrototypeDefaults.GunLaser);
-            var gunGrenade = Asset<SkillData>("Skills/Skill_Gun_Grenade", resetData, PrototypeDefaults.GunGrenade);
-            var gunJet = Asset<SkillData>("Skills/Skill_Gun_Jet", resetData, PrototypeDefaults.GunJet);
-            var gunSlide = Asset<SkillData>("Skills/Skill_Gun_Slide", resetData, PrototypeDefaults.GunSlide);
-            var gunFinisher = Asset<SkillData>("Skills/Skill_Gun_Finisher", resetData, PrototypeDefaults.GunFinisher);
+            var aGunRapid = Asset<SkillData>("Skills/Skill_Gun_Rapid", iResetData, PrototypeDefaults.GunRapid);
+            var aGunShotgun = Asset<SkillData>("Skills/Skill_Gun_Shotgun", iResetData, PrototypeDefaults.GunShotgun);
+            var aGunLaser = Asset<SkillData>("Skills/Skill_Gun_Laser", iResetData, PrototypeDefaults.GunLaser);
+            var aGunGrenade = Asset<SkillData>("Skills/Skill_Gun_Grenade", iResetData, PrototypeDefaults.GunGrenade);
+            var aGunJet = Asset<SkillData>("Skills/Skill_Gun_Jet", iResetData, PrototypeDefaults.GunJet);
+            var aGunSlide = Asset<SkillData>("Skills/Skill_Gun_Slide", iResetData, PrototypeDefaults.GunSlide);
+            var aGunFinisher = Asset<SkillData>("Skills/Skill_Gun_Finisher", iResetData, PrototypeDefaults.GunFinisher);
 
             // 拳
-            var gauntletRush = Asset<SkillData>("Skills/Skill_Gauntlet_Rush", resetData, PrototypeDefaults.GauntletRush);
-            var gauntletUppercut = Asset<SkillData>("Skills/Skill_Gauntlet_Uppercut", resetData, PrototypeDefaults.GauntletUppercut);
-            var gauntletRocket = Asset<SkillData>("Skills/Skill_Gauntlet_Rocket", resetData, PrototypeDefaults.GauntletRocket);
-            var gauntletDash = Asset<SkillData>("Skills/Skill_Gauntlet_Dash", resetData, PrototypeDefaults.GauntletDash);
-            var gauntletFinisher = Asset<SkillData>("Skills/Skill_Gauntlet_Finisher", resetData, PrototypeDefaults.GauntletFinisher);
+            var aGauntletRush = Asset<SkillData>("Skills/Skill_Gauntlet_Rush", iResetData, PrototypeDefaults.GauntletRush);
+            var aGauntletUppercut = Asset<SkillData>("Skills/Skill_Gauntlet_Uppercut", iResetData, PrototypeDefaults.GauntletUppercut);
+            var aGauntletRocket = Asset<SkillData>("Skills/Skill_Gauntlet_Rocket", iResetData, PrototypeDefaults.GauntletRocket);
+            var aGauntletDash = Asset<SkillData>("Skills/Skill_Gauntlet_Dash", iResetData, PrototypeDefaults.GauntletDash);
+            var aGauntletFinisher = Asset<SkillData>("Skills/Skill_Gauntlet_Finisher", iResetData, PrototypeDefaults.GauntletFinisher);
 
-            var sword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", resetData, w => PrototypeDefaults.Sword(w, swordFinisher));
-            var hammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", resetData, w => PrototypeDefaults.Hammer(w, hammerFinisher));
-            var chain = Asset<WeaponTypeData>("Weapons/Weapon_Chain", resetData, w => PrototypeDefaults.Chain(w, chainFinisher));
-            var staff = Asset<WeaponTypeData>("Weapons/Weapon_Staff", resetData, w => PrototypeDefaults.Staff(w, staffFinisher));
-            var gun = Asset<WeaponTypeData>("Weapons/Weapon_Gun", resetData, w => PrototypeDefaults.Gun(w, gunFinisher));
-            var gauntlet = Asset<WeaponTypeData>("Weapons/Weapon_Gauntlet", resetData, w => PrototypeDefaults.Gauntlet(w, gauntletFinisher));
-            var weapons = new Object[] { sword, hammer, chain, staff, gun, gauntlet };
+            var aSword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", iResetData, iW => PrototypeDefaults.Sword(iW, aSwordFinisher));
+            var aHammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", iResetData, iW => PrototypeDefaults.Hammer(iW, aHammerFinisher));
+            var aChain = Asset<WeaponTypeData>("Weapons/Weapon_Chain", iResetData, iW => PrototypeDefaults.Chain(iW, aChainFinisher));
+            var aStaff = Asset<WeaponTypeData>("Weapons/Weapon_Staff", iResetData, iW => PrototypeDefaults.Staff(iW, aStaffFinisher));
+            var aGun = Asset<WeaponTypeData>("Weapons/Weapon_Gun", iResetData, iW => PrototypeDefaults.Gun(iW, aGunFinisher));
+            var aGauntlet = Asset<WeaponTypeData>("Weapons/Weapon_Gauntlet", iResetData, iW => PrototypeDefaults.Gauntlet(iW, aGauntletFinisher));
+            var aWeapons = new Object[] { aSword, aHammer, aChain, aStaff, aGun, aGauntlet };
 
             // 編成画面で選べるスキル(フィニッシャーは除く)。常に最新の一覧で作り直す
-            var database = Asset<SkillDatabase>("SkillDatabase", true, db => db.skills = new System.Collections.Generic.List<SkillData>
+            var aDatabase = Asset<SkillDatabase>("SkillDatabase", true, iDb => iDb.Skills = new System.Collections.Generic.List<SkillData>
             {
-                swordCombo, swordThrust, swordIai, swordWave, swordStep, swordPhantom,
-                hammerCombo, hammerSpin, hammerQuake, hammerMeteor, hammerJump, hammerCharge,
-                chainCombo, chainRing, chainPull, chainBind, chainWire,
-                staffBolt, staffMelee, staffFireball, staffThunder, staffFrost, staffBlink, staffLevitate,
-                gunRapid, gunShotgun, gunLaser, gunGrenade, gunJet, gunSlide,
-                gauntletRush, gauntletUppercut, gauntletRocket, gauntletDash,
+                aSwordCombo, aSwordThrust, aSwordIai, aSwordWave, aSwordStep, aSwordPhantom,
+                aHammerCombo, aHammerSpin, aHammerQuake, aHammerMeteor, aHammerJump, aHammerCharge,
+                aChainCombo, aChainRing, aChainPull, aChainBind, aChainWire,
+                aStaffBolt, aStaffMelee, aStaffFireball, aStaffThunder, aStaffFrost, aStaffBlink, aStaffLevitate,
+                aGunRapid, aGunShotgun, aGunLaser, aGunGrenade, aGunJet, aGunSlide,
+                aGauntletRush, aGauntletUppercut, aGauntletRocket, aGauntletDash,
             });
 
-            var styleConfig = Asset<StyleRankConfig>("StyleRankConfig", resetData, _ => { });
+            var aStyleConfig = Asset<StyleRankConfig>("StyleRankConfig", iResetData, _ => { });
 
-            var grunt = Asset<EnemyProfile>("Enemies/Enemy_Grunt", resetData, PrototypeDefaults.Grunt);
-            var armored = Asset<EnemyProfile>("Enemies/Enemy_Armored", resetData, PrototypeDefaults.Armored);
-            var boss = Asset<EnemyProfile>("Enemies/Enemy_Boss", resetData, PrototypeDefaults.Boss);
-            var shooter = Asset<EnemyProfile>("Enemies/Enemy_Shooter", resetData, PrototypeDefaults.Shooter);
-            var dasher = Asset<EnemyProfile>("Enemies/Enemy_Dasher", resetData, PrototypeDefaults.Dasher);
-            var flyer = Asset<EnemyProfile>("Enemies/Enemy_Flyer", resetData, PrototypeDefaults.Flyer);
-            var bomber = Asset<EnemyProfile>("Enemies/Enemy_Bomber", resetData, PrototypeDefaults.Bomber);
-            var dummy = Asset<EnemyProfile>("Enemies/Enemy_Dummy", resetData, PrototypeDefaults.Dummy);
-            var armoredDummy = Asset<EnemyProfile>("Enemies/Enemy_ArmoredDummy", resetData, PrototypeDefaults.ArmoredDummy);
-            var flyingDummy = Asset<EnemyProfile>("Enemies/Enemy_FlyingDummy", resetData, PrototypeDefaults.FlyingDummy);
-            var magus = Asset<EnemyProfile>("Enemies/Enemy_Magus", resetData, p => PrototypeDefaults.Magus(p, flyer));
-            var shadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", resetData, PrototypeDefaults.Shadow);
+            var aGrunt = Asset<EnemyProfile>("Enemies/Enemy_Grunt", iResetData, PrototypeDefaults.Grunt);
+            var aArmored = Asset<EnemyProfile>("Enemies/Enemy_Armored", iResetData, PrototypeDefaults.Armored);
+            var aBoss = Asset<EnemyProfile>("Enemies/Enemy_Boss", iResetData, PrototypeDefaults.Boss);
+            var aShooter = Asset<EnemyProfile>("Enemies/Enemy_Shooter", iResetData, PrototypeDefaults.Shooter);
+            var aDasher = Asset<EnemyProfile>("Enemies/Enemy_Dasher", iResetData, PrototypeDefaults.Dasher);
+            var aFlyer = Asset<EnemyProfile>("Enemies/Enemy_Flyer", iResetData, PrototypeDefaults.Flyer);
+            var aBomber = Asset<EnemyProfile>("Enemies/Enemy_Bomber", iResetData, PrototypeDefaults.Bomber);
+            var aDummy = Asset<EnemyProfile>("Enemies/Enemy_Dummy", iResetData, PrototypeDefaults.Dummy);
+            var aArmoredDummy = Asset<EnemyProfile>("Enemies/Enemy_ArmoredDummy", iResetData, PrototypeDefaults.ArmoredDummy);
+            var aFlyingDummy = Asset<EnemyProfile>("Enemies/Enemy_FlyingDummy", iResetData, PrototypeDefaults.FlyingDummy);
+            var aMagus = Asset<EnemyProfile>("Enemies/Enemy_Magus", iResetData, iP => PrototypeDefaults.Magus(iP, aFlyer));
+            var aShadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", iResetData, PrototypeDefaults.Shadow);
 
             // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
-            EnsureWeaknesses(grunt, WeaponType.Sword, WeaponType.Gauntlet);
-            EnsureWeaknesses(armored, WeaponType.Hammer, WeaponType.Gauntlet);
-            EnsureWeaknesses(shooter, WeaponType.Chain, WeaponType.Sword);
-            EnsureWeaknesses(dasher, WeaponType.Staff, WeaponType.Gun);
-            EnsureWeaknesses(flyer, WeaponType.Gun, WeaponType.Staff);
-            EnsureWeaknesses(bomber, WeaponType.Gun, WeaponType.Chain);
-            EnsureWeaknesses(boss, WeaponType.Hammer, WeaponType.Chain);
-            EnsureWeaknesses(magus, WeaponType.Gun, WeaponType.Gauntlet);
-            EnsureWeaknesses(dummy, WeaponType.Sword);
-            EnsureWeaknesses(armoredDummy, WeaponType.Hammer);
-            EnsureWeaknesses(flyingDummy, WeaponType.Gun);
+            EnsureWeaknesses(aGrunt, WeaponType.Sword, WeaponType.Gauntlet);
+            EnsureWeaknesses(aArmored, WeaponType.Hammer, WeaponType.Gauntlet);
+            EnsureWeaknesses(aShooter, WeaponType.Chain, WeaponType.Sword);
+            EnsureWeaknesses(aDasher, WeaponType.Staff, WeaponType.Gun);
+            EnsureWeaknesses(aFlyer, WeaponType.Gun, WeaponType.Staff);
+            EnsureWeaknesses(aBomber, WeaponType.Gun, WeaponType.Chain);
+            EnsureWeaknesses(aBoss, WeaponType.Hammer, WeaponType.Chain);
+            EnsureWeaknesses(aMagus, WeaponType.Gun, WeaponType.Gauntlet);
+            EnsureWeaknesses(aDummy, WeaponType.Sword);
+            EnsureWeaknesses(aArmoredDummy, WeaponType.Hammer);
+            EnsureWeaknesses(aFlyingDummy, WeaponType.Gun);
 
             // プレイヤーと同じスキルを使う敵「写し身」。型(武器種ごとのスキルの組)を切り替え、そのたびに弱点が変わる
-            var mirrorBlade = Asset<EnemyProfile>("Enemies/Enemy_MirrorBlade", resetData, p => PrototypeDefaults.MirrorBlade(p,
-                SkillSet("剣の型", sword, new[] { WeaponType.Hammer, WeaponType.Gauntlet }, swordCombo, swordIai, swordStep),
-                SkillSet("大槌の型", hammer, new[] { WeaponType.Sword, WeaponType.Gun }, hammerCombo, hammerQuake, hammerJump)));
-            var mirrorCaster = Asset<EnemyProfile>("Enemies/Enemy_MirrorCaster", resetData, p => PrototypeDefaults.MirrorCaster(p,
-                SkillSet("杖の型", staff, new[] { WeaponType.Sword, WeaponType.Gauntlet }, staffBolt, staffThunder, staffBlink),
-                SkillSet("銃の型", gun, new[] { WeaponType.Chain, WeaponType.Staff }, gunRapid, gunGrenade, gunSlide)));
-            var mirrorBrawler = Asset<EnemyProfile>("Enemies/Enemy_MirrorBrawler", resetData, p => PrototypeDefaults.MirrorBrawler(p,
-                SkillSet("拳の型", gauntlet, new[] { WeaponType.Hammer, WeaponType.Staff }, gauntletRush, gauntletUppercut, gauntletDash),
-                SkillSet("鎖の型", chain, new[] { WeaponType.Gauntlet, WeaponType.Gun }, chainCombo, chainBind, chainWire)));
+            var aMirrorBlade = Asset<EnemyProfile>("Enemies/Enemy_MirrorBlade", iResetData, iP => PrototypeDefaults.MirrorBlade(iP,
+                SkillSet("剣の型", aSword, new[] { WeaponType.Hammer, WeaponType.Gauntlet }, aSwordCombo, aSwordIai, aSwordStep),
+                SkillSet("大槌の型", aHammer, new[] { WeaponType.Sword, WeaponType.Gun }, aHammerCombo, aHammerQuake, aHammerJump)));
+            var aMirrorCaster = Asset<EnemyProfile>("Enemies/Enemy_MirrorCaster", iResetData, iP => PrototypeDefaults.MirrorCaster(iP,
+                SkillSet("杖の型", aStaff, new[] { WeaponType.Sword, WeaponType.Gauntlet }, aStaffBolt, aStaffThunder, aStaffBlink),
+                SkillSet("銃の型", aGun, new[] { WeaponType.Chain, WeaponType.Staff }, aGunRapid, aGunGrenade, aGunSlide)));
+            var aMirrorBrawler = Asset<EnemyProfile>("Enemies/Enemy_MirrorBrawler", iResetData, iP => PrototypeDefaults.MirrorBrawler(iP,
+                SkillSet("拳の型", aGauntlet, new[] { WeaponType.Hammer, WeaponType.Staff }, aGauntletRush, aGauntletUppercut, aGauntletDash),
+                SkillSet("鎖の型", aChain, new[] { WeaponType.Gauntlet, WeaponType.Gun }, aChainCombo, aChainBind, aChainWire)));
 
             // ボスにもプレイヤーのスキルを混ぜる(弱点はボスのまま)。影刃は型を切り替える
-            EnsureSkillSets(boss, 0f, SkillSet("大槌の技", hammer, null, hammerQuake, hammerJump));
-            EnsureSkillSets(magus, 0f, SkillSet("杖の技", staff, null, staffThunder, staffBolt));
-            EnsureSkillSets(shadow, 8f,
-                SkillSet("剣の型", sword, null, swordIai, swordWave, swordPhantom),
-                SkillSet("鎖の型", chain, null, chainBind, chainRing));
+            EnsureSkillSets(aBoss, 0f, SkillSet("大槌の技", aHammer, null, aHammerQuake, aHammerJump));
+            EnsureSkillSets(aMagus, 0f, SkillSet("杖の技", aStaff, null, aStaffThunder, aStaffBolt));
+            EnsureSkillSets(aShadow, 8f,
+                SkillSet("剣の型", aSword, null, aSwordIai, aSwordWave, aSwordPhantom),
+                SkillSet("鎖の型", aChain, null, aChainBind, aChainRing));
 
-            EnsureFolder(DataRoot, "Stages");
-            var stages = new Object[]
+            EnsureFolder(mDataRoot, "Stages");
+            var aStages = new Object[]
             {
-                Asset<StageData>("Stages/Stage_0_Training", resetData, s => PrototypeDefaults.TrainingStage(s, dummy, armoredDummy, flyingDummy)),
-                Asset<StageData>("Stages/Stage_1_Beast", resetData, s => PrototypeDefaults.Act1(s, grunt, armored, boss)),
-                Asset<StageData>("Stages/Stage_2_Skyfire", resetData, s => PrototypeDefaults.Act2(s, grunt, shooter, dasher, flyer, armored, magus)),
-                Asset<StageData>("Stages/Stage_3_Inferno", resetData,
-                    s => PrototypeDefaults.Act3(s, bomber, dasher, shooter, armored, flyer, boss, magus)),
-                Asset<StageData>("Stages/Stage_4_Shadow", resetData,
-                    s => PrototypeDefaults.Act4(s, dasher, shooter, flyer, armored, bomber, shadow)),
-                Asset<StageData>("Stages/Stage_5_Mirror", resetData,
-                    s => PrototypeDefaults.Act5(s, grunt, shooter, mirrorBlade, mirrorCaster, mirrorBrawler, shadow)),
-                Asset<StageData>("Stages/Stage_9_Endless", resetData,
-                    s => PrototypeDefaults.Endless(s, grunt, dasher, shooter, bomber, flyer, armored, boss, magus)),
-                Asset<StageData>("Stages/Stage_10_Explore", resetData, PrototypeDefaults.ExplorationStage),
+                Asset<StageData>("Stages/Stage_0_Training", iResetData, iS => PrototypeDefaults.TrainingStage(iS, aDummy, aArmoredDummy, aFlyingDummy)),
+                Asset<StageData>("Stages/Stage_1_Beast", iResetData, iS => PrototypeDefaults.Act1(iS, aGrunt, aArmored, aBoss)),
+                Asset<StageData>("Stages/Stage_2_Skyfire", iResetData, iS => PrototypeDefaults.Act2(iS, aGrunt, aShooter, aDasher, aFlyer, aArmored, aMagus)),
+                Asset<StageData>("Stages/Stage_3_Inferno", iResetData,
+                    iS => PrototypeDefaults.Act3(iS, aBomber, aDasher, aShooter, aArmored, aFlyer, aBoss, aMagus)),
+                Asset<StageData>("Stages/Stage_4_Shadow", iResetData,
+                    iS => PrototypeDefaults.Act4(iS, aDasher, aShooter, aFlyer, aArmored, aBomber, aShadow)),
+                Asset<StageData>("Stages/Stage_5_Mirror", iResetData,
+                    iS => PrototypeDefaults.Act5(iS, aGrunt, aShooter, aMirrorBlade, aMirrorCaster, aMirrorBrawler, aShadow)),
+                Asset<StageData>("Stages/Stage_9_Endless", iResetData,
+                    iS => PrototypeDefaults.Endless(iS, aGrunt, aDasher, aShooter, aBomber, aFlyer, aArmored, aBoss, aMagus)),
+                Asset<StageData>("Stages/Stage_10_Explore", iResetData, PrototypeDefaults.ExplorationStage),
             };
             // 既にあるエンドレスにも、新しいボスを加える
-            var endless = (StageData)stages[stages.Length - 2];
-            EnsureEndlessBoss(endless, shadow);
+            var aEndless = (StageData)aStages[aStages.Length - 2];
+            EnsureEndlessBoss(aEndless, aShadow);
             // 写し身もエンドレスに混ぜる
-            EnsureEndlessEntry(endless, mirrorBlade, 3f, 4);
-            EnsureEndlessEntry(endless, mirrorCaster, 3f, 5);
-            EnsureEndlessEntry(endless, mirrorBrawler, 3f, 6);
+            EnsureEndlessEntry(aEndless, aMirrorBlade, 3f, 4);
+            EnsureEndlessEntry(aEndless, aMirrorCaster, 3f, 5);
+            EnsureEndlessEntry(aEndless, aMirrorBrawler, 3f, 6);
 
             AssetDatabase.SaveAssets();
 
@@ -210,181 +210,181 @@ namespace BattleFight.EditorTools
             RenderSettings.ambientEquatorColor = new Color(0.4f, 0.4f, 0.45f);
             RenderSettings.ambientGroundColor = new Color(0.2f, 0.2f, 0.22f);
 
-            var lightObject = new GameObject("Directional Light");
-            var light = lightObject.AddComponent<Light>();
-            light.type = LightType.Directional;
-            light.intensity = 1.3f;
-            light.shadows = LightShadows.Soft;
-            lightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            var aLightObject = new GameObject("Directional Light");
+            var aLight = aLightObject.AddComponent<Light>();
+            aLight.type = LightType.Directional;
+            aLight.intensity = 1.3f;
+            aLight.shadows = LightShadows.Soft;
+            aLightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
-            var arenaRoot = BuildArena();
+            var aArenaRoot = BuildArena();
 
             // 探索マップ(アリーナとは離れた場所に作る。探索のステージでだけ出す)
-            var explorationSkills = new ExplorationSkills
+            var aExplorationSkills = new ExplorationSkills
             {
-                swordCombo = swordCombo, swordIai = swordIai, swordStep = swordStep,
-                hammerCombo = hammerCombo, hammerSpin = hammerSpin, hammerQuake = hammerQuake, hammerMeteor = hammerMeteor,
-                hammerJump = hammerJump,
-                chainCombo = chainCombo, chainPull = chainPull, chainWire = chainWire,
-                staffBolt = staffBolt, staffBlink = staffBlink, staffFireball = staffFireball, staffThunder = staffThunder,
+                SwordCombo = aSwordCombo, SwordIai = aSwordIai, SwordStep = aSwordStep,
+                HammerCombo = aHammerCombo, HammerSpin = aHammerSpin, HammerQuake = aHammerQuake, HammerMeteor = aHammerMeteor,
+                HammerJump = aHammerJump,
+                ChainCombo = aChainCombo, ChainPull = aChainPull, ChainWire = aChainWire,
+                StaffBolt = aStaffBolt, StaffBlink = aStaffBlink, StaffFireball = aStaffFireball, StaffThunder = aStaffThunder,
             };
-            var explorationEnemies = new ExplorationEnemies
+            var aExplorationEnemies = new ExplorationEnemies
             {
-                grunt = grunt, armored = armored, shooter = shooter, dasher = dasher, flyer = flyer, boss = boss,
+                Grunt = aGrunt, Armored = aArmored, Shooter = aShooter, Dasher = aDasher, Flyer = aFlyer, Boss = aBoss,
             };
-            var exploration = BuildExploration(explorationSkills, explorationEnemies);
+            var aExploration = BuildExploration(aExplorationSkills, aExplorationEnemies);
 
             // プレイヤー
-            var player = new GameObject("Player") { tag = "Player" };
-            player.transform.position = new Vector3(0f, 0.1f, -10f);
-            var controller = player.AddComponent<CharacterController>();
-            controller.center = new Vector3(0f, 1f, 0f);
-            controller.height = 2f;
-            controller.radius = 0.4f;
-            controller.stepOffset = 0.3f;
-            controller.skinWidth = 0.05f;
+            var aPlayer = new GameObject("Player") { tag = "Player" };
+            aPlayer.transform.position = new Vector3(0f, 0.1f, -10f);
+            var aController = aPlayer.AddComponent<CharacterController>();
+            aController.center = new Vector3(0f, 1f, 0f);
+            aController.height = 2f;
+            aController.radius = 0.4f;
+            aController.stepOffset = 0.3f;
+            aController.skinWidth = 0.05f;
 
-            var body = Part(PrimitiveType.Capsule, "Body", player.transform, new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f),
+            var aBody = Part(PrimitiveType.Capsule, "Body", aPlayer.transform, new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f),
                 Mat("Player", new Color(0.9f, 0.9f, 0.95f)));
-            Part(PrimitiveType.Cube, "Visor", body, new Vector3(0f, 0.5f, 0.4f), new Vector3(0.7f, 0.15f, 0.3f),
+            Part(PrimitiveType.Cube, "Visor", aBody, new Vector3(0f, 0.5f, 0.4f), new Vector3(0.7f, 0.15f, 0.3f),
                 Mat("Visor", new Color(0.1f, 0.6f, 1f)));
-            var hand = new GameObject("HandAnchor").transform;
-            hand.SetParent(player.transform, false);
-            hand.localPosition = new Vector3(0.45f, 1.15f, 0.25f);
+            var aHand = new GameObject("HandAnchor").transform;
+            aHand.SetParent(aPlayer.transform, false);
+            aHand.localPosition = new Vector3(0.45f, 1.15f, 0.25f);
 
-            var damageable = player.AddComponent<Damageable>();
-            var input = player.AddComponent<PlayerInputReader>();
-            var motor = player.AddComponent<PlayerMotor>();
-            var slots = player.AddComponent<SkillSlotController>();
-            var weaponHolder = player.AddComponent<WeaponHolder>();
-            var lockOn = player.AddComponent<LockOnSystem>();
-            var style = player.AddComponent<StyleRankSystem>();
-            var executor = player.AddComponent<SkillExecutor>();
-            var playerController = player.AddComponent<PlayerController>();
+            var aDamageable = aPlayer.AddComponent<Damageable>();
+            var aInput = aPlayer.AddComponent<PlayerInputReader>();
+            var aMotor = aPlayer.AddComponent<PlayerMotor>();
+            var aSlots = aPlayer.AddComponent<SkillSlotController>();
+            var aWeaponHolder = aPlayer.AddComponent<WeaponHolder>();
+            var aLockOn = aPlayer.AddComponent<LockOnSystem>();
+            var aStyle = aPlayer.AddComponent<StyleRankSystem>();
+            var aExecutor = aPlayer.AddComponent<SkillExecutor>();
+            var aPlayerController = aPlayer.AddComponent<PlayerController>();
 
             // カメラ
-            var cameraObject = new GameObject("Main Camera") { tag = "MainCamera" };
-            var camera = cameraObject.AddComponent<Camera>();
-            camera.fieldOfView = 55f;
-            camera.nearClipPlane = 0.1f;
-            cameraObject.AddComponent<AudioListener>();
-            var cameraRig = cameraObject.AddComponent<ThirdPersonCamera>();
-            cameraObject.transform.position = new Vector3(0f, 4f, -17f);
+            var aCameraObject = new GameObject("Main Camera") { tag = "MainCamera" };
+            var aCamera = aCameraObject.AddComponent<Camera>();
+            aCamera.fieldOfView = 55f;
+            aCamera.nearClipPlane = 0.1f;
+            aCameraObject.AddComponent<AudioListener>();
+            var aCameraRig = aCameraObject.AddComponent<ThirdPersonCamera>();
+            aCameraObject.transform.position = new Vector3(0f, 4f, -17f);
 
             // ゲーム進行
-            var directorObject = new GameObject("GameDirector");
-            var director = directorObject.AddComponent<ArenaDirector>();
-            var feedback = directorObject.AddComponent<CombatFeedback>();
+            var aDirectorObject = new GameObject("GameDirector");
+            var aDirector = aDirectorObject.AddComponent<ArenaDirector>();
+            var aFeedback = aDirectorObject.AddComponent<CombatFeedback>();
             // UI(UI Toolkit)。画面ごとに UIDocument を分け、同じ PanelSettings で重ねる
-            var panel = BuildPanelSettings();
-            var hud = UiDocument<BattleHud>("UI_Hud", "Hud", panel, 0);
-            var stageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", panel, 10);
-            var loadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", panel, 20);
+            var aPanel = BuildPanelSettings();
+            var aHud = UiDocument<BattleHud>("UI_Hud", "Hud", aPanel, 0);
+            var aStageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", aPanel, 10);
+            var aLoadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", aPanel, 20);
 
             // ---------- 参照の設定 ----------
-            Configure(damageable, so =>
+            Configure(aDamageable, iSo =>
             {
-                so.FindProperty("team").enumValueIndex = (int)Team.Player;
-                so.FindProperty("maxHealth").floatValue = 200f;
+                iSo.FindProperty("mTeam").enumValueIndex = (int)Team.Player;
+                iSo.FindProperty("mMaxHealth").floatValue = 200f;
             });
-            Configure(slots, so =>
+            Configure(aSlots, iSo =>
             {
-                SetArray(so, "attackARack", swordCombo, hammerCombo, chainCombo);
-                SetArray(so, "attackBRack", swordIai, hammerQuake, chainPull);
-                SetArray(so, "movementRack", swordStep, hammerJump, chainWire);
-                SetArray(so, "weaponDatabase", weapons);
-                so.FindProperty("database").objectReferenceValue = database;
+                SetArray(iSo, "mAttackARack", aSwordCombo, aHammerCombo, aChainCombo);
+                SetArray(iSo, "mAttackBRack", aSwordIai, aHammerQuake, aChainPull);
+                SetArray(iSo, "mMovementRack", aSwordStep, aHammerJump, aChainWire);
+                SetArray(iSo, "mWeaponDatabase", aWeapons);
+                iSo.FindProperty("mDatabase").objectReferenceValue = aDatabase;
                 // プリセット方式を試せるよう、最初からプリセット方式にしておく
-                so.FindProperty("mode").enumValueIndex = (int)SwapMode.Preset;
-                var presets = so.FindProperty("defaultPresets");
-                SetPreset(presets, 0, "剣士", swordCombo, swordIai, swordStep);
-                SetPreset(presets, 1, "魔導士", staffBolt, staffThunder, staffBlink);
-                SetPreset(presets, 2, "ガンナー", gunRapid, gunGrenade, gunJet);
-                SetPreset(presets, 3, "混成", gauntletRush, hammerQuake, chainWire);
+                iSo.FindProperty("mMode").enumValueIndex = (int)SwapMode.Preset;
+                var aPresets = iSo.FindProperty("mDefaultPresets");
+                SetPreset(aPresets, 0, "剣士", aSwordCombo, aSwordIai, aSwordStep);
+                SetPreset(aPresets, 1, "魔導士", aStaffBolt, aStaffThunder, aStaffBlink);
+                SetPreset(aPresets, 2, "ガンナー", aGunRapid, aGunGrenade, aGunJet);
+                SetPreset(aPresets, 3, "混成", aGauntletRush, aHammerQuake, aChainWire);
             });
-            Configure(weaponHolder, so =>
+            Configure(aWeaponHolder, iSo =>
             {
-                so.FindProperty("handAnchor").objectReferenceValue = hand;
-                so.FindProperty("slots").objectReferenceValue = slots;
-                so.FindProperty("surfaceMaterial").objectReferenceValue = Mat("Surface", Color.white);
-                SetArray(so, "weaponDatabase", weapons);
+                iSo.FindProperty("mHandAnchor").objectReferenceValue = aHand;
+                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSo.FindProperty("mSurfaceMaterial").objectReferenceValue = Mat("Surface", Color.white);
+                SetArray(iSo, "mWeaponDatabase", aWeapons);
             });
-            Configure(lockOn, so =>
+            Configure(aLockOn, iSo =>
             {
-                so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("viewTransform").objectReferenceValue = cameraObject.transform;
+                iSo.FindProperty("mInput").objectReferenceValue = aInput;
+                iSo.FindProperty("mViewTransform").objectReferenceValue = aCameraObject.transform;
             });
-            Configure(style, so => so.FindProperty("config").objectReferenceValue = styleConfig);
-            Configure(executor, so =>
+            Configure(aStyle, iSo => iSo.FindProperty("mConfig").objectReferenceValue = aStyleConfig);
+            Configure(aExecutor, iSo =>
             {
-                so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("motor").objectReferenceValue = motor;
-                so.FindProperty("slots").objectReferenceValue = slots;
-                so.FindProperty("weapons").objectReferenceValue = weaponHolder;
-                so.FindProperty("lockOn").objectReferenceValue = lockOn;
-                so.FindProperty("style").objectReferenceValue = style;
-                so.FindProperty("self").objectReferenceValue = damageable;
-                so.FindProperty("view").objectReferenceValue = camera;
+                iSo.FindProperty("mInput").objectReferenceValue = aInput;
+                iSo.FindProperty("mMotor").objectReferenceValue = aMotor;
+                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSo.FindProperty("mWeapons").objectReferenceValue = aWeaponHolder;
+                iSo.FindProperty("mLockOn").objectReferenceValue = aLockOn;
+                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSo.FindProperty("mSelf").objectReferenceValue = aDamageable;
+                iSo.FindProperty("mView").objectReferenceValue = aCamera;
             });
-            Configure(playerController, so =>
+            Configure(aPlayerController, iSo =>
             {
-                so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("motor").objectReferenceValue = motor;
-                so.FindProperty("executor").objectReferenceValue = executor;
-                so.FindProperty("damageable").objectReferenceValue = damageable;
-                so.FindProperty("style").objectReferenceValue = style;
-                so.FindProperty("cameraTransform").objectReferenceValue = cameraObject.transform;
+                iSo.FindProperty("mInput").objectReferenceValue = aInput;
+                iSo.FindProperty("mMotor").objectReferenceValue = aMotor;
+                iSo.FindProperty("mExecutor").objectReferenceValue = aExecutor;
+                iSo.FindProperty("mDamageable").objectReferenceValue = aDamageable;
+                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSo.FindProperty("mCameraTransform").objectReferenceValue = aCameraObject.transform;
             });
-            Configure(cameraRig, so =>
+            Configure(aCameraRig, iSo =>
             {
-                so.FindProperty("target").objectReferenceValue = player.transform;
-                so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("lockOn").objectReferenceValue = lockOn;
+                iSo.FindProperty("mTarget").objectReferenceValue = aPlayer.transform;
+                iSo.FindProperty("mInput").objectReferenceValue = aInput;
+                iSo.FindProperty("mLockOn").objectReferenceValue = aLockOn;
             });
             // 実行時に生成する仮モデル用。シーンから参照してシェーダーがビルドに残るようにする
-            var surface = Mat("Surface", Color.white);
-            Configure(feedback, so =>
+            var aSurface = Mat("Surface", Color.white);
+            Configure(aFeedback, iSo =>
             {
-                so.FindProperty("cameraRig").objectReferenceValue = cameraRig;
-                so.FindProperty("effectMaterial").objectReferenceValue = surface;
+                iSo.FindProperty("mCameraRig").objectReferenceValue = aCameraRig;
+                iSo.FindProperty("mEffectMaterial").objectReferenceValue = aSurface;
             });
-            Configure(hud, so =>
+            Configure(aHud, iSo =>
             {
-                so.FindProperty("slots").objectReferenceValue = slots;
-                so.FindProperty("executor").objectReferenceValue = executor;
-                so.FindProperty("style").objectReferenceValue = style;
-                so.FindProperty("player").objectReferenceValue = damageable;
-                so.FindProperty("lockOn").objectReferenceValue = lockOn;
-                so.FindProperty("director").objectReferenceValue = director;
-                so.FindProperty("view").objectReferenceValue = camera;
+                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSo.FindProperty("mExecutor").objectReferenceValue = aExecutor;
+                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSo.FindProperty("mPlayer").objectReferenceValue = aDamageable;
+                iSo.FindProperty("mLockOn").objectReferenceValue = aLockOn;
+                iSo.FindProperty("mDirector").objectReferenceValue = aDirector;
+                iSo.FindProperty("mView").objectReferenceValue = aCamera;
             });
-            Configure(loadoutEditor, so =>
+            Configure(aLoadoutEditor, iSo =>
             {
-                so.FindProperty("slots").objectReferenceValue = slots;
-                so.FindProperty("input").objectReferenceValue = input;
+                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSo.FindProperty("mInput").objectReferenceValue = aInput;
             });
-            Configure(director, so =>
+            Configure(aDirector, iSo =>
             {
-                so.FindProperty("player").objectReferenceValue = player.transform;
-                so.FindProperty("input").objectReferenceValue = input;
-                so.FindProperty("style").objectReferenceValue = style;
-                so.FindProperty("enemyMaterial").objectReferenceValue = surface;
-                SetArray(so, "stages", stages);
-                so.FindProperty("arenaRoot").objectReferenceValue = arenaRoot.gameObject;
-                so.FindProperty("exploration").objectReferenceValue = exploration;
-                so.FindProperty("slots").objectReferenceValue = slots;
+                iSo.FindProperty("mPlayer").objectReferenceValue = aPlayer.transform;
+                iSo.FindProperty("mInput").objectReferenceValue = aInput;
+                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSo.FindProperty("mEnemyMaterial").objectReferenceValue = aSurface;
+                SetArray(iSo, "mStages", aStages);
+                iSo.FindProperty("mArenaRoot").objectReferenceValue = aArenaRoot.gameObject;
+                iSo.FindProperty("mExploration").objectReferenceValue = aExploration;
+                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
             });
-            Configure(stageSelect, so =>
+            Configure(aStageSelect, iSo =>
             {
-                so.FindProperty("director").objectReferenceValue = director;
-                so.FindProperty("rankConfig").objectReferenceValue = styleConfig;
+                iSo.FindProperty("mDirector").objectReferenceValue = aDirector;
+                iSo.FindProperty("mRankConfig").objectReferenceValue = aStyleConfig;
             });
 
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorSceneManager.SaveScene(aScene, ScenePath);
 
-            var buildScenes = EditorBuildSettings.scenes.Where(s => s.path != ScenePath).ToList();
-            buildScenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
-            EditorBuildSettings.scenes = buildScenes.ToArray();
+            var aBuildScenes = EditorBuildSettings.scenes.Where(iS => iS.path != ScenePath).ToList();
+            aBuildScenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
+            EditorBuildSettings.scenes = aBuildScenes.ToArray();
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[BattleFight] 試作アリーナを生成しました: {ScenePath}");
@@ -392,30 +392,30 @@ namespace BattleFight.EditorTools
 
         static Transform BuildArena()
         {
-            var arena = new GameObject("Arena").transform;
-            var floorMat = Mat("Floor", new Color(0.32f, 0.34f, 0.38f));
-            var wallMat = Mat("Wall", new Color(0.22f, 0.23f, 0.27f));
-            var pillarMat = Mat("Pillar", new Color(0.4f, 0.38f, 0.36f));
-            var platformMat = Mat("Platform", new Color(0.35f, 0.4f, 0.45f));
-            var grappleMat = Mat("GrapplePoint", new Color(0.75f, 0.5f, 1f));
+            var aArena = new GameObject("Arena").transform;
+            var aFloorMat = Mat("Floor", new Color(0.32f, 0.34f, 0.38f));
+            var aWallMat = Mat("Wall", new Color(0.22f, 0.23f, 0.27f));
+            var aPillarMat = Mat("Pillar", new Color(0.4f, 0.38f, 0.36f));
+            var aPlatformMat = Mat("Platform", new Color(0.35f, 0.4f, 0.45f));
+            var aGrappleMat = Mat("GrapplePoint", new Color(0.75f, 0.5f, 1f));
 
-            Part(PrimitiveType.Cube, "Floor", arena, new Vector3(0f, -0.5f, 0f), new Vector3(60f, 1f, 60f), floorMat, true);
-            Part(PrimitiveType.Cube, "Wall_N", arena, new Vector3(0f, 2f, 30f), new Vector3(60f, 4f, 1f), wallMat, true);
-            Part(PrimitiveType.Cube, "Wall_S", arena, new Vector3(0f, 2f, -30f), new Vector3(60f, 4f, 1f), wallMat, true);
-            Part(PrimitiveType.Cube, "Wall_E", arena, new Vector3(30f, 2f, 0f), new Vector3(1f, 4f, 60f), wallMat, true);
-            Part(PrimitiveType.Cube, "Wall_W", arena, new Vector3(-30f, 2f, 0f), new Vector3(1f, 4f, 60f), wallMat, true);
+            Part(PrimitiveType.Cube, "Floor", aArena, new Vector3(0f, -0.5f, 0f), new Vector3(60f, 1f, 60f), aFloorMat, true);
+            Part(PrimitiveType.Cube, "Wall_N", aArena, new Vector3(0f, 2f, 30f), new Vector3(60f, 4f, 1f), aWallMat, true);
+            Part(PrimitiveType.Cube, "Wall_S", aArena, new Vector3(0f, 2f, -30f), new Vector3(60f, 4f, 1f), aWallMat, true);
+            Part(PrimitiveType.Cube, "Wall_E", aArena, new Vector3(30f, 2f, 0f), new Vector3(1f, 4f, 60f), aWallMat, true);
+            Part(PrimitiveType.Cube, "Wall_W", aArena, new Vector3(-30f, 2f, 0f), new Vector3(1f, 4f, 60f), aWallMat, true);
 
-            Part(PrimitiveType.Cube, "Pillar_1", arena, new Vector3(-12f, 3f, 8f), new Vector3(2f, 6f, 2f), pillarMat, true);
-            Part(PrimitiveType.Cube, "Pillar_2", arena, new Vector3(12f, 3f, 8f), new Vector3(2f, 6f, 2f), pillarMat, true);
-            Part(PrimitiveType.Cube, "Pillar_3", arena, new Vector3(-12f, 3f, -8f), new Vector3(2f, 6f, 2f), pillarMat, true);
-            Part(PrimitiveType.Cube, "Pillar_4", arena, new Vector3(12f, 3f, -8f), new Vector3(2f, 6f, 2f), pillarMat, true);
+            Part(PrimitiveType.Cube, "Pillar_1", aArena, new Vector3(-12f, 3f, 8f), new Vector3(2f, 6f, 2f), aPillarMat, true);
+            Part(PrimitiveType.Cube, "Pillar_2", aArena, new Vector3(12f, 3f, 8f), new Vector3(2f, 6f, 2f), aPillarMat, true);
+            Part(PrimitiveType.Cube, "Pillar_3", aArena, new Vector3(-12f, 3f, -8f), new Vector3(2f, 6f, 2f), aPillarMat, true);
+            Part(PrimitiveType.Cube, "Pillar_4", aArena, new Vector3(12f, 3f, -8f), new Vector3(2f, 6f, 2f), aPillarMat, true);
 
             // ハンマージャンプやワイヤーで乗れる高台
-            Part(PrimitiveType.Cube, "Platform_W", arena, new Vector3(-22f, 1.5f, 0f), new Vector3(8f, 3f, 10f), platformMat, true);
-            Part(PrimitiveType.Cube, "Platform_E", arena, new Vector3(22f, 1.5f, 0f), new Vector3(8f, 3f, 10f), platformMat, true);
+            Part(PrimitiveType.Cube, "Platform_W", aArena, new Vector3(-22f, 1.5f, 0f), new Vector3(8f, 3f, 10f), aPlatformMat, true);
+            Part(PrimitiveType.Cube, "Platform_E", aArena, new Vector3(22f, 1.5f, 0f), new Vector3(8f, 3f, 10f), aPlatformMat, true);
 
             // ワイヤーで立体的に移動できるよう、高さと位置をばらして置く
-            Vector3[] grapplePoints =
+            Vector3[] aGrapplePoints =
             {
                 // 高台の上
                 new Vector3(-22f, 8f, 0f), new Vector3(22f, 8f, 0f),
@@ -430,130 +430,130 @@ namespace BattleFight.EditorTools
                 // アリーナ中央の上空
                 new Vector3(0f, 12f, 0f),
             };
-            for (int i = 0; i < grapplePoints.Length; i++)
+            for (int aI = 0; aI < aGrapplePoints.Length; aI++)
             {
-                var point = Part(PrimitiveType.Sphere, $"GrapplePoint_{i + 1}", arena, grapplePoints[i], Vector3.one * 0.8f, grappleMat);
-                point.gameObject.AddComponent<GrapplePoint>();
+                var aPoint = Part(PrimitiveType.Sphere, $"GrapplePoint_{aI + 1}", aArena, aGrapplePoints[aI], Vector3.one * 0.8f, aGrappleMat);
+                aPoint.gameObject.AddComponent<GrapplePoint>();
             }
-            return arena;
+            return aArena;
         }
 
         // ---------- 補助 ----------
 
-        static T Asset<T>(string relativePath, bool reset, Action<T> initialize) where T : ScriptableObject
+        static T Asset<T>(string iRelativePath, bool iReset, Action<T> iInitialize) where T : ScriptableObject
         {
-            string path = $"{DataRoot}/{relativePath}.asset";
-            var asset = AssetDatabase.LoadAssetAtPath<T>(path);
-            if (asset == null)
+            string aPath = $"{mDataRoot}/{iRelativePath}.asset";
+            var aAsset = AssetDatabase.LoadAssetAtPath<T>(aPath);
+            if (aAsset == null)
             {
-                asset = ScriptableObject.CreateInstance<T>();
-                initialize(asset);
-                AssetDatabase.CreateAsset(asset, path);
+                aAsset = ScriptableObject.CreateInstance<T>();
+                iInitialize(aAsset);
+                AssetDatabase.CreateAsset(aAsset, aPath);
             }
-            else if (reset)
+            else if (iReset)
             {
-                initialize(asset);
-                EditorUtility.SetDirty(asset);
+                iInitialize(aAsset);
+                EditorUtility.SetDirty(aAsset);
             }
-            return asset;
+            return aAsset;
         }
 
-        static Material Mat(string name, Color color)
+        static Material Mat(string iName, Color iColor)
         {
-            string path = $"{Root}/Materials/M_{name}.mat";
-            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material != null) return material;
+            string aPath = $"{mRoot}/Materials/M_{iName}.mat";
+            var aMaterial = AssetDatabase.LoadAssetAtPath<Material>(aPath);
+            if (aMaterial != null) return aMaterial;
 
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            material = new Material(shader);
-            material.SetColor("_BaseColor", color);
-            material.color = color;
-            AssetDatabase.CreateAsset(material, path);
-            return material;
+            var aShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            aMaterial = new Material(aShader);
+            aMaterial.SetColor("_BaseColor", iColor);
+            aMaterial.color = iColor;
+            AssetDatabase.CreateAsset(aMaterial, aPath);
+            return aMaterial;
         }
 
-        static Transform Part(PrimitiveType shape, string name, Transform parent, Vector3 localPosition, Vector3 localScale,
-            Material material, bool keepCollider = false)
+        static Transform Part(PrimitiveType iShape, string iName, Transform iParent, Vector3 iLocalPosition, Vector3 iLocalScale,
+            Material iMaterial, bool iKeepCollider = false)
         {
-            var go = GameObject.CreatePrimitive(shape);
-            go.name = name;
-            if (!keepCollider) Object.DestroyImmediate(go.GetComponent<Collider>());
-            go.transform.SetParent(parent, false);
-            go.transform.localPosition = localPosition;
-            go.transform.localScale = localScale;
-            go.GetComponent<Renderer>().sharedMaterial = material;
-            return go.transform;
+            var aGo = GameObject.CreatePrimitive(iShape);
+            aGo.name = iName;
+            if (!iKeepCollider) Object.DestroyImmediate(aGo.GetComponent<Collider>());
+            aGo.transform.SetParent(iParent, false);
+            aGo.transform.localPosition = iLocalPosition;
+            aGo.transform.localScale = iLocalScale;
+            aGo.GetComponent<Renderer>().sharedMaterial = iMaterial;
+            return aGo.transform;
         }
 
-        static void Configure(Object target, Action<SerializedObject> configure)
+        static void Configure(Object iTarget, Action<SerializedObject> iConfigure)
         {
-            var so = new SerializedObject(target);
-            configure(so);
-            so.ApplyModifiedPropertiesWithoutUndo();
+            var aSo = new SerializedObject(iTarget);
+            iConfigure(aSo);
+            aSo.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        static void SetArray(SerializedObject so, string field, params Object[] values)
+        static void SetArray(SerializedObject iSo, string iField, params Object[] iValues)
         {
-            var property = so.FindProperty(field);
-            property.arraySize = values.Length;
-            for (int i = 0; i < values.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            var aProperty = iSo.FindProperty(iField);
+            aProperty.arraySize = iValues.Length;
+            for (int aI = 0; aI < iValues.Length; aI++) aProperty.GetArrayElementAtIndex(aI).objectReferenceValue = iValues[aI];
         }
 
-        static void EnsureEndlessBoss(StageData endless, EnemyProfile boss)
+        static void EnsureEndlessBoss(StageData iEndless, EnemyProfile iBoss)
         {
-            if (endless == null || boss == null) return;
-            var bosses = new System.Collections.Generic.List<EnemyProfile>(endless.endlessBosses ?? new EnemyProfile[0]);
-            if (bosses.Contains(boss)) return;
-            bosses.Add(boss);
-            endless.endlessBosses = bosses.ToArray();
-            EditorUtility.SetDirty(endless);
+            if (iEndless == null || iBoss == null) return;
+            var aBosses = new System.Collections.Generic.List<EnemyProfile>(iEndless.EndlessBosses ?? new EnemyProfile[0]);
+            if (aBosses.Contains(iBoss)) return;
+            aBosses.Add(iBoss);
+            iEndless.EndlessBosses = aBosses.ToArray();
+            EditorUtility.SetDirty(iEndless);
         }
 
-        static EnemySkillSet SkillSet(string name, WeaponTypeData weapon, WeaponType[] weaknesses, params SkillData[] skills) => new EnemySkillSet
+        static EnemySkillSet SkillSet(string iName, WeaponTypeData iWeapon, WeaponType[] iWeaknesses, params SkillData[] iSkills) => new EnemySkillSet
         {
-            name = name,
-            weapon = weapon.weapon,
-            color = weapon.color,
-            skills = skills,
-            weaknesses = weaknesses ?? new WeaponType[0],
+            Name = iName,
+            Weapon = iWeapon.Weapon,
+            Color = iWeapon.Color,
+            Skills = iSkills,
+            Weaknesses = iWeaknesses ?? new WeaponType[0],
         };
 
         /// <summary>まだスキルを持っていない敵にだけ、プレイヤーのスキルの型を入れる(既にある調整を上書きしない)</summary>
-        static void EnsureSkillSets(EnemyProfile profile, float swapInterval, params EnemySkillSet[] sets)
+        static void EnsureSkillSets(EnemyProfile iProfile, float iSwapInterval, params EnemySkillSet[] iSets)
         {
-            if (profile == null || (profile.skillSets != null && profile.skillSets.Count > 0)) return;
-            profile.skillSets = new System.Collections.Generic.List<EnemySkillSet>(sets);
-            profile.skillSwapInterval = swapInterval;
-            EditorUtility.SetDirty(profile);
+            if (iProfile == null || (iProfile.SkillSets != null && iProfile.SkillSets.Count > 0)) return;
+            iProfile.SkillSets = new System.Collections.Generic.List<EnemySkillSet>(iSets);
+            iProfile.SkillSwapInterval = iSwapInterval;
+            EditorUtility.SetDirty(iProfile);
         }
 
-        static void EnsureEndlessEntry(StageData endless, EnemyProfile profile, float cost, int minWave)
+        static void EnsureEndlessEntry(StageData iEndless, EnemyProfile iProfile, float iCost, int iMinWave)
         {
-            if (endless == null || profile == null || endless.endlessPool.Exists(e => e.profile == profile)) return;
-            endless.endlessPool.Add(new EndlessEntry { profile = profile, cost = cost, minWave = minWave });
-            EditorUtility.SetDirty(endless);
+            if (iEndless == null || iProfile == null || iEndless.EndlessPool.Exists(iE => iE.Profile == iProfile)) return;
+            iEndless.EndlessPool.Add(new EndlessEntry { Profile = iProfile, Cost = iCost, MinWave = iMinWave });
+            EditorUtility.SetDirty(iEndless);
         }
 
-        static void EnsureWeaknesses(EnemyProfile profile, params WeaponType[] weaknesses)
+        static void EnsureWeaknesses(EnemyProfile iProfile, params WeaponType[] iWeaknesses)
         {
-            if (profile == null || (profile.weaknesses != null && profile.weaknesses.Length > 0)) return;
-            profile.weaknesses = weaknesses;
-            EditorUtility.SetDirty(profile);
+            if (iProfile == null || (iProfile.Weaknesses != null && iProfile.Weaknesses.Length > 0)) return;
+            iProfile.Weaknesses = iWeaknesses;
+            EditorUtility.SetDirty(iProfile);
         }
 
-        static void SetPreset(SerializedProperty presets, int index, string name, SkillData attackA, SkillData attackB, SkillData movement)
+        static void SetPreset(SerializedProperty iPresets, int iIndex, string iName, SkillData iAttackA, SkillData iAttackB, SkillData iMovement)
         {
-            if (presets.arraySize <= index) presets.arraySize = index + 1;
-            var preset = presets.GetArrayElementAtIndex(index);
-            preset.FindPropertyRelative("name").stringValue = name;
-            preset.FindPropertyRelative("attackA").objectReferenceValue = attackA;
-            preset.FindPropertyRelative("attackB").objectReferenceValue = attackB;
-            preset.FindPropertyRelative("movement").objectReferenceValue = movement;
+            if (iPresets.arraySize <= iIndex) iPresets.arraySize = iIndex + 1;
+            var aPreset = iPresets.GetArrayElementAtIndex(iIndex);
+            aPreset.FindPropertyRelative("Name").stringValue = iName;
+            aPreset.FindPropertyRelative("AttackA").objectReferenceValue = iAttackA;
+            aPreset.FindPropertyRelative("AttackB").objectReferenceValue = iAttackB;
+            aPreset.FindPropertyRelative("Movement").objectReferenceValue = iMovement;
         }
 
-        static void EnsureFolder(string parent, string name)
+        static void EnsureFolder(string iParent, string iName)
         {
-            if (!AssetDatabase.IsValidFolder($"{parent}/{name}")) AssetDatabase.CreateFolder(parent, name);
+            if (!AssetDatabase.IsValidFolder($"{iParent}/{iName}")) AssetDatabase.CreateFolder(iParent, iName);
         }
     }
 }

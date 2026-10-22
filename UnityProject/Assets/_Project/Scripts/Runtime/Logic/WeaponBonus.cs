@@ -19,25 +19,25 @@ namespace BattleFight
         /// <summary>Mastery / Synergy の対象の武器種</summary>
         public readonly WeaponType Weapon;
 
-        public WeaponBonus(WeaponBonusKind kind, WeaponType weapon)
+        public WeaponBonus(WeaponBonusKind iKind, WeaponType iWeapon)
         {
-            Kind = kind;
-            Weapon = weapon;
+            Kind = iKind;
+            Weapon = iWeapon;
         }
 
         /// <summary>この武器種の技に Mastery / Synergy のボーナスが乗るか</summary>
-        public bool Boosts(WeaponType weapon) =>
-            (Kind == WeaponBonusKind.Mastery || Kind == WeaponBonusKind.Synergy) && Weapon == weapon;
+        public bool Boosts(WeaponType iWeapon) =>
+            (Kind == WeaponBonusKind.Mastery || Kind == WeaponBonusKind.Synergy) && Weapon == iWeapon;
     }
 
     public static class WeaponBonusResolver
     {
-        public static WeaponBonus Resolve(WeaponType attackA, WeaponType attackB, WeaponType movement)
+        public static WeaponBonus Resolve(WeaponType iAttackA, WeaponType iAttackB, WeaponType iMovement)
         {
-            if (attackA == attackB && attackB == movement) return new WeaponBonus(WeaponBonusKind.Mastery, attackA);
-            if (attackA == attackB || attackA == movement) return new WeaponBonus(WeaponBonusKind.Synergy, attackA);
-            if (attackB == movement) return new WeaponBonus(WeaponBonusKind.Synergy, attackB);
-            return new WeaponBonus(WeaponBonusKind.Arsenal, attackA);
+            if (iAttackA == iAttackB && iAttackB == iMovement) return new WeaponBonus(WeaponBonusKind.Mastery, iAttackA);
+            if (iAttackA == iAttackB || iAttackA == iMovement) return new WeaponBonus(WeaponBonusKind.Synergy, iAttackA);
+            if (iAttackB == iMovement) return new WeaponBonus(WeaponBonusKind.Synergy, iAttackB);
+            return new WeaponBonus(WeaponBonusKind.Arsenal, iAttackA);
         }
     }
 }

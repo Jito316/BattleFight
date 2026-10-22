@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -9,127 +10,127 @@ namespace BattleFight
     /// </summary>
     public class WeaponHolder : MonoBehaviour
     {
-        const float PopDuration = 0.12f;
+        const float mPopDuration = 0.12f;
 
-        [SerializeField] Transform handAnchor;
-        [SerializeField] WeaponTypeData[] weaponDatabase;
-        [SerializeField] SkillSlotController slots;
-        [SerializeField, Tooltip("武器の仮モデルに使うマテリアル(色は武器種ごとに変える)")] Material surfaceMaterial;
+        [SerializeField, FormerlySerializedAs("handAnchor")] Transform mHandAnchor;
+        [SerializeField, FormerlySerializedAs("weaponDatabase")] WeaponTypeData[] mWeaponDatabase;
+        [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
+        [SerializeField, Tooltip("武器の仮モデルに使うマテリアル(色は武器種ごとに変える)"), FormerlySerializedAs("surfaceMaterial")] Material mSurfaceMaterial;
 
-        readonly Dictionary<WeaponType, GameObject> visuals = new Dictionary<WeaponType, GameObject>();
-        WeaponType mainWeapon;
-        WeaponType? temporaryWeapon;
-        WeaponType? shownWeapon;
-        float popTimer;
+        readonly Dictionary<WeaponType, GameObject> mVisuals = new Dictionary<WeaponType, GameObject>();
+        WeaponType mMainWeapon;
+        WeaponType? mTemporaryWeapon;
+        WeaponType? mShownWeapon;
+        float mPopTimer;
 
         void Start()
         {
-            if (weaponDatabase != null)
+            if (mWeaponDatabase != null)
             {
-                foreach (var data in weaponDatabase)
+                foreach (var aData in mWeaponDatabase)
                 {
-                    if (data != null && !visuals.ContainsKey(data.weapon)) visuals[data.weapon] = BuildVisual(data);
+                    if (aData != null && !mVisuals.ContainsKey(aData.Weapon)) mVisuals[aData.Weapon] = BuildVisual(aData);
                 }
             }
-            var current = slots != null ? slots.GetCurrent(SlotType.AttackA) : null;
-            SetMainWeapon(current != null ? current.weapon : WeaponType.Sword);
+            var aCurrent = mSlots != null ? mSlots.GetCurrent(SlotType.AttackA) : null;
+            SetMainWeapon(aCurrent != null ? aCurrent.Weapon : WeaponType.Sword);
             // 編成画面や方式の切り替えで攻撃Aが変わったときも持ち替える
-            if (slots != null) slots.SlotChanged += OnSlotChanged;
+            if (mSlots != null) mSlots.SlotChanged += OnSlotChanged;
         }
 
         void OnDestroy()
         {
-            if (slots != null) slots.SlotChanged -= OnSlotChanged;
+            if (mSlots != null) mSlots.SlotChanged -= OnSlotChanged;
         }
 
-        void OnSlotChanged(SlotType slot)
+        void OnSlotChanged(SlotType iSlot)
         {
-            if (slot != SlotType.AttackA) return;
-            var current = slots.GetCurrent(SlotType.AttackA);
-            if (current != null) SetMainWeapon(current.weapon);
+            if (iSlot != SlotType.AttackA) return;
+            var aCurrent = mSlots.GetCurrent(SlotType.AttackA);
+            if (aCurrent != null) SetMainWeapon(aCurrent.Weapon);
         }
 
-        GameObject BuildVisual(WeaponTypeData data)
+        GameObject BuildVisual(WeaponTypeData iData)
         {
-            var root = new GameObject(data.displayName);
-            root.transform.SetParent(handAnchor, false);
+            var aRoot = new GameObject(iData.DisplayName);
+            aRoot.transform.SetParent(mHandAnchor, false);
 
-            if (data.handleLength > 0f)
+            if (iData.HandleLength > 0f)
             {
-                var handle = CreatePart(PrimitiveType.Cube, root.transform, new Color(0.25f, 0.2f, 0.15f));
-                handle.localScale = new Vector3(0.05f, 0.05f, data.handleLength);
-                handle.localPosition = new Vector3(0f, 0f, data.handleLength * 0.5f);
+                var aHandle = CreatePart(PrimitiveType.Cube, aRoot.transform, new Color(0.25f, 0.2f, 0.15f));
+                aHandle.localScale = new Vector3(0.05f, 0.05f, iData.HandleLength);
+                aHandle.localPosition = new Vector3(0f, 0f, iData.HandleLength * 0.5f);
             }
 
-            var head = CreatePart(data.headShape, root.transform, data.color);
-            head.localPosition = data.headOffset;
-            head.localRotation = Quaternion.Euler(data.headRotation);
-            head.localScale = data.headScale;
+            var aHead = CreatePart(iData.HeadShape, aRoot.transform, iData.Color);
+            aHead.localPosition = iData.HeadOffset;
+            aHead.localRotation = Quaternion.Euler(iData.HeadRotation);
+            aHead.localScale = iData.HeadScale;
 
-            root.SetActive(false);
-            return root;
+            aRoot.SetActive(false);
+            return aRoot;
         }
 
-        Transform CreatePart(PrimitiveType shape, Transform parent, Color color)
+        Transform CreatePart(PrimitiveType iShape, Transform iParent, Color iColor)
         {
-            var part = GameObject.CreatePrimitive(shape);
-            Destroy(part.GetComponent<Collider>());
-            part.transform.SetParent(parent, false);
-            var renderer = part.GetComponent<Renderer>();
-            if (surfaceMaterial != null) renderer.sharedMaterial = surfaceMaterial;
-            renderer.material.color = color;
-            return part.transform;
+            var aPart = GameObject.CreatePrimitive(iShape);
+            Destroy(aPart.GetComponent<Collider>());
+            aPart.transform.SetParent(iParent, false);
+            var aRenderer = aPart.GetComponent<Renderer>();
+            if (mSurfaceMaterial != null) aRenderer.sharedMaterial = mSurfaceMaterial;
+            aRenderer.material.color = iColor;
+            return aPart.transform;
         }
 
-        public void SetMainWeapon(WeaponType weapon)
+        public void SetMainWeapon(WeaponType iWeapon)
         {
-            mainWeapon = weapon;
+            mMainWeapon = iWeapon;
             Refresh();
         }
 
-        public void ShowTemporary(WeaponType weapon)
+        public void ShowTemporary(WeaponType iWeapon)
         {
-            temporaryWeapon = weapon;
+            mTemporaryWeapon = iWeapon;
             Refresh();
         }
 
         public void ClearTemporary()
         {
-            temporaryWeapon = null;
+            mTemporaryWeapon = null;
             Refresh();
         }
 
         void Refresh()
         {
-            var weapon = temporaryWeapon ?? mainWeapon;
-            if (shownWeapon == weapon) return;
-            shownWeapon = weapon;
-            foreach (var pair in visuals) pair.Value.SetActive(pair.Key == weapon);
-            popTimer = PopDuration;
+            var aWeapon = mTemporaryWeapon ?? mMainWeapon;
+            if (mShownWeapon == aWeapon) return;
+            mShownWeapon = aWeapon;
+            foreach (var aPair in mVisuals) aPair.Value.SetActive(aPair.Key == aWeapon);
+            mPopTimer = mPopDuration;
         }
 
         /// <summary>振りの姿勢。normalized は -1(振りかぶり)〜 1(振り抜き)。</summary>
-        public void SetSwing(float normalized, bool overhead, float side)
+        public void SetSwing(float iNormalized, bool iOverhead, float iSide)
         {
-            handAnchor.localRotation = overhead
-                ? Quaternion.Euler(Mathf.Lerp(-100f, 60f, (normalized + 1f) * 0.5f), 0f, 0f)
-                : Quaternion.Euler(10f, normalized * 80f * side, 0f);
+            mHandAnchor.localRotation = iOverhead
+                ? Quaternion.Euler(Mathf.Lerp(-100f, 60f, (iNormalized + 1f) * 0.5f), 0f, 0f)
+                : Quaternion.Euler(10f, iNormalized * 80f * iSide, 0f);
         }
 
         public void SetIdle()
         {
-            var idle = Quaternion.Euler(35f, 0f, 0f);
-            handAnchor.localRotation = Quaternion.Slerp(handAnchor.localRotation, idle, 1f - Mathf.Exp(-15f * Time.deltaTime));
+            var aIdle = Quaternion.Euler(35f, 0f, 0f);
+            mHandAnchor.localRotation = Quaternion.Slerp(mHandAnchor.localRotation, aIdle, 1f - Mathf.Exp(-15f * Time.deltaTime));
         }
 
         void LateUpdate()
         {
-            if (popTimer <= 0f || !shownWeapon.HasValue) return;
-            popTimer -= Time.unscaledDeltaTime;
-            if (visuals.TryGetValue(shownWeapon.Value, out var visual))
+            if (mPopTimer <= 0f || !mShownWeapon.HasValue) return;
+            mPopTimer -= Time.unscaledDeltaTime;
+            if (mVisuals.TryGetValue(mShownWeapon.Value, out var aVisual))
             {
                 // 持ち替えた瞬間に少し大きくして目立たせる
-                visual.transform.localScale = Vector3.one * (1f + Mathf.Max(0f, popTimer / PopDuration) * 0.6f);
+                aVisual.transform.localScale = Vector3.one * (1f + Mathf.Max(0f, mPopTimer / mPopDuration) * 0.6f);
             }
         }
     }

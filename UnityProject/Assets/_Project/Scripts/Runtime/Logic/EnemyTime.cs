@@ -11,30 +11,30 @@ namespace BattleFight
         public const float SlowScale = 0.25f;
         public const float SlowDuration = 1.5f;
 
-        static float slowUntil = float.NegativeInfinity;
-        static float slowStartedAt = float.NegativeInfinity;
+        static float mSlowUntil = float.NegativeInfinity;
+        static float mSlowStartedAt = float.NegativeInfinity;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
-            slowUntil = float.NegativeInfinity;
-            slowStartedAt = float.NegativeInfinity;
+            mSlowUntil = float.NegativeInfinity;
+            mSlowStartedAt = float.NegativeInfinity;
         }
 
-        public static bool IsSlowed => Time.unscaledTime < slowUntil;
+        public static bool IsSlowed => Time.unscaledTime < mSlowUntil;
         public static float Scale => IsSlowed ? SlowScale : 1f;
         public static float DeltaTime => Time.deltaTime * Scale;
 
         /// <summary>残りの割合(1 = 始まった直後、0 = 終わり)</summary>
-        public static float Remaining => IsSlowed ? Mathf.Clamp01((slowUntil - Time.unscaledTime) / SlowDuration) : 0f;
-        public static float StartedAt => slowStartedAt;
+        public static float Remaining => IsSlowed ? Mathf.Clamp01((mSlowUntil - Time.unscaledTime) / SlowDuration) : 0f;
+        public static float StartedAt => mSlowStartedAt;
 
-        public static void Slow(float duration = SlowDuration)
+        public static void Slow(float iDuration = SlowDuration)
         {
-            slowUntil = Mathf.Max(slowUntil, Time.unscaledTime + duration);
-            slowStartedAt = Time.unscaledTime;
+            mSlowUntil = Mathf.Max(mSlowUntil, Time.unscaledTime + iDuration);
+            mSlowStartedAt = Time.unscaledTime;
         }
 
-        public static void Clear() => slowUntil = float.NegativeInfinity;
+        public static void Clear() => mSlowUntil = float.NegativeInfinity;
     }
 }

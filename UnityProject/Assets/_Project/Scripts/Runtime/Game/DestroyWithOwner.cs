@@ -9,30 +9,30 @@ namespace BattleFight
     /// </summary>
     public class DestroyWithOwner : MonoBehaviour
     {
-        static readonly Dictionary<Object, int> Users = new Dictionary<Object, int>();
+        static readonly Dictionary<Object, int> mUsers = new Dictionary<Object, int>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => Users.Clear();
+        static void ResetStatics() => mUsers.Clear();
 
-        Object target;
+        Object mTarget;
 
-        public static void Attach(GameObject owner, Object data)
+        public static void Attach(GameObject iOwner, Object iData)
         {
-            if (owner == null || data == null) return;
-            owner.AddComponent<DestroyWithOwner>().target = data;
-            Users[data] = Users.TryGetValue(data, out int count) ? count + 1 : 1;
+            if (iOwner == null || iData == null) return;
+            iOwner.AddComponent<DestroyWithOwner>().mTarget = iData;
+            mUsers[iData] = mUsers.TryGetValue(iData, out int aCount) ? aCount + 1 : 1;
         }
 
         void OnDestroy()
         {
-            if (target == null || !Users.TryGetValue(target, out int count)) return;
-            if (count > 1)
+            if (mTarget == null || !mUsers.TryGetValue(mTarget, out int aCount)) return;
+            if (aCount > 1)
             {
-                Users[target] = count - 1;
+                mUsers[mTarget] = aCount - 1;
                 return;
             }
-            Users.Remove(target);
-            Destroy(target);
+            mUsers.Remove(mTarget);
+            Destroy(mTarget);
         }
     }
 }

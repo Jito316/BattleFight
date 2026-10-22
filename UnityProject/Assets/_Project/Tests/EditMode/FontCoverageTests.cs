@@ -14,35 +14,35 @@ namespace BattleFight.Tests
     /// </summary>
     public class FontCoverageTests
     {
-        const string FontPath = "Assets/_Project/Fonts/NotoSansJP-Bold-Subset.otf";
-        static readonly Regex Escape = new Regex(@"\\u([0-9A-Fa-f]{4})");
+        const string mFontPath = "Assets/_Project/Fonts/NotoSansJP-Bold-Subset.otf";
+        static readonly Regex mEscape = new Regex(@"\\u([0-9A-Fa-f]{4})");
 
         [Test]
         public void SubsetFont_ContainsEveryCharacterUsedInTheGame()
         {
-            var font = AssetDatabase.LoadAssetAtPath<Font>(FontPath);
-            Assert.NotNull(font, FontPath);
+            var aFont = AssetDatabase.LoadAssetAtPath<Font>(mFontPath);
+            Assert.NotNull(aFont, mFontPath);
 
-            var used = new HashSet<char>();
-            foreach (var path in Directory.GetFiles("Assets/_Project", "*.*", SearchOption.AllDirectories))
+            var aUsed = new HashSet<char>();
+            foreach (var aPath in Directory.GetFiles("Assets/_Project", "*.*", SearchOption.AllDirectories))
             {
-                if (!path.EndsWith(".cs") && !path.EndsWith(".asset") && !path.EndsWith(".uxml")) continue;
+                if (!aPath.EndsWith(".cs") && !aPath.EndsWith(".asset") && !aPath.EndsWith(".uxml")) continue;
                 // テストのメッセージは画面に出ないので対象外(subset_font.py と同じ)
-                if (path.Replace('\\', '/').Contains("/Tests/")) continue;
-                string text = File.ReadAllText(path, Encoding.UTF8);
-                foreach (char c in text) used.Add(c);
-                foreach (Match m in Escape.Matches(text)) used.Add((char)System.Convert.ToInt32(m.Groups[1].Value, 16));
+                if (aPath.Replace('\\', '/').Contains("/Tests/")) continue;
+                string aText = File.ReadAllText(aPath, Encoding.UTF8);
+                foreach (char aC in aText) aUsed.Add(aC);
+                foreach (Match aM in mEscape.Matches(aText)) aUsed.Add((char)System.Convert.ToInt32(aM.Groups[1].Value, 16));
             }
 
-            var missing = new StringBuilder();
-            foreach (char c in used)
+            var aMissing = new StringBuilder();
+            foreach (char aC in aUsed)
             {
                 // 制御文字・サロゲート・ASCII 以外の記号でフォントにない字を集める
-                if (c < 0x20 || char.IsSurrogate(c)) continue;
-                if (!font.HasCharacter(c)) missing.Append(c);
+                if (aC < 0x20 || char.IsSurrogate(aC)) continue;
+                if (!aFont.HasCharacter(aC)) aMissing.Append(aC);
             }
-            Assert.IsEmpty(missing.ToString(),
-                "フォントにない文字があります。`python Tools/subset_font.py` を実行してフォントを作り直してください: " + missing);
+            Assert.IsEmpty(aMissing.ToString(),
+                "フォントにない文字があります。`python Tools/subset_font.py` を実行してフォントを作り直してください: " + aMissing);
         }
     }
 }

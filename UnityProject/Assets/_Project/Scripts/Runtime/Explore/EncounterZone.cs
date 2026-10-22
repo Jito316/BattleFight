@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -13,98 +14,98 @@ namespace BattleFight
         [Serializable]
         public class Spawn
         {
-            public EnemyProfile profile;
-            [Tooltip("このゾーンからの相対位置")] public Vector3 offset;
+            [FormerlySerializedAs("profile")] public EnemyProfile Profile;
+            [Tooltip("このゾーンからの相対位置")] [FormerlySerializedAs("offset")] public Vector3 Offset;
         }
 
-        [SerializeField] string id;
-        [SerializeField, Tooltip("このゾーンからの相対位置の範囲")] Vector3 size = new Vector3(20f, 6f, 20f);
-        [SerializeField] List<Spawn> spawns = new List<Spawn>();
-        [SerializeField, Tooltip("倒すと手に入るスキル(ボス)")] SkillData[] rewards;
-        [SerializeField, Tooltip("倒すと探索クリア")] bool isFinal;
-        [SerializeField, Tooltip("戦っている間だけ出す壁(ボス部屋の入口を閉じる)")] GameObject[] barriers;
+        [SerializeField, FormerlySerializedAs("id")] string mId;
+        [SerializeField, Tooltip("このゾーンからの相対位置の範囲"), FormerlySerializedAs("size")] Vector3 mSize = new Vector3(20f, 6f, 20f);
+        [SerializeField, FormerlySerializedAs("spawns")] List<Spawn> mSpawns = new List<Spawn>();
+        [SerializeField, Tooltip("倒すと手に入るスキル(ボス)"), FormerlySerializedAs("rewards")] SkillData[] mRewards;
+        [SerializeField, Tooltip("倒すと探索クリア"), FormerlySerializedAs("isFinal")] bool mIsFinal;
+        [SerializeField, Tooltip("戦っている間だけ出す壁(ボス部屋の入口を閉じる)"), FormerlySerializedAs("barriers")] GameObject[] mBarriers;
 
-        readonly List<EnemyController> alive = new List<EnemyController>();
+        readonly List<EnemyController> mAlive = new List<EnemyController>();
 
-        public string Id => id;
+        public string Id => mId;
 
-        public void Setup(string zoneId, Vector3 zoneSize, List<Spawn> zoneSpawns, SkillData[] zoneRewards, bool final, GameObject[] zoneBarriers)
+        public void Setup(string iZoneId, Vector3 iZoneSize, List<Spawn> iZoneSpawns, SkillData[] iZoneRewards, bool iFinal, GameObject[] iZoneBarriers)
         {
-            id = zoneId;
-            size = zoneSize;
-            spawns = zoneSpawns;
-            rewards = zoneRewards;
-            isFinal = final;
-            barriers = zoneBarriers;
+            mId = iZoneId;
+            mSize = iZoneSize;
+            mSpawns = iZoneSpawns;
+            mRewards = iZoneRewards;
+            mIsFinal = iFinal;
+            mBarriers = iZoneBarriers;
         }
 
-        public bool Cleared => ExplorationSave.HasFlag(id);
+        public bool Cleared => ExplorationSave.HasFlag(mId);
         public bool Active { get; private set; }
-        public IReadOnlyList<SkillData> Rewards => rewards ?? new SkillData[0];
-        public int AliveCount => alive.Count;
+        public IReadOnlyList<SkillData> Rewards => mRewards ?? new SkillData[0];
+        public int AliveCount => mAlive.Count;
 
         void Start() => SetBarriers(false);
 
         void Update()
         {
-            var region = ExplorationRegion.Active;
-            if (region == null || region.Player == null || region.Director == null || Cleared) return;
+            var aRegion = ExplorationRegion.Active;
+            if (aRegion == null || aRegion.Player == null || aRegion.Director == null || Cleared) return;
 
             if (!Active)
             {
-                if (new Bounds(transform.position, size).Contains(region.Player.position)) Begin(region);
+                if (new Bounds(transform.position, mSize).Contains(aRegion.Player.position)) Begin(aRegion);
                 return;
             }
 
-            alive.RemoveAll(e => e == null || e.IsDead);
-            if (alive.Count == 0) Finish(region);
+            mAlive.RemoveAll(iE => iE == null || iE.IsDead);
+            if (mAlive.Count == 0) Finish(aRegion);
         }
 
-        void Begin(ExplorationRegion region)
+        void Begin(ExplorationRegion iRegion)
         {
             Active = true;
-            foreach (var spawn in spawns)
+            foreach (var aSpawn in mSpawns)
             {
-                if (spawn.profile == null) continue;
-                var enemy = region.Director.SpawnAt(spawn.profile, transform.position + spawn.offset);
-                if (enemy != null) alive.Add(enemy);
+                if (aSpawn.Profile == null) continue;
+                var aEnemy = iRegion.Director.SpawnAt(aSpawn.Profile, transform.position + aSpawn.Offset);
+                if (aEnemy != null) mAlive.Add(aEnemy);
             }
             SetBarriers(true);
         }
 
-        void Finish(ExplorationRegion region)
+        void Finish(ExplorationRegion iRegion)
         {
             Active = false;
-            ExplorationSave.SetFlag(id);
+            ExplorationSave.SetFlag(mId);
             SetBarriers(false);
 
-            var got = new List<string>();
-            foreach (var skill in Rewards)
+            var aGot = new List<string>();
+            foreach (var aSkill in Rewards)
             {
-                if (skill == null || !ExplorationSave.Unlock(skill)) continue;
-                region.Slots.EquipNewSkill(skill);
-                got.Add(skill.displayName);
+                if (aSkill == null || !ExplorationSave.Unlock(aSkill)) continue;
+                iRegion.Slots.EquipNewSkill(aSkill);
+                aGot.Add(aSkill.DisplayName);
             }
-            if (got.Count > 0)
+            if (aGot.Count > 0)
             {
-                region.Notify($"スキルを手に入れた\n<size=30>{string.Join("・", got)}</size>\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
+                iRegion.Notify($"スキルを手に入れた\n<size=30>{string.Join("・", aGot)}</size>\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
             }
-            if (isFinal) region.Director.CompleteExploration();
+            if (mIsFinal) iRegion.Director.CompleteExploration();
         }
 
-        void SetBarriers(bool on)
+        void SetBarriers(bool iOn)
         {
-            if (barriers == null) return;
-            foreach (var barrier in barriers)
+            if (mBarriers == null) return;
+            foreach (var aBarrier in mBarriers)
             {
-                if (barrier != null) barrier.SetActive(on);
+                if (aBarrier != null) aBarrier.SetActive(iOn);
             }
         }
 
         void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(1f, 0.4f, 0.4f, 0.4f);
-            Gizmos.DrawWireCube(transform.position, size);
+            Gizmos.DrawWireCube(transform.position, mSize);
         }
     }
 }

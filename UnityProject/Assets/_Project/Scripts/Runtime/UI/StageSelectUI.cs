@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace BattleFight
@@ -9,128 +10,130 @@ namespace BattleFight
     [RequireComponent(typeof(UIDocument))]
     public class StageSelectUI : MonoBehaviour
     {
-        [SerializeField] ArenaDirector director;
-        [SerializeField] StyleRankConfig rankConfig;
+        [SerializeField, FormerlySerializedAs("director")] ArenaDirector mDirector;
+        [SerializeField, FormerlySerializedAs("rankConfig")] StyleRankConfig mRankConfig;
 
-        VisualElement root, window, list;
-        Label footer;
-        readonly List<(VisualElement row, Label record)> rows = new List<(VisualElement, Label)>();
-        int highlighted;
-        float resetNoticeTime = -99f;
+        VisualElement mRoot;
+        VisualElement mWindow;
+        VisualElement mList;
+        Label mFooter;
+        readonly List<(VisualElement row, Label record)> mRows = new List<(VisualElement, Label)>();
+        int mHighlighted;
+        float mResetNoticeTime = -99f;
 
-        bool Visible => director != null && director.State == ArenaDirector.GameState.StageSelect && !LoadoutEditorUI.IsOpen;
+        bool mVisible => mDirector != null && mDirector.State == ArenaDirector.GameState.StageSelect && !LoadoutEditorUI.IsOpen;
 
-        public int Highlighted => highlighted;
+        public int Highlighted => mHighlighted;
 
         void OnEnable()
         {
-            root = GetComponent<UIDocument>().rootVisualElement;
-            window = root.Q("stage-select");
-            list = root.Q("stage-list");
-            footer = root.Q<Label>("footer");
+            mRoot = GetComponent<UIDocument>().rootVisualElement;
+            mWindow = mRoot.Q("stage-select");
+            mList = mRoot.Q("stage-list");
+            mFooter = mRoot.Q<Label>("footer");
             BuildRows();
         }
 
         void BuildRows()
         {
-            list.Clear();
-            rows.Clear();
-            if (director == null || director.Stages == null) return;
-            for (int i = 0; i < director.Stages.Count; i++)
+            mList.Clear();
+            mRows.Clear();
+            if (mDirector == null || mDirector.Stages == null) return;
+            for (int aI = 0; aI < mDirector.Stages.Count; aI++)
             {
-                var stage = director.Stages[i];
-                var row = Classed(new VisualElement(), "stage-row");
-                var stripe = Classed(new VisualElement(), "stage-row__stripe");
-                stripe.style.backgroundColor = stage != null ? KindColor(stage.kind) : Color.gray;
-                row.Add(stripe);
-                var body = Classed(new VisualElement(), "stage-row__body");
-                var head = Classed(new VisualElement(), "stage-row__head");
-                head.Add(Classed(new Label(stage != null ? stage.displayName : "-"), "stage-row__title"));
-                var record = Classed(new Label(), "stage-row__record");
-                head.Add(record);
-                body.Add(head);
-                body.Add(Classed(new Label(stage != null ? stage.description : ""), "stage-row__desc"));
-                row.Add(body);
+                var aStage = mDirector.Stages[aI];
+                var aRow = Classed(new VisualElement(), "stage-row");
+                var aStripe = Classed(new VisualElement(), "stage-row__stripe");
+                aStripe.style.backgroundColor = aStage != null ? KindColor(aStage.Kind) : Color.gray;
+                aRow.Add(aStripe);
+                var aBody = Classed(new VisualElement(), "stage-row__body");
+                var aHead = Classed(new VisualElement(), "stage-row__head");
+                aHead.Add(Classed(new Label(aStage != null ? aStage.DisplayName : "-"), "stage-row__title"));
+                var aRecord = Classed(new Label(), "stage-row__record");
+                aHead.Add(aRecord);
+                aBody.Add(aHead);
+                aBody.Add(Classed(new Label(aStage != null ? aStage.Description : ""), "stage-row__desc"));
+                aRow.Add(aBody);
 
-                int index = i;
+                int aIndex = aI;
                 // マウスを動かしたときだけ選択を変える(止まったマウスがキー操作の選択を上書きしないように)
-                row.RegisterCallback<PointerMoveEvent>(_ => highlighted = index);
-                row.RegisterCallback<ClickEvent>(_ => { if (Visible) director.StartStage(index); });
-                list.Add(row);
-                rows.Add((row, record));
+                aRow.RegisterCallback<PointerMoveEvent>(_ => mHighlighted = aIndex);
+                aRow.RegisterCallback<ClickEvent>(_ => { if (mVisible) mDirector.StartStage(aIndex); });
+                mList.Add(aRow);
+                mRows.Add((aRow, aRecord));
             }
         }
 
         void Update()
         {
-            bool visible = Visible;
-            window.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
-            if (!visible || director.Stages == null || director.Stages.Count == 0) return;
-            if (rows.Count != director.Stages.Count) BuildRows();
+            bool aVisible = mVisible;
+            mWindow.style.display = aVisible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!aVisible || mDirector.Stages == null || mDirector.Stages.Count == 0) return;
+            if (mRows.Count != mDirector.Stages.Count) BuildRows();
 
-            var keyboard = Keyboard.current;
-            var gamepad = Gamepad.current;
-            int count = director.Stages.Count;
-            bool up = (keyboard != null && (keyboard.wKey.wasPressedThisFrame || keyboard.upArrowKey.wasPressedThisFrame))
-                      || (gamepad != null && gamepad.dpad.up.wasPressedThisFrame);
-            bool down = (keyboard != null && (keyboard.sKey.wasPressedThisFrame || keyboard.downArrowKey.wasPressedThisFrame))
-                        || (gamepad != null && gamepad.dpad.down.wasPressedThisFrame);
-            bool confirm = (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame))
-                           || (gamepad != null && gamepad.buttonSouth.wasPressedThisFrame);
+            var aKeyboard = Keyboard.current;
+            var aGamepad = Gamepad.current;
+            int aCount = mDirector.Stages.Count;
+            bool aUp = (aKeyboard != null && (aKeyboard.wKey.wasPressedThisFrame || aKeyboard.upArrowKey.wasPressedThisFrame))
+                      || (aGamepad != null && aGamepad.dpad.up.wasPressedThisFrame);
+            bool aDown = (aKeyboard != null && (aKeyboard.sKey.wasPressedThisFrame || aKeyboard.downArrowKey.wasPressedThisFrame))
+                        || (aGamepad != null && aGamepad.dpad.down.wasPressedThisFrame);
+            bool aConfirm = (aKeyboard != null && (aKeyboard.enterKey.wasPressedThisFrame || aKeyboard.numpadEnterKey.wasPressedThisFrame))
+                           || (aGamepad != null && aGamepad.buttonSouth.wasPressedThisFrame);
 
-            if (up) highlighted = (highlighted + count - 1) % count;
-            if (down) highlighted = (highlighted + 1) % count;
+            if (aUp) mHighlighted = (mHighlighted + aCount - 1) % aCount;
+            if (aDown) mHighlighted = (mHighlighted + 1) % aCount;
 
             // 探索を選んでいるとき: Backspace で記録を消して、はじめからにする
-            var stage = director.Stages[highlighted];
-            bool exploration = stage != null && stage.kind == StageKind.Exploration;
-            if (exploration && keyboard != null && keyboard.backspaceKey.wasPressedThisFrame)
+            var aStage = mDirector.Stages[mHighlighted];
+            bool aExploration = aStage != null && aStage.Kind == StageKind.Exploration;
+            if (aExploration && aKeyboard != null && aKeyboard.backspaceKey.wasPressedThisFrame)
             {
                 ExplorationSave.Reset();
                 PlayerPrefs.DeleteKey(LoadoutStorage.ExplorationPrefsKey);
-                StageRecords.Clear(stage.name);
-                resetNoticeTime = Time.unscaledTime;
+                StageRecords.Clear(aStage.name);
+                mResetNoticeTime = Time.unscaledTime;
             }
 
-            for (int i = 0; i < rows.Count; i++)
+            for (int aI = 0; aI < mRows.Count; aI++)
             {
-                var (row, record) = rows[i];
-                row.EnableInClassList("stage-row--selected", i == highlighted);
-                string text = director.Stages[i] != null ? RecordText(director.Stages[i]) : "";
-                if (record.text != text) record.text = text;
+                var (aRow, aRecord) = mRows[aI];
+                aRow.EnableInClassList("stage-row--selected", aI == mHighlighted);
+                string aText = mDirector.Stages[aI] != null ? RecordText(mDirector.Stages[aI]) : "";
+                if (aRecord.text != aText) aRecord.text = aText;
             }
 
-            bool notice = Time.unscaledTime - resetNoticeTime < 2.5f;
-            footer.EnableInClassList("select__footer--notice", notice);
-            footer.text = notice
+            bool aNotice = Time.unscaledTime - mResetNoticeTime < 2.5f;
+            mFooter.EnableInClassList("select__footer--notice", aNotice);
+            mFooter.text = aNotice
                 ? "探索の記録を消しました。はじめから遊べます"
-                : "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   [P] スキル編成" + (exploration ? "   [Backspace] 探索をはじめから" : "");
+                : "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   [P] スキル編成" + (aExploration ? "   [Backspace] 探索をはじめから" : "");
 
-            if (confirm) director.StartStage(highlighted);
+            if (aConfirm) mDirector.StartStage(mHighlighted);
         }
 
-        string RecordText(StageData stage)
+        string RecordText(StageData iStage)
         {
-            switch (stage.kind)
+            switch (iStage.Kind)
             {
                 case StageKind.Training:
                     return "練習用";
                 case StageKind.Exploration:
                     if (!ExplorationSave.HasStarted) return "はじめから";
-                    string cleared = StageRecords.IsCleared(stage.name) ? "クリア済み  " : "";
-                    return $"{cleared}スキル {ExplorationSave.UnlockedCount} / {Mathf.Max(ExplorationSave.TotalSkills, ExplorationSave.UnlockedCount)}";
+                    string aCleared = StageRecords.IsCleared(iStage.name) ? "クリア済み  " : "";
+                    return $"{aCleared}スキル {ExplorationSave.UnlockedCount} / {Mathf.Max(ExplorationSave.TotalSkills, ExplorationSave.UnlockedCount)}";
                 case StageKind.Endless:
-                    int wave = StageRecords.BestWave(stage.name);
-                    return wave > 0 ? $"最高 WAVE {wave}" : "記録なし";
+                    int aWave = StageRecords.BestWave(iStage.name);
+                    return aWave > 0 ? $"最高 WAVE {aWave}" : "記録なし";
                 default:
-                    if (!StageRecords.IsCleared(stage.name)) return "未クリア";
-                    int rank = StageRecords.BestRank(stage.name);
-                    string rankName = rankConfig != null && rank >= 0 ? rankConfig.rankNames[Mathf.Min(rank, rankConfig.rankNames.Length - 1)] : "-";
-                    return $"クリア済み  {StageRecords.BestTime(stage.name):0.0}秒 / {rankName}";
+                    if (!StageRecords.IsCleared(iStage.name)) return "未クリア";
+                    int aRank = StageRecords.BestRank(iStage.name);
+                    string aRankName = mRankConfig != null && aRank >= 0 ? mRankConfig.RankNames[Mathf.Min(aRank, mRankConfig.RankNames.Length - 1)] : "-";
+                    return $"クリア済み  {StageRecords.BestTime(iStage.name):0.0}秒 / {aRankName}";
             }
         }
 
-        static Color KindColor(StageKind kind) => kind switch
+        static Color KindColor(StageKind iKind) => iKind switch
         {
             StageKind.Training => new Color(0.4f, 0.9f, 0.5f),
             StageKind.Endless => new Color(1f, 0.4f, 0.4f),
@@ -138,11 +141,11 @@ namespace BattleFight
             _ => new Color(0.4f, 0.7f, 1f),
         };
 
-        static T Classed<T>(T element, string className) where T : VisualElement
+        static T Classed<T>(T iElement, string iClassName) where T : VisualElement
         {
-            element.AddToClassList(className);
-            if (element is Label) element.pickingMode = PickingMode.Ignore;
-            return element;
+            iElement.AddToClassList(iClassName);
+            if (iElement is Label) iElement.pickingMode = PickingMode.Ignore;
+            return iElement;
         }
     }
 }

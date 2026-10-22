@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -13,38 +14,38 @@ namespace BattleFight
         [Serializable]
         public class Room
         {
-            public string name;
-            public Vector3 center;
-            public Vector3 size;
+            [FormerlySerializedAs("name")] public string Name;
+            [FormerlySerializedAs("center")] public Vector3 Center;
+            [FormerlySerializedAs("size")] public Vector3 Size;
 
-            public bool Contains(Vector3 localPosition) => new Bounds(center, size).Contains(localPosition);
+            public bool Contains(Vector3 iLocalPosition) => new Bounds(Center, Size).Contains(iLocalPosition);
         }
 
-        [SerializeField] string regionName = "古城";
-        [SerializeField, Tooltip("はじめて来たときの出現位置")] Transform spawnPoint;
-        [SerializeField, Tooltip("最初から持っているスキル")] SkillData[] starterSkills;
-        [SerializeField, Tooltip("探索モードの初期プリセット(持っているスキルだけで組む)")] SkillPreset[] starterPresets;
-        [SerializeField, Tooltip("この高さより下に落ちたら、最後に触れた安全地点へ戻す")] float fallHeight = -8f;
-        [SerializeField, Tooltip("落ちたときのダメージ")] float fallDamage = 15f;
-        [SerializeField] List<Room> rooms = new List<Room>();
+        [SerializeField, FormerlySerializedAs("regionName")] string mRegionName = "古城";
+        [SerializeField, Tooltip("はじめて来たときの出現位置"), FormerlySerializedAs("spawnPoint")] Transform mSpawnPoint;
+        [SerializeField, Tooltip("最初から持っているスキル"), FormerlySerializedAs("starterSkills")] SkillData[] mStarterSkills;
+        [SerializeField, Tooltip("探索モードの初期プリセット(持っているスキルだけで組む)"), FormerlySerializedAs("starterPresets")] SkillPreset[] mStarterPresets;
+        [SerializeField, Tooltip("この高さより下に落ちたら、最後に触れた安全地点へ戻す"), FormerlySerializedAs("fallHeight")] float mFallHeight = -8f;
+        [SerializeField, Tooltip("落ちたときのダメージ"), FormerlySerializedAs("fallDamage")] float mFallDamage = 15f;
+        [SerializeField, FormerlySerializedAs("rooms")] List<Room> mRooms = new List<Room>();
 
         public static ExplorationRegion Active { get; private set; }
 
         /// <summary>マップを生成するエディタ拡張から設定する</summary>
-        public void Setup(string name, Transform spawn, SkillData[] starters, SkillPreset[] presets, float fall, List<Room> roomList)
+        public void Setup(string iName, Transform iSpawn, SkillData[] iStarters, SkillPreset[] iPresets, float iFall, List<Room> iRoomList)
         {
-            regionName = name;
-            spawnPoint = spawn;
-            starterSkills = starters;
-            starterPresets = presets;
-            fallHeight = fall;
-            rooms = roomList;
+            mRegionName = iName;
+            mSpawnPoint = iSpawn;
+            mStarterSkills = iStarters;
+            mStarterPresets = iPresets;
+            mFallHeight = iFall;
+            mRooms = iRoomList;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() => Active = null;
 
-        public string RegionName => regionName;
+        public string RegionName => mRegionName;
         public Transform Player { get; private set; }
         public SkillSlotController Slots { get; private set; }
         public ArenaDirector Director { get; private set; }
@@ -57,28 +58,28 @@ namespace BattleFight
         public Color MessageColor { get; private set; } = Color.white;
         public float MessageTime { get; private set; } = -99f;
 
-        SafePoint lastSafePoint;
-        Damageable playerDamageable;
+        SafePoint mLastSafePoint;
+        Damageable mPlayerDamageable;
 
-        public void Begin(ArenaDirector director, Transform player, SkillSlotController slots, Material surface)
+        public void Begin(ArenaDirector iDirector, Transform iPlayer, SkillSlotController iSlots, Material iSurface)
         {
             Active = this;
-            Director = director;
-            Player = player;
-            Slots = slots;
-            SurfaceMaterial = surface;
-            playerDamageable = player.GetComponent<Damageable>();
+            Director = iDirector;
+            Player = iPlayer;
+            Slots = iSlots;
+            SurfaceMaterial = iSurface;
+            mPlayerDamageable = iPlayer.GetComponent<Damageable>();
             gameObject.SetActive(true);
 
-            foreach (var skill in starterSkills) ExplorationSave.Unlock(skill);
+            foreach (var aSkill in mStarterSkills) ExplorationSave.Unlock(aSkill);
             TotalSkills = CountSkills();
             ExplorationSave.TotalSkills = TotalSkills;
-            slots.BeginCollection(starterPresets);
+            iSlots.BeginCollection(mStarterPresets);
 
             // 最後に触れた祭壇から始める(まだなければ入口)
-            var start = FindCheckpoint(ExplorationSave.Checkpoint);
-            lastSafePoint = start != null ? start.GetComponent<SafePoint>() : null;
-            Teleport(start != null ? start.RespawnPosition : spawnPoint.position);
+            var aStart = FindCheckpoint(ExplorationSave.Checkpoint);
+            mLastSafePoint = aStart != null ? aStart.GetComponent<SafePoint>() : null;
+            Teleport(aStart != null ? aStart.RespawnPosition : mSpawnPoint.position);
         }
 
         void OnDisable()
@@ -88,33 +89,33 @@ namespace BattleFight
 
         int CountSkills()
         {
-            var skills = new HashSet<SkillData>(starterSkills);
-            foreach (var pickup in GetComponentsInChildren<SkillPickup>(true))
+            var aSkills = new HashSet<SkillData>(mStarterSkills);
+            foreach (var aPickup in GetComponentsInChildren<SkillPickup>(true))
             {
-                foreach (var skill in pickup.Skills) skills.Add(skill);
+                foreach (var aSkill in aPickup.Skills) aSkills.Add(aSkill);
             }
-            foreach (var zone in GetComponentsInChildren<EncounterZone>(true))
+            foreach (var aZone in GetComponentsInChildren<EncounterZone>(true))
             {
-                foreach (var skill in zone.Rewards) skills.Add(skill);
+                foreach (var aSkill in aZone.Rewards) aSkills.Add(aSkill);
             }
-            skills.Remove(null);
-            return skills.Count;
+            aSkills.Remove(null);
+            return aSkills.Count;
         }
 
-        Checkpoint FindCheckpoint(string id)
+        Checkpoint FindCheckpoint(string iId)
         {
-            if (string.IsNullOrEmpty(id)) return null;
-            foreach (var checkpoint in GetComponentsInChildren<Checkpoint>(true))
+            if (string.IsNullOrEmpty(iId)) return null;
+            foreach (var aCheckpoint in GetComponentsInChildren<Checkpoint>(true))
             {
-                if (checkpoint.Id == id) return checkpoint;
+                if (aCheckpoint.Id == iId) return aCheckpoint;
             }
             return null;
         }
 
-        public void Notify(string message, Color color)
+        public void Notify(string iMessage, Color iColor)
         {
-            Message = message;
-            MessageColor = color;
+            Message = iMessage;
+            MessageColor = iColor;
             MessageTime = Time.unscaledTime;
         }
 
@@ -122,47 +123,47 @@ namespace BattleFight
         public string CurrentRoomName()
         {
             if (Player == null) return "";
-            var local = transform.InverseTransformPoint(Player.position);
-            foreach (var room in rooms)
+            var aLocal = transform.InverseTransformPoint(Player.position);
+            foreach (var aRoom in mRooms)
             {
-                if (room.Contains(local)) return room.name;
+                if (aRoom.Contains(aLocal)) return aRoom.Name;
             }
             return "";
         }
 
-        public void TouchSafePoint(SafePoint point) => lastSafePoint = point;
+        public void TouchSafePoint(SafePoint iPoint) => mLastSafePoint = iPoint;
 
         void Update()
         {
-            if (Player == null || GamePause.IsPaused || playerDamageable == null || playerDamageable.IsDead) return;
-            if (Player.position.y >= fallHeight) return;
+            if (Player == null || GamePause.IsPaused || mPlayerDamageable == null || mPlayerDamageable.IsDead) return;
+            if (Player.position.y >= mFallHeight) return;
 
             // 谷に落ちた: 最後に触れた安全地点(なければ入口)へ戻し、少しダメージを受ける
-            var respawn = lastSafePoint != null ? lastSafePoint.transform.position : spawnPoint.position;
-            Teleport(respawn);
-            playerDamageable.ApplyHit(new HitInfo { damage = fallDamage, direction = Vector3.forward });
+            var aRespawn = mLastSafePoint != null ? mLastSafePoint.transform.position : mSpawnPoint.position;
+            Teleport(aRespawn);
+            mPlayerDamageable.ApplyHit(new HitInfo { Damage = mFallDamage, Direction = Vector3.forward });
             Notify("落ちてしまった…", new Color(1f, 0.6f, 0.5f));
         }
 
-        void Teleport(Vector3 position)
+        void Teleport(Vector3 iPosition)
         {
             // CharacterController は有効なままだと位置を上書きするので、一度止めて動かす
-            var controller = Player.GetComponent<CharacterController>();
-            if (controller != null) controller.enabled = false;
-            Player.position = position + Vector3.up * 0.1f;
-            if (controller != null) controller.enabled = true;
+            var aController = Player.GetComponent<CharacterController>();
+            if (aController != null) aController.enabled = false;
+            Player.position = iPosition + Vector3.up * 0.1f;
+            if (aController != null) aController.enabled = true;
         }
 
         public void RestorePlayer()
         {
-            if (playerDamageable != null && !playerDamageable.IsDead) playerDamageable.Heal(playerDamageable.MaxHealth);
+            if (mPlayerDamageable != null && !mPlayerDamageable.IsDead) mPlayerDamageable.Heal(mPlayerDamageable.MaxHealth);
         }
 
         void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(0.4f, 0.8f, 1f, 0.5f);
             Gizmos.matrix = transform.localToWorldMatrix;
-            foreach (var room in rooms) Gizmos.DrawWireCube(room.center, room.size);
+            foreach (var aRoom in mRooms) Gizmos.DrawWireCube(aRoom.Center, aRoom.Size);
         }
     }
 }

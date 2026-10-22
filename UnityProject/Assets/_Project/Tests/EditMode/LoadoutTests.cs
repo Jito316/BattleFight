@@ -6,108 +6,108 @@ namespace BattleFight.Tests
 {
     public class LoadoutTests
     {
-        readonly List<Object> created = new List<Object>();
-        SkillDatabase database;
+        readonly List<Object> mCreated = new List<Object>();
+        SkillDatabase mDatabase;
 
-        SkillData Skill(string id, SlotType slot, WeaponType weapon)
+        SkillData Skill(string iId, SlotType iSlot, WeaponType iWeapon)
         {
-            var skill = ScriptableObject.CreateInstance<SkillData>();
-            skill.name = id;
-            skill.slot = slot;
-            skill.weapon = weapon;
-            created.Add(skill);
-            database.skills.Add(skill);
-            return skill;
+            var aSkill = ScriptableObject.CreateInstance<SkillData>();
+            aSkill.name = iId;
+            aSkill.Slot = iSlot;
+            aSkill.Weapon = iWeapon;
+            mCreated.Add(aSkill);
+            mDatabase.Skills.Add(aSkill);
+            return aSkill;
         }
 
         [SetUp]
         public void SetUp()
         {
-            database = ScriptableObject.CreateInstance<SkillDatabase>();
-            created.Add(database);
+            mDatabase = ScriptableObject.CreateInstance<SkillDatabase>();
+            mCreated.Add(mDatabase);
         }
 
         [TearDown]
         public void TearDown()
         {
-            foreach (var o in created) Object.DestroyImmediate(o);
-            created.Clear();
+            foreach (var aO in mCreated) Object.DestroyImmediate(aO);
+            mCreated.Clear();
         }
 
         [Test]
         public void Preset_RejectsSkillForAnotherSlot()
         {
-            var attack = Skill("a", SlotType.AttackA, WeaponType.Sword);
-            var preset = new SkillPreset();
+            var aAttack = Skill("a", SlotType.AttackA, WeaponType.Sword);
+            var aPreset = new SkillPreset();
 
-            Assert.IsFalse(preset.Set(SlotType.Movement, attack));
-            Assert.IsNull(preset.movement);
-            Assert.IsTrue(preset.Set(SlotType.AttackA, attack));
-            Assert.AreSame(attack, preset.Get(SlotType.AttackA));
+            Assert.IsFalse(aPreset.Set(SlotType.Movement, aAttack));
+            Assert.IsNull(aPreset.Movement);
+            Assert.IsTrue(aPreset.Set(SlotType.AttackA, aAttack));
+            Assert.AreSame(aAttack, aPreset.Get(SlotType.AttackA));
         }
 
         [Test]
         public void Preset_Bonus_UsesWeaponsOfAllSlots()
         {
-            var preset = new SkillPreset("p",
+            var aPreset = new SkillPreset("p",
                 Skill("a", SlotType.AttackA, WeaponType.Staff),
                 Skill("b", SlotType.AttackB, WeaponType.Staff),
                 Skill("m", SlotType.Movement, WeaponType.Staff));
-            Assert.AreEqual(WeaponBonusKind.Mastery, preset.Bonus.Kind);
-            Assert.AreEqual(WeaponType.Staff, preset.Bonus.Weapon);
+            Assert.AreEqual(WeaponBonusKind.Mastery, aPreset.Bonus.Kind);
+            Assert.AreEqual(WeaponType.Staff, aPreset.Bonus.Weapon);
 
-            preset.Set(SlotType.Movement, null);
-            Assert.AreEqual(WeaponBonusKind.None, preset.Bonus.Kind);
+            aPreset.Set(SlotType.Movement, null);
+            Assert.AreEqual(WeaponBonusKind.None, aPreset.Bonus.Kind);
         }
 
         [Test]
         public void Storage_RoundTripsModeIndexAndSkills()
         {
-            var a = Skill("gun_a", SlotType.AttackA, WeaponType.Gun);
-            var b = Skill("staff_b", SlotType.AttackB, WeaponType.Staff);
-            var m = Skill("chain_m", SlotType.Movement, WeaponType.Chain);
-            var presets = new List<SkillPreset> { new SkillPreset("one", a, b, m), new SkillPreset("two", a, null, m) };
+            var aA = Skill("gun_a", SlotType.AttackA, WeaponType.Gun);
+            var aB = Skill("staff_b", SlotType.AttackB, WeaponType.Staff);
+            var aM = Skill("chain_m", SlotType.Movement, WeaponType.Chain);
+            var aPresets = new List<SkillPreset> { new SkillPreset("one", aA, aB, aM), new SkillPreset("two", aA, null, aM) };
 
-            string json = LoadoutStorage.Serialize(SwapMode.Preset, 1, presets);
-            Assert.IsTrue(LoadoutStorage.TryDeserialize(json, database, out var loaded));
+            string aJson = LoadoutStorage.Serialize(SwapMode.Preset, 1, aPresets);
+            Assert.IsTrue(LoadoutStorage.TryDeserialize(aJson, mDatabase, out var aLoaded));
 
-            Assert.AreEqual(SwapMode.Preset, loaded.mode);
-            Assert.AreEqual(1, loaded.presetIndex);
-            Assert.AreEqual(2, loaded.presets.Count);
-            Assert.AreEqual("one", loaded.presets[0].name);
-            Assert.AreSame(a, loaded.presets[0].attackA);
-            Assert.AreSame(b, loaded.presets[0].attackB);
-            Assert.AreSame(m, loaded.presets[0].movement);
-            Assert.IsNull(loaded.presets[1].attackB);
+            Assert.AreEqual(SwapMode.Preset, aLoaded.Mode);
+            Assert.AreEqual(1, aLoaded.PresetIndex);
+            Assert.AreEqual(2, aLoaded.Presets.Count);
+            Assert.AreEqual("one", aLoaded.Presets[0].Name);
+            Assert.AreSame(aA, aLoaded.Presets[0].AttackA);
+            Assert.AreSame(aB, aLoaded.Presets[0].AttackB);
+            Assert.AreSame(aM, aLoaded.Presets[0].Movement);
+            Assert.IsNull(aLoaded.Presets[1].AttackB);
         }
 
         [Test]
         public void Storage_MissingSkillsBecomeNull()
         {
-            var a = Skill("gone", SlotType.AttackA, WeaponType.Gun);
-            string json = LoadoutStorage.Serialize(SwapMode.Rack, 0, new List<SkillPreset> { new SkillPreset("p", a, null, null) });
-            database.skills.Clear();
+            var aA = Skill("gone", SlotType.AttackA, WeaponType.Gun);
+            string aJson = LoadoutStorage.Serialize(SwapMode.Rack, 0, new List<SkillPreset> { new SkillPreset("p", aA, null, null) });
+            mDatabase.Skills.Clear();
 
-            Assert.IsTrue(LoadoutStorage.TryDeserialize(json, database, out var loaded));
-            Assert.IsNull(loaded.presets[0].attackA);
+            Assert.IsTrue(LoadoutStorage.TryDeserialize(aJson, mDatabase, out var aLoaded));
+            Assert.IsNull(aLoaded.Presets[0].AttackA);
         }
 
         [Test]
         public void Storage_RejectsBrokenData()
         {
-            Assert.IsFalse(LoadoutStorage.TryDeserialize("", database, out _));
-            Assert.IsFalse(LoadoutStorage.TryDeserialize("{not json", database, out _));
+            Assert.IsFalse(LoadoutStorage.TryDeserialize("", mDatabase, out _));
+            Assert.IsFalse(LoadoutStorage.TryDeserialize("{not json", mDatabase, out _));
         }
 
         [Test]
         public void Database_FindsByAssetName_AndFiltersBySlot()
         {
-            var a = Skill("x", SlotType.AttackA, WeaponType.Sword);
+            var aA = Skill("x", SlotType.AttackA, WeaponType.Sword);
             Skill("y", SlotType.Movement, WeaponType.Sword);
 
-            Assert.AreSame(a, database.Find("x"));
-            Assert.IsNull(database.Find("nothing"));
-            CollectionAssert.AreEqual(new[] { a }, new List<SkillData>(database.ForSlot(SlotType.AttackA)));
+            Assert.AreSame(aA, mDatabase.Find("x"));
+            Assert.IsNull(mDatabase.Find("nothing"));
+            CollectionAssert.AreEqual(new[] { aA }, new List<SkillData>(mDatabase.ForSlot(SlotType.AttackA)));
         }
     }
 }

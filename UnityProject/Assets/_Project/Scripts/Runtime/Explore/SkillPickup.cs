@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -10,26 +11,26 @@ namespace BattleFight
     /// </summary>
     public class SkillPickup : MonoBehaviour
     {
-        [SerializeField] string id;
-        [SerializeField] SkillData[] skills;
-        [SerializeField, Tooltip("手に入れたときに出す一言(何ができるようになるか)")] string hint;
-        [SerializeField] float radius = 1.6f;
-        [SerializeField] Transform orb;
+        [SerializeField, FormerlySerializedAs("id")] string mId;
+        [SerializeField, FormerlySerializedAs("skills")] SkillData[] mSkills;
+        [SerializeField, Tooltip("手に入れたときに出す一言(何ができるようになるか)"), FormerlySerializedAs("hint")] string mHint;
+        [SerializeField, FormerlySerializedAs("radius")] float mRadius = 1.6f;
+        [SerializeField, FormerlySerializedAs("orb")] Transform mOrb;
 
-        float baseHeight;
+        float mBaseHeight;
 
-        public string Id => id;
+        public string Id => mId;
 
-        public void Setup(string pickupId, SkillData[] pickupSkills, string pickupHint, Transform orbTransform)
+        public void Setup(string iPickupId, SkillData[] iPickupSkills, string iPickupHint, Transform iOrbTransform)
         {
-            id = pickupId;
-            skills = pickupSkills;
-            hint = pickupHint;
-            orb = orbTransform;
+            mId = iPickupId;
+            mSkills = iPickupSkills;
+            mHint = iPickupHint;
+            mOrb = iOrbTransform;
         }
 
-        public IReadOnlyList<SkillData> Skills => skills ?? new SkillData[0];
-        public bool Collected => ExplorationSave.HasFlag(id);
+        public IReadOnlyList<SkillData> Skills => mSkills ?? new SkillData[0];
+        public bool Collected => ExplorationSave.HasFlag(mId);
 
         void OnEnable()
         {
@@ -38,66 +39,66 @@ namespace BattleFight
                 gameObject.SetActive(false);
                 return;
             }
-            if (orb != null) baseHeight = orb.localPosition.y;
+            if (mOrb != null) mBaseHeight = mOrb.localPosition.y;
         }
 
         void Start()
         {
             // 武器種の色で光らせる(最初のスキルの武器種)
-            var region = ExplorationRegion.Active;
-            if (orb == null || region == null || region.Slots == null || skills == null || skills.Length == 0 || skills[0] == null) return;
-            var data = region.Slots.GetWeaponData(skills[0].weapon);
-            var renderer = orb.GetComponent<Renderer>();
-            if (data != null && renderer != null)
+            var aRegion = ExplorationRegion.Active;
+            if (mOrb == null || aRegion == null || aRegion.Slots == null || mSkills == null || mSkills.Length == 0 || mSkills[0] == null) return;
+            var aData = aRegion.Slots.GetWeaponData(mSkills[0].Weapon);
+            var aRenderer = mOrb.GetComponent<Renderer>();
+            if (aData != null && aRenderer != null)
             {
-                if (region.SurfaceMaterial != null) renderer.sharedMaterial = region.SurfaceMaterial;
-                var block = new MaterialPropertyBlock();
-                block.SetColor("_BaseColor", data.color);
-                block.SetColor("_Color", data.color);
-                renderer.SetPropertyBlock(block);
+                if (aRegion.SurfaceMaterial != null) aRenderer.sharedMaterial = aRegion.SurfaceMaterial;
+                var aBlock = new MaterialPropertyBlock();
+                aBlock.SetColor("_BaseColor", aData.Color);
+                aBlock.SetColor("_Color", aData.Color);
+                aRenderer.SetPropertyBlock(aBlock);
             }
         }
 
         void Update()
         {
-            if (orb != null)
+            if (mOrb != null)
             {
-                orb.Rotate(0f, 120f * Time.deltaTime, 0f, Space.World);
-                var p = orb.localPosition;
-                p.y = baseHeight + Mathf.Sin(Time.time * 2.5f) * 0.15f;
-                orb.localPosition = p;
+                mOrb.Rotate(0f, 120f * Time.deltaTime, 0f, Space.World);
+                var aP = mOrb.localPosition;
+                aP.y = mBaseHeight + Mathf.Sin(Time.time * 2.5f) * 0.15f;
+                mOrb.localPosition = aP;
             }
 
-            var region = ExplorationRegion.Active;
-            if (region == null || region.Player == null) return;
-            if ((region.Player.position + Vector3.up - transform.position).sqrMagnitude <= radius * radius) Collect(region);
+            var aRegion = ExplorationRegion.Active;
+            if (aRegion == null || aRegion.Player == null) return;
+            if ((aRegion.Player.position + Vector3.up - transform.position).sqrMagnitude <= mRadius * mRadius) Collect(aRegion);
         }
 
-        public void Collect(ExplorationRegion region)
+        public void Collect(ExplorationRegion iRegion)
         {
             if (Collected) return;
-            ExplorationSave.SetFlag(id);
+            ExplorationSave.SetFlag(mId);
 
-            var names = new StringBuilder();
-            foreach (var skill in Skills)
+            var aNames = new StringBuilder();
+            foreach (var aSkill in Skills)
             {
-                if (skill == null) continue;
-                ExplorationSave.Unlock(skill);
-                int preset = region.Slots != null ? region.Slots.EquipNewSkill(skill) : -1;
-                var data = region.Slots != null ? region.Slots.GetWeaponData(skill.weapon) : null;
-                if (names.Length > 0) names.Append('\n');
-                names.Append($"<color=#{ColorUtility.ToHtmlStringRGB(data != null ? data.color : Color.white)}>{skill.displayName}</color>");
-                names.Append($"<size=24>  {(data != null ? data.displayName : "")}・{SlotName(skill.slot)}");
-                if (preset >= 0) names.Append($"  → プリセット{preset + 1}に入れた");
-                names.Append("</size>");
+                if (aSkill == null) continue;
+                ExplorationSave.Unlock(aSkill);
+                int aPreset = iRegion.Slots != null ? iRegion.Slots.EquipNewSkill(aSkill) : -1;
+                var aData = iRegion.Slots != null ? iRegion.Slots.GetWeaponData(aSkill.Weapon) : null;
+                if (aNames.Length > 0) aNames.Append('\n');
+                aNames.Append($"<color=#{ColorUtility.ToHtmlStringRGB(aData != null ? aData.Color : Color.white)}>{aSkill.DisplayName}</color>");
+                aNames.Append($"<size=24>  {(aData != null ? aData.DisplayName : "")}・{SlotName(aSkill.Slot)}");
+                if (aPreset >= 0) aNames.Append($"  → プリセット{aPreset + 1}に入れた");
+                aNames.Append("</size>");
             }
-            string hintLine = string.IsNullOrEmpty(hint) ? "" : $"\n<size=26><color=#FFE08A>{hint}</color></size>";
-            region.Notify($"スキルを手に入れた\n{names}{hintLine}\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
+            string aHintLine = string.IsNullOrEmpty(mHint) ? "" : $"\n<size=26><color=#FFE08A>{mHint}</color></size>";
+            iRegion.Notify($"スキルを手に入れた\n{aNames}{aHintLine}\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
             if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, 2.5f, new Color(1f, 0.9f, 0.5f));
             gameObject.SetActive(false);
         }
 
-        static string SlotName(SlotType slot) => slot switch
+        static string SlotName(SlotType iSlot) => iSlot switch
         {
             SlotType.AttackA => "攻撃A",
             SlotType.AttackB => "攻撃B",

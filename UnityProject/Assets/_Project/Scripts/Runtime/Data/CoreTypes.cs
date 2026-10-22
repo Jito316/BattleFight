@@ -63,6 +63,6 @@ namespace BattleFight
     {
         public const float Fps = 60f;
 
-        public static float ToSeconds(int frames) => frames / Fps;
+        public static float ToSeconds(int iFrames) => iFrames / Fps;
     }
 }

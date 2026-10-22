@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -19,37 +20,37 @@ namespace BattleFight
     [Serializable]
     public class StageWave
     {
-        public string label = "WAVE";
-        public EnemyProfile[] enemies;
+        [FormerlySerializedAs("label")] public string Label = "WAVE";
+        [FormerlySerializedAs("enemies")] public EnemyProfile[] Enemies;
     }
 
     [Serializable]
     public class EndlessEntry
     {
-        public EnemyProfile profile;
+        [FormerlySerializedAs("profile")] public EnemyProfile Profile;
         [Tooltip("ウェーブの予算をどれだけ使うか(強い敵ほど高い)")]
-        public float cost = 1f;
+        [FormerlySerializedAs("cost")] public float Cost = 1f;
         [Tooltip("このウェーブから出てくる")]
-        [Min(1)] public int minWave = 1;
+        [Min(1)] [FormerlySerializedAs("minWave")] public int MinWave = 1;
     }
 
     [CreateAssetMenu(menuName = "BattleFight/Stage Data", fileName = "Stage_")]
     public class StageData : ScriptableObject
     {
-        public string displayName = "ステージ";
-        [TextArea] public string description;
-        public StageKind kind = StageKind.Waves;
+        [FormerlySerializedAs("displayName")] public string DisplayName = "ステージ";
+        [TextArea] [FormerlySerializedAs("description")] public string Description;
+        [FormerlySerializedAs("kind")] public StageKind Kind = StageKind.Waves;
 
         [Header("Waves")]
-        public StageWave[] waves;
+        [FormerlySerializedAs("waves")] public StageWave[] Waves;
 
         [Header("Training")]
-        public EnemyProfile[] trainingDummies;
+        [FormerlySerializedAs("trainingDummies")] public EnemyProfile[] TrainingDummies;
 
         [Header("Endless")]
-        public List<EndlessEntry> endlessPool = new List<EndlessEntry>();
-        public EnemyProfile[] endlessBosses;
+        [FormerlySerializedAs("endlessPool")] public List<EndlessEntry> EndlessPool = new List<EndlessEntry>();
+        [FormerlySerializedAs("endlessBosses")] public EnemyProfile[] EndlessBosses;
         [Tooltip("このウェーブごとにボスが出る")]
-        [Min(1)] public int bossEvery = 5;
+        [Min(1)] [FormerlySerializedAs("bossEvery")] public int BossEvery = 5;
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -22,38 +23,38 @@ namespace BattleFight
             GameOver,
         }
 
-        const int MaxAliveEnemies = 16;
+        const int mMaxAliveEnemies = 16;
 
-        [SerializeField] StageData[] stages;
-        [SerializeField] Transform player;
-        [SerializeField] PlayerInputReader input;
-        [SerializeField] StyleRankSystem style;
-        [SerializeField, Tooltip("敵の仮モデルに使うマテリアル(色は敵ごとに変える)")] Material enemyMaterial;
-        [SerializeField] Vector3 arenaCenter;
-        [SerializeField] float spawnRadius = 14f;
-        [SerializeField] float firstWaveDelay = 1.5f;
-        [SerializeField] float waveInterval = 2.5f;
-        [SerializeField] float baseShardReward = 10f;
-        [SerializeField] float trainingRespawnDelay = 1.5f;
+        [SerializeField, FormerlySerializedAs("stages")] StageData[] mStages;
+        [SerializeField, FormerlySerializedAs("player")] Transform mPlayer;
+        [SerializeField, FormerlySerializedAs("input")] PlayerInputReader mInput;
+        [SerializeField, FormerlySerializedAs("style")] StyleRankSystem mStyle;
+        [SerializeField, Tooltip("敵の仮モデルに使うマテリアル(色は敵ごとに変える)"), FormerlySerializedAs("enemyMaterial")] Material mEnemyMaterial;
+        [SerializeField, FormerlySerializedAs("arenaCenter")] Vector3 mArenaCenter;
+        [SerializeField, FormerlySerializedAs("spawnRadius")] float mSpawnRadius = 14f;
+        [SerializeField, FormerlySerializedAs("firstWaveDelay")] float mFirstWaveDelay = 1.5f;
+        [SerializeField, FormerlySerializedAs("waveInterval")] float mWaveInterval = 2.5f;
+        [SerializeField, FormerlySerializedAs("baseShardReward")] float mBaseShardReward = 10f;
+        [SerializeField, FormerlySerializedAs("trainingRespawnDelay")] float mTrainingRespawnDelay = 1.5f;
 
         [Header("探索")]
-        [SerializeField, Tooltip("アリーナの地形(探索中は隠す)")] GameObject arenaRoot;
-        [SerializeField, Tooltip("探索マップ(探索のステージでだけ出す)")] ExplorationRegion exploration;
-        [SerializeField] SkillSlotController slots;
+        [SerializeField, Tooltip("アリーナの地形(探索中は隠す)"), FormerlySerializedAs("arenaRoot")] GameObject mArenaRoot;
+        [SerializeField, Tooltip("探索マップ(探索のステージでだけ出す)"), FormerlySerializedAs("exploration")] ExplorationRegion mExploration;
+        [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
 
         // シーンを読み直しても、選んだステージと「すぐ始めるか」を覚えておく
-        static int selectedStage = -1;
-        static bool startImmediately;
+        static int mSelectedStage = -1;
+        static bool mStartImmediately;
 
-        readonly List<EnemyController> alive = new List<EnemyController>();
-        readonly System.Random random = new System.Random();
-        Damageable playerDamageable;
+        readonly List<EnemyController> mAlive = new List<EnemyController>();
+        readonly System.Random mRandom = new System.Random();
+        Damageable mPlayerDamageable;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
-            selectedStage = -1;
-            startImmediately = false;
+            mSelectedStage = -1;
+            mStartImmediately = false;
             Instance = null;
             EliteChanceOverride = -1f;
         }
@@ -66,20 +67,20 @@ namespace BattleFight
         {
             if (EliteChanceOverride >= 0f) return EliteChanceOverride;
             if (CurrentStage == null) return 0f;
-            if (CurrentStage.kind == StageKind.Waves) return 0.12f;
-            if (CurrentStage.kind == StageKind.Endless) return Mathf.Min(0.3f, 0.08f + WaveNumber * 0.01f);
+            if (CurrentStage.Kind == StageKind.Waves) return 0.12f;
+            if (CurrentStage.Kind == StageKind.Endless) return Mathf.Min(0.3f, 0.08f + WaveNumber * 0.01f);
             return 0f;
         }
 
         public static ArenaDirector Instance { get; private set; }
 
-        public IReadOnlyList<StageData> Stages => stages;
+        public IReadOnlyList<StageData> Stages => mStages;
         public StageData CurrentStage { get; private set; }
         public int StageIndex { get; private set; } = -1;
         public GameState State { get; private set; } = GameState.StageSelect;
         public int WaveNumber { get; private set; }
         /// <summary>エンドレスと訓練場では 0</summary>
-        public int WaveCount => CurrentStage != null && CurrentStage.kind == StageKind.Waves && CurrentStage.waves != null ? CurrentStage.waves.Length : 0;
+        public int WaveCount => CurrentStage != null && CurrentStage.Kind == StageKind.Waves && CurrentStage.Waves != null ? CurrentStage.Waves.Length : 0;
         public string WaveLabel { get; private set; }
         public int Shards { get; private set; }
         public float ElapsedTime { get; private set; }
@@ -91,9 +92,9 @@ namespace BattleFight
         {
             get
             {
-                foreach (var enemy in alive)
+                foreach (var aEnemy in mAlive)
                 {
-                    if (enemy != null && !enemy.IsDead && enemy.Profile.isBoss) return enemy;
+                    if (aEnemy != null && !aEnemy.IsDead && aEnemy.Profile.IsBoss) return aEnemy;
                 }
                 return null;
             }
@@ -102,21 +103,21 @@ namespace BattleFight
         void Awake()
         {
             Instance = this;
-            if (exploration != null) exploration.gameObject.SetActive(false);
+            if (mExploration != null) mExploration.gameObject.SetActive(false);
         }
 
-        public bool IsExploring => CurrentStage != null && CurrentStage.kind == StageKind.Exploration;
-        public ExplorationRegion Exploration => exploration;
+        public bool IsExploring => CurrentStage != null && CurrentStage.Kind == StageKind.Exploration;
+        public ExplorationRegion Exploration => mExploration;
 
         void Start()
         {
-            playerDamageable = player.GetComponent<Damageable>();
-            playerDamageable.Died += OnPlayerDied;
+            mPlayerDamageable = mPlayer.GetComponent<Damageable>();
+            mPlayerDamageable.Died += OnPlayerDied;
 
-            if (startImmediately && selectedStage >= 0 && selectedStage < stages.Length)
+            if (mStartImmediately && mSelectedStage >= 0 && mSelectedStage < mStages.Length)
             {
-                startImmediately = false;
-                StartStage(selectedStage);
+                mStartImmediately = false;
+                StartStage(mSelectedStage);
             }
             else
             {
@@ -126,7 +127,7 @@ namespace BattleFight
 
         void OnDestroy()
         {
-            if (playerDamageable != null) playerDamageable.Died -= OnPlayerDied;
+            if (mPlayerDamageable != null) mPlayerDamageable.Died -= OnPlayerDied;
             if (Instance == this) Instance = null;
         }
 
@@ -136,21 +137,21 @@ namespace BattleFight
             ThirdPersonCamera.SetCursorLocked(false);
         }
 
-        public void StartStage(int index)
+        public void StartStage(int iIndex)
         {
-            if (stages == null || index < 0 || index >= stages.Length) return;
+            if (mStages == null || iIndex < 0 || iIndex >= mStages.Length) return;
             StopAllCoroutines();
-            selectedStage = index;
-            StageIndex = index;
-            CurrentStage = stages[index];
+            mSelectedStage = iIndex;
+            StageIndex = iIndex;
+            CurrentStage = mStages[iIndex];
             ElapsedTime = 0f;
             WaveNumber = 0;
 
             // 探索のステージだけ探索マップを出し、アリーナの地形は隠す
-            bool exploring = IsExploring && exploration != null;
-            if (arenaRoot != null) arenaRoot.SetActive(!exploring);
-            if (exploring) exploration.Begin(this, player, slots, enemyMaterial);
-            else if (exploration != null) exploration.gameObject.SetActive(false);
+            bool aExploring = IsExploring && mExploration != null;
+            if (mArenaRoot != null) mArenaRoot.SetActive(!aExploring);
+            if (aExploring) mExploration.Begin(this, mPlayer, mSlots, mEnemyMaterial);
+            else if (mExploration != null) mExploration.gameObject.SetActive(false);
 #if !UNITY_WEBGL || UNITY_EDITOR
             ThirdPersonCamera.SetCursorLocked(true);
 #endif
@@ -160,113 +161,113 @@ namespace BattleFight
         IEnumerator Run()
         {
             State = GameState.Starting;
-            WaveLabel = CurrentStage.displayName;
-            yield return new WaitForSeconds(firstWaveDelay);
+            WaveLabel = CurrentStage.DisplayName;
+            yield return new WaitForSeconds(mFirstWaveDelay);
 
-            switch (CurrentStage.kind)
+            switch (CurrentStage.Kind)
             {
                 case StageKind.Exploration:
                     // 敵は部屋ごとの EncounterZone が出す。ボスを倒すと CompleteExploration でクリア
-                    WaveLabel = CurrentStage.displayName;
+                    WaveLabel = CurrentStage.DisplayName;
                     State = GameState.Fighting;
                     yield break;
 
                 case StageKind.Training:
-                    WaveLabel = CurrentStage.displayName;
-                    if (CurrentStage.trainingDummies != null) Spawn(CurrentStage.trainingDummies);
+                    WaveLabel = CurrentStage.DisplayName;
+                    if (CurrentStage.TrainingDummies != null) Spawn(CurrentStage.TrainingDummies);
                     State = GameState.Fighting;
                     yield break;
 
                 case StageKind.Endless:
-                    for (int wave = 1; ; wave++)
+                    for (int aWave = 1; ; aWave++)
                     {
-                        WaveNumber = wave;
-                        bool boss = EndlessWaveGenerator.IsBossWave(wave, CurrentStage.bossEvery);
-                        WaveLabel = boss ? "BOSS WAVE" : "WAVE";
-                        Spawn(EndlessWaveGenerator.Generate(wave, CurrentStage.endlessPool, CurrentStage.endlessBosses,
-                            CurrentStage.bossEvery, random));
+                        WaveNumber = aWave;
+                        bool aBoss = EndlessWaveGenerator.IsBossWave(aWave, CurrentStage.BossEvery);
+                        WaveLabel = aBoss ? "BOSS WAVE" : "WAVE";
+                        Spawn(EndlessWaveGenerator.Generate(aWave, CurrentStage.EndlessPool, CurrentStage.EndlessBosses,
+                            CurrentStage.BossEvery, mRandom));
                         State = GameState.Fighting;
-                        while (alive.Count > 0) yield return null;
+                        while (mAlive.Count > 0) yield return null;
 
-                        if (StageRecords.RecordWave(CurrentStage.name, wave)) NewRecord = true;
+                        if (StageRecords.RecordWave(CurrentStage.name, aWave)) NewRecord = true;
                         State = GameState.Intermission;
-                        yield return new WaitForSeconds(waveInterval);
+                        yield return new WaitForSeconds(mWaveInterval);
                     }
 
                 default:
-                    for (int i = 0; i < WaveCount; i++)
+                    for (int aI = 0; aI < WaveCount; aI++)
                     {
-                        WaveNumber = i + 1;
-                        WaveLabel = CurrentStage.waves[i].label;
-                        Spawn(CurrentStage.waves[i].enemies);
+                        WaveNumber = aI + 1;
+                        WaveLabel = CurrentStage.Waves[aI].Label;
+                        Spawn(CurrentStage.Waves[aI].Enemies);
                         State = GameState.Fighting;
-                        while (alive.Count > 0) yield return null;
+                        while (mAlive.Count > 0) yield return null;
 
-                        if (i < WaveCount - 1)
+                        if (aI < WaveCount - 1)
                         {
                             State = GameState.Intermission;
-                            yield return new WaitForSeconds(waveInterval);
+                            yield return new WaitForSeconds(mWaveInterval);
                         }
                     }
                     State = GameState.Cleared;
-                    NewRecord = StageRecords.RecordClear(CurrentStage.name, ElapsedTime, style != null ? style.HighestRank : 0);
+                    NewRecord = StageRecords.RecordClear(CurrentStage.name, ElapsedTime, mStyle != null ? mStyle.HighestRank : 0);
                     ThirdPersonCamera.SetCursorLocked(false);
                     break;
             }
         }
 
-        void Spawn(IReadOnlyList<EnemyProfile> enemies)
+        void Spawn(IReadOnlyList<EnemyProfile> iEnemies)
         {
-            if (enemies == null || enemies.Count == 0) return;
+            if (iEnemies == null || iEnemies.Count == 0) return;
 
             // プレイヤーの反対側を中心に扇状に出す
-            Vector3 fromCenter = player.position - arenaCenter;
-            float baseAngle = Mathf.Atan2(fromCenter.x, fromCenter.z) * Mathf.Rad2Deg + 180f;
-            int count = enemies.Count;
-            float spread = count > 1 ? Mathf.Min(200f, 40f * count) : 0f;
+            Vector3 aFromCenter = mPlayer.position - mArenaCenter;
+            float aBaseAngle = Mathf.Atan2(aFromCenter.x, aFromCenter.z) * Mathf.Rad2Deg + 180f;
+            int aCount = iEnemies.Count;
+            float aSpread = aCount > 1 ? Mathf.Min(200f, 40f * aCount) : 0f;
 
-            for (int i = 0; i < count; i++)
+            for (int aI = 0; aI < aCount; aI++)
             {
-                if (enemies[i] == null) continue;
-                float angle = (baseAngle - spread * 0.5f + (count > 1 ? spread * i / (count - 1) : 0f)) * Mathf.Deg2Rad;
-                Vector3 position = arenaCenter + new Vector3(Mathf.Sin(angle), 0f, Mathf.Cos(angle)) * spawnRadius;
+                if (iEnemies[aI] == null) continue;
+                float aAngle = (aBaseAngle - aSpread * 0.5f + (aCount > 1 ? aSpread * aI / (aCount - 1) : 0f)) * Mathf.Deg2Rad;
+                Vector3 aPosition = mArenaCenter + new Vector3(Mathf.Sin(aAngle), 0f, Mathf.Cos(aAngle)) * mSpawnRadius;
                 // ときどきエリート(巨大・俊足・分裂・障壁)になる
-                var affix = EliteMaker.Roll(enemies[i], EliteChance(), random);
-                if (affix != EliteAffix.None) SpawnElite(enemies[i], affix, position);
-                else SpawnEnemy(enemies[i], position);
+                var aAffix = EliteMaker.Roll(iEnemies[aI], EliteChance(), mRandom);
+                if (aAffix != EliteAffix.None) SpawnElite(iEnemies[aI], aAffix, aPosition);
+                else SpawnEnemy(iEnemies[aI], aPosition);
             }
         }
 
         /// <summary>ボスの召喚などで、ウェーブの途中に敵を足す(倒すまでウェーブは終わらない)</summary>
-        public EnemyController SpawnExtra(EnemyProfile profile, Vector3 position)
+        public EnemyController SpawnExtra(EnemyProfile iProfile, Vector3 iPosition)
         {
             // 倒れずに消えた敵(ウェーブの外で消したものなど)は数えない
-            alive.RemoveAll(e => e == null);
-            if (profile == null || alive.Count >= MaxAliveEnemies || State == GameState.GameOver) return null;
-            if (IsExploring) return SpawnEnemy(profile, position, true);
+            mAlive.RemoveAll(iE => iE == null);
+            if (iProfile == null || mAlive.Count >= mMaxAliveEnemies || State == GameState.GameOver) return null;
+            if (IsExploring) return SpawnEnemy(iProfile, iPosition, true);
             // アリーナの外に出ないようにする
-            Vector3 offset = position - arenaCenter;
-            offset.y = 0f;
-            if (offset.magnitude > 26f) position = arenaCenter + offset.normalized * 26f;
-            return SpawnEnemy(profile, position);
+            Vector3 aOffset = iPosition - mArenaCenter;
+            aOffset.y = 0f;
+            if (aOffset.magnitude > 26f) iPosition = mArenaCenter + aOffset.normalized * 26f;
+            return SpawnEnemy(iProfile, iPosition);
         }
 
         /// <summary>エリートを出す(元のデータは変えず、強化した複製を使う)</summary>
-        public EnemyController SpawnElite(EnemyProfile profile, EliteAffix affix, Vector3 position)
+        public EnemyController SpawnElite(EnemyProfile iProfile, EliteAffix iAffix, Vector3 iPosition)
         {
-            if (profile == null || State == GameState.GameOver) return null;
-            var elite = EliteMaker.Create(profile, affix);
-            var enemy = SpawnEnemy(elite, position, IsExploring);
+            if (iProfile == null || State == GameState.GameOver) return null;
+            var aElite = EliteMaker.Create(iProfile, iAffix);
+            var aEnemy = SpawnEnemy(aElite, iPosition, IsExploring);
             // 敵が消えたら、複製したデータも消す
-            DestroyWithOwner.Attach(enemy.gameObject, elite);
-            return enemy;
+            DestroyWithOwner.Attach(aEnemy.gameObject, aElite);
+            return aEnemy;
         }
 
         /// <summary>探索: 部屋の敵をその場所(高さもそのまま)に出す</summary>
-        public EnemyController SpawnAt(EnemyProfile profile, Vector3 position)
+        public EnemyController SpawnAt(EnemyProfile iProfile, Vector3 iPosition)
         {
-            if (profile == null || State == GameState.GameOver) return null;
-            return SpawnEnemy(profile, position, true);
+            if (iProfile == null || State == GameState.GameOver) return null;
+            return SpawnEnemy(iProfile, iPosition, true);
         }
 
         /// <summary>探索: 最後のボスを倒した</summary>
@@ -274,63 +275,63 @@ namespace BattleFight
         {
             if (!IsExploring || State == GameState.GameOver) return;
             State = GameState.Cleared;
-            NewRecord = StageRecords.RecordClear(CurrentStage.name, ElapsedTime, style != null ? style.HighestRank : 0);
+            NewRecord = StageRecords.RecordClear(CurrentStage.name, ElapsedTime, mStyle != null ? mStyle.HighestRank : 0);
             ThirdPersonCamera.SetCursorLocked(false);
         }
 
-        EnemyController SpawnEnemy(EnemyProfile profile, Vector3 position, bool keepHeight = false)
+        EnemyController SpawnEnemy(EnemyProfile iProfile, Vector3 iPosition, bool iKeepHeight = false)
         {
-            position.y = keepHeight ? position.y + 0.1f : 0.1f;
-            Vector3 look = player.position - position;
-            look.y = 0f;
-            var rotation = look.sqrMagnitude > 0.01f ? Quaternion.LookRotation(look) : Quaternion.identity;
+            iPosition.y = iKeepHeight ? iPosition.y + 0.1f : 0.1f;
+            Vector3 aLook = mPlayer.position - iPosition;
+            aLook.y = 0f;
+            var aRotation = aLook.sqrMagnitude > 0.01f ? Quaternion.LookRotation(aLook) : Quaternion.identity;
 
-            var enemy = EnemyFactory.Create(profile, position, rotation, player, enemyMaterial);
-            alive.Add(enemy);
-            enemy.Damageable.Died += () => OnEnemyDied(enemy, profile, position);
-            return enemy;
+            var aEnemy = EnemyFactory.Create(iProfile, iPosition, aRotation, mPlayer, mEnemyMaterial);
+            mAlive.Add(aEnemy);
+            aEnemy.Damageable.Died += () => OnEnemyDied(aEnemy, iProfile, iPosition);
+            return aEnemy;
         }
 
-        void OnEnemyDied(EnemyController enemy, EnemyProfile profile, Vector3 spawnPosition)
+        void OnEnemyDied(EnemyController iEnemy, EnemyProfile iProfile, Vector3 iSpawnPosition)
         {
-            alive.Remove(enemy);
-            float multiplier = style != null ? style.RewardMultiplier : 1f;
-            Shards += Mathf.RoundToInt(baseShardReward * profile.shardValue * multiplier);
+            mAlive.Remove(iEnemy);
+            float aMultiplier = mStyle != null ? mStyle.RewardMultiplier : 1f;
+            Shards += Mathf.RoundToInt(mBaseShardReward * iProfile.ShardValue * aMultiplier);
 
-            if (profile.elite != EliteAffix.None)
+            if (iProfile.Elite != EliteAffix.None)
             {
-                if (style != null) style.AddBonus(80f, "ELITE DOWN", new Color(1f, 0.82f, 0.3f));
+                if (mStyle != null) mStyle.AddBonus(80f, "ELITE DOWN", new Color(1f, 0.82f, 0.3f));
                 // 分裂: 小さな分身が2体出る
-                if (profile.elite == EliteAffix.Splitter && State != GameState.GameOver && enemy != null)
+                if (iProfile.Elite == EliteAffix.Splitter && State != GameState.GameOver && iEnemy != null)
                 {
-                    var split = EliteMaker.CreateSplit(profile.eliteSource != null ? profile.eliteSource : profile);
-                    for (int i = 0; i < 2; i++)
+                    var aSplit = EliteMaker.CreateSplit(iProfile.EliteSource != null ? iProfile.EliteSource : iProfile);
+                    for (int aI = 0; aI < 2; aI++)
                     {
-                        Vector3 offset = Quaternion.Euler(0f, 90f + 180f * i, 0f) * enemy.transform.forward * 1.2f;
-                        var child = SpawnEnemy(split, enemy.transform.position + offset, true);
-                        DestroyWithOwner.Attach(child.gameObject, split);
+                        Vector3 aOffset = Quaternion.Euler(0f, 90f + 180f * aI, 0f) * iEnemy.transform.forward * 1.2f;
+                        var aChild = SpawnEnemy(aSplit, iEnemy.transform.position + aOffset, true);
+                        DestroyWithOwner.Attach(aChild.gameObject, aSplit);
                     }
                 }
             }
 
             // ウェーブ最後の1体を倒した瞬間はスローモーション
-            bool waveStage = CurrentStage != null && (CurrentStage.kind == StageKind.Waves || CurrentStage.kind == StageKind.Endless);
-            if (waveStage && State == GameState.Fighting && alive.Count == 0 && CombatFeedback.Instance != null)
+            bool aWaveStage = CurrentStage != null && (CurrentStage.Kind == StageKind.Waves || CurrentStage.Kind == StageKind.Endless);
+            if (aWaveStage && State == GameState.Fighting && mAlive.Count == 0 && CombatFeedback.Instance != null)
             {
                 CombatFeedback.Instance.SlowMotion(0.25f, 0.9f);
                 CombatFeedback.Instance.Shake(0.35f);
             }
 
-            if (CurrentStage != null && CurrentStage.kind == StageKind.Training && State == GameState.Fighting)
+            if (CurrentStage != null && CurrentStage.Kind == StageKind.Training && State == GameState.Fighting)
             {
-                StartCoroutine(RespawnLater(profile, spawnPosition));
+                StartCoroutine(RespawnLater(iProfile, iSpawnPosition));
             }
         }
 
-        IEnumerator RespawnLater(EnemyProfile profile, Vector3 position)
+        IEnumerator RespawnLater(EnemyProfile iProfile, Vector3 iPosition)
         {
-            yield return new WaitForSeconds(trainingRespawnDelay);
-            if (State == GameState.Fighting) SpawnEnemy(profile, position);
+            yield return new WaitForSeconds(mTrainingRespawnDelay);
+            if (State == GameState.Fighting) SpawnEnemy(iProfile, iPosition);
         }
 
         void OnPlayerDied()
@@ -346,31 +347,31 @@ namespace BattleFight
             if (State == GameState.Fighting || State == GameState.Intermission) ElapsedTime += Time.deltaTime;
             if (State == GameState.StageSelect) return;
 
-            var keyboard = Keyboard.current;
-            if (input != null && input.Consume(PlayerAction.Restart)) Retry();
-            else if (keyboard != null && keyboard.tKey.wasPressedThisFrame) BackToStageSelect();
-            else if (State == GameState.Cleared && keyboard != null && keyboard.nKey.wasPressedThisFrame && HasNextStage) NextStage();
+            var aKeyboard = Keyboard.current;
+            if (mInput != null && mInput.Consume(PlayerAction.Restart)) Retry();
+            else if (aKeyboard != null && aKeyboard.tKey.wasPressedThisFrame) BackToStageSelect();
+            else if (State == GameState.Cleared && aKeyboard != null && aKeyboard.nKey.wasPressedThisFrame && HasNextStage) NextStage();
         }
 
         int NextStageIndex()
         {
-            for (int i = StageIndex + 1; i < stages.Length; i++)
+            for (int aI = StageIndex + 1; aI < mStages.Length; aI++)
             {
-                if (stages[i] != null && stages[i].kind == StageKind.Waves) return i;
+                if (mStages[aI] != null && mStages[aI].Kind == StageKind.Waves) return aI;
             }
             return -1;
         }
 
-        public void Retry() => Reload(selectedStage, true);
+        public void Retry() => Reload(mSelectedStage, true);
 
         public void NextStage() => Reload(NextStageIndex(), true);
 
-        public void BackToStageSelect() => Reload(selectedStage, false);
+        public void BackToStageSelect() => Reload(mSelectedStage, false);
 
-        static void Reload(int stage, bool start)
+        static void Reload(int iStage, bool iStart)
         {
-            selectedStage = stage;
-            startImmediately = start && stage >= 0;
+            mSelectedStage = iStage;
+            mStartImmediately = iStart && iStage >= 0;
             GamePause.Set(false);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }

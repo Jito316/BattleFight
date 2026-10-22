@@ -21,165 +21,190 @@ namespace BattleFight.EditorTools
     /// </summary>
     public static partial class PrototypeSceneBuilder
     {
-        static readonly Vector3 ExplorationOrigin = new Vector3(200f, 0f, 0f);
-        const float WallHeight = 6f;
-        const float LedgeHeight = 3f;
+        static readonly Vector3 mExplorationOrigin = new Vector3(200f, 0f, 0f);
+        const float mWallHeight = 6f;
+        const float mLedgeHeight = 3f;
 
         class ExplorationSkills
         {
-            public SkillData swordCombo, swordIai, swordStep;
-            public SkillData hammerCombo, hammerSpin, hammerQuake, hammerMeteor, hammerJump;
-            public SkillData chainCombo, chainPull, chainWire;
-            public SkillData staffBolt, staffBlink, staffFireball, staffThunder;
+            public SkillData SwordCombo;
+            public SkillData SwordIai;
+            public SkillData SwordStep;
+            public SkillData HammerCombo;
+            public SkillData HammerSpin;
+            public SkillData HammerQuake;
+            public SkillData HammerMeteor;
+            public SkillData HammerJump;
+            public SkillData ChainCombo;
+            public SkillData ChainPull;
+            public SkillData ChainWire;
+            public SkillData StaffBolt;
+            public SkillData StaffBlink;
+            public SkillData StaffFireball;
+            public SkillData StaffThunder;
         }
 
         class ExplorationEnemies
         {
-            public EnemyProfile grunt, armored, shooter, dasher, flyer, boss;
+            public EnemyProfile Grunt;
+            public EnemyProfile Armored;
+            public EnemyProfile Shooter;
+            public EnemyProfile Dasher;
+            public EnemyProfile Flyer;
+            public EnemyProfile Boss;
         }
 
         class ExplorationMaterials
         {
-            public Material floor, wall, raised, cracked, crack, altar, crystal, orb, barrier, grapple;
+            public Material Floor;
+            public Material Wall;
+            public Material Raised;
+            public Material Cracked;
+            public Material Crack;
+            public Material Altar;
+            public Material Crystal;
+            public Material Orb;
+            public Material Barrier;
+            public Material Grapple;
         }
 
-        static ExplorationRegion BuildExploration(ExplorationSkills skill, ExplorationEnemies enemy)
+        static ExplorationRegion BuildExploration(ExplorationSkills iSkill, ExplorationEnemies iEnemy)
         {
-            var root = new GameObject("Exploration").transform;
-            root.position = ExplorationOrigin;
-            var m = new ExplorationMaterials
+            var aRoot = new GameObject("Exploration").transform;
+            aRoot.position = mExplorationOrigin;
+            var aM = new ExplorationMaterials
             {
-                floor = Mat("ExploreFloor", new Color(0.3f, 0.3f, 0.34f)),
-                wall = Mat("ExploreWall", new Color(0.24f, 0.22f, 0.26f)),
-                raised = Mat("ExploreRaised", new Color(0.36f, 0.38f, 0.33f)),
-                cracked = Mat("CrackedWall", new Color(0.52f, 0.4f, 0.3f)),
-                crack = Mat("Crack", new Color(0.12f, 0.08f, 0.06f)),
-                altar = Mat("Altar", new Color(0.55f, 0.55f, 0.6f)),
-                crystal = Mat("AltarCrystal", new Color(0.45f, 0.8f, 1f)),
-                orb = Mat("SkillOrb", new Color(1f, 0.9f, 0.5f)),
-                barrier = Mat("Barrier", new Color(0.6f, 0.15f, 0.2f)),
-                grapple = Mat("GrapplePoint", new Color(0.75f, 0.5f, 1f)),
+                Floor = Mat("ExploreFloor", new Color(0.3f, 0.3f, 0.34f)),
+                Wall = Mat("ExploreWall", new Color(0.24f, 0.22f, 0.26f)),
+                Raised = Mat("ExploreRaised", new Color(0.36f, 0.38f, 0.33f)),
+                Cracked = Mat("CrackedWall", new Color(0.52f, 0.4f, 0.3f)),
+                Crack = Mat("Crack", new Color(0.12f, 0.08f, 0.06f)),
+                Altar = Mat("Altar", new Color(0.55f, 0.55f, 0.6f)),
+                Crystal = Mat("AltarCrystal", new Color(0.45f, 0.8f, 1f)),
+                Orb = Mat("SkillOrb", new Color(1f, 0.9f, 0.5f)),
+                Barrier = Mat("Barrier", new Color(0.6f, 0.15f, 0.2f)),
+                Grapple = Mat("GrapplePoint", new Color(0.75f, 0.5f, 1f)),
             };
 
             // ---------- 入口の広間(x -12..12, z -12..12, 床の高さ 0) ----------
-            Floor(root, "Hall_Floor", -12, 12, -12, 12, 0f, m.floor);
-            WallX(root, "Hall_Wall_S", -12, 12, -12, 0f, m.wall);
-            WallX(root, "Hall_Wall_N", -12, 12, 12, 0f, m.wall, (-3, 3));
-            WallZ(root, "Hall_Wall_E", -12, 12, 12, 0f, m.wall, (-3, 3));
-            WallZ(root, "Hall_Wall_W", -12, 12, -12, 0f, m.wall, (-4, 4));
-            Pillar(root, "Hall_Pillar_1", new Vector3(-7, 0, 7), m.wall);
-            Pillar(root, "Hall_Pillar_2", new Vector3(7, 0, 7), m.wall);
-            var spawn = new GameObject("PlayerSpawn").transform;
-            spawn.SetParent(root, false);
-            spawn.localPosition = new Vector3(0f, 0f, -5f);
+            Floor(aRoot, "Hall_Floor", -12, 12, -12, 12, 0f, aM.Floor);
+            WallX(aRoot, "Hall_Wall_S", -12, 12, -12, 0f, aM.Wall);
+            WallX(aRoot, "Hall_Wall_N", -12, 12, 12, 0f, aM.Wall, (-3, 3));
+            WallZ(aRoot, "Hall_Wall_E", -12, 12, 12, 0f, aM.Wall, (-3, 3));
+            WallZ(aRoot, "Hall_Wall_W", -12, 12, -12, 0f, aM.Wall, (-4, 4));
+            Pillar(aRoot, "Hall_Pillar_1", new Vector3(-7, 0, 7), aM.Wall);
+            Pillar(aRoot, "Hall_Pillar_2", new Vector3(7, 0, 7), aM.Wall);
+            var aSpawn = new GameObject("PlayerSpawn").transform;
+            aSpawn.SetParent(aRoot, false);
+            aSpawn.localPosition = new Vector3(0f, 0f, -5f);
             // 祭壇は通り道をふさがないよう、広間の隅に置く
-            Altar(root, "cp_hall", new Vector3(-7f, 0f, -7f), m);
+            Altar(aRoot, "cp_hall", new Vector3(-7f, 0f, -7f), aM);
 
             // ---------- 東の回廊 → 兵舎(x 20..44, z -10..10) ----------
-            Floor(root, "EastHall_Floor", 12, 20, -3, 3, 0f, m.floor);
-            WallX(root, "EastHall_Wall_S", 12, 20, -3, 0f, m.wall);
-            WallX(root, "EastHall_Wall_N", 12, 20, 3, 0f, m.wall);
+            Floor(aRoot, "EastHall_Floor", 12, 20, -3, 3, 0f, aM.Floor);
+            WallX(aRoot, "EastHall_Wall_S", 12, 20, -3, 0f, aM.Wall);
+            WallX(aRoot, "EastHall_Wall_N", 12, 20, 3, 0f, aM.Wall);
 
-            Floor(root, "Barracks_Floor", 20, 44, -10, 10, 0f, m.floor);
-            WallZ(root, "Barracks_Wall_W", -10, 10, 20, 0f, m.wall, (-3, 3));
-            WallZ(root, "Barracks_Wall_E", -10, 10, 44, 0f, m.wall);
-            WallX(root, "Barracks_Wall_N", 20, 44, 10, 0f, m.wall);
-            WallX(root, "Barracks_Wall_S", 20, 44, -10, 0f, m.wall, (29, 35));
-            Pickup(root, "pickup_hammer_combo", new Vector3(40f, 0f, 0f), "ひび割れた壁を壊せる(大槌の技で叩く)", skill.hammerCombo);
-            Zone(root, "zone_barracks", new Vector3(32f, 0f, 0f), new Vector3(22f, 8f, 18f),
-                (enemy.grunt, new Vector3(28f, 0f, 5f)), (enemy.grunt, new Vector3(36f, 0f, -4f)), (enemy.grunt, new Vector3(38f, 0f, 5f)));
+            Floor(aRoot, "Barracks_Floor", 20, 44, -10, 10, 0f, aM.Floor);
+            WallZ(aRoot, "Barracks_Wall_W", -10, 10, 20, 0f, aM.Wall, (-3, 3));
+            WallZ(aRoot, "Barracks_Wall_E", -10, 10, 44, 0f, aM.Wall);
+            WallX(aRoot, "Barracks_Wall_N", 20, 44, 10, 0f, aM.Wall);
+            WallX(aRoot, "Barracks_Wall_S", 20, 44, -10, 0f, aM.Wall, (29, 35));
+            Pickup(aRoot, "pickup_hammer_combo", new Vector3(40f, 0f, 0f), "ひび割れた壁を壊せる(大槌の技で叩く)", iSkill.HammerCombo);
+            Zone(aRoot, "zone_barracks", new Vector3(32f, 0f, 0f), new Vector3(22f, 8f, 18f),
+                (iEnemy.Grunt, new Vector3(28f, 0f, 5f)), (iEnemy.Grunt, new Vector3(36f, 0f, -4f)), (iEnemy.Grunt, new Vector3(38f, 0f, 5f)));
 
             // 兵舎の南: ひび割れた壁の奥の隠し部屋(x 28..36, z -18..-10)
-            CrackedWall(root, "wall_barracks_secret", new Vector3(32f, 0f, -10f), 6f, true, m);
-            Floor(root, "Secret_Floor", 28, 36, -18, -10, 0f, m.floor);
-            WallX(root, "Secret_Wall_S", 28, 36, -18, 0f, m.wall);
-            WallZ(root, "Secret_Wall_W", -18, -10, 28, 0f, m.wall);
-            WallZ(root, "Secret_Wall_E", -18, -10, 36, 0f, m.wall);
-            Pickup(root, "pickup_hammer_spin", new Vector3(32f, 0f, -15f), "隠し部屋を見つけた", skill.hammerSpin);
+            CrackedWall(aRoot, "wall_barracks_secret", new Vector3(32f, 0f, -10f), 6f, true, aM);
+            Floor(aRoot, "Secret_Floor", 28, 36, -18, -10, 0f, aM.Floor);
+            WallX(aRoot, "Secret_Wall_S", 28, 36, -18, 0f, aM.Wall);
+            WallZ(aRoot, "Secret_Wall_W", -18, -10, 28, 0f, aM.Wall);
+            WallZ(aRoot, "Secret_Wall_E", -18, -10, 36, 0f, aM.Wall);
+            Pickup(aRoot, "pickup_hammer_spin", new Vector3(32f, 0f, -15f), "隠し部屋を見つけた", iSkill.HammerSpin);
 
             // ---------- 北の回廊(ひび割れた壁)→ 崩れた大広間(x -11..11, z 20..44) ----------
-            Floor(root, "NorthHall_Floor", -3, 3, 12, 20, 0f, m.floor);
-            WallZ(root, "NorthHall_Wall_W", 12, 20, -3, 0f, m.wall);
-            WallZ(root, "NorthHall_Wall_E", 12, 20, 3, 0f, m.wall);
-            CrackedWall(root, "wall_hall_north", new Vector3(0f, 0f, 14f), 6f, true, m);
+            Floor(aRoot, "NorthHall_Floor", -3, 3, 12, 20, 0f, aM.Floor);
+            WallZ(aRoot, "NorthHall_Wall_W", 12, 20, -3, 0f, aM.Wall);
+            WallZ(aRoot, "NorthHall_Wall_E", 12, 20, 3, 0f, aM.Wall);
+            CrackedWall(aRoot, "wall_hall_north", new Vector3(0f, 0f, 14f), 6f, true, aM);
 
-            Floor(root, "GreatHall_Floor", -11, 11, 20, 44, 0f, m.floor);
-            WallX(root, "GreatHall_Wall_S", -11, 11, 20, 0f, m.wall, (-3, 3));
-            WallX(root, "GreatHall_Wall_N", -11, 11, 44, 0f, m.wall);
-            WallZ(root, "GreatHall_Wall_W", 20, 44, -11, 0f, m.wall);
-            WallZ(root, "GreatHall_Wall_E", 20, 44, 11, 0f, m.wall);
-            Pickup(root, "pickup_hammer_jump", new Vector3(6f, 0f, 40f), "高い段差に跳び乗れる(移動スキル)", skill.hammerJump);
-            Pickup(root, "pickup_hammer_quake", new Vector3(-6f, 0f, 40f), "", skill.hammerQuake);
-            Zone(root, "zone_great_hall", new Vector3(0f, 0f, 32f), new Vector3(20f, 8f, 22f),
-                (enemy.armored, new Vector3(-4f, 0f, 34f)), (enemy.grunt, new Vector3(4f, 0f, 30f)), (enemy.grunt, new Vector3(4f, 0f, 38f)));
+            Floor(aRoot, "GreatHall_Floor", -11, 11, 20, 44, 0f, aM.Floor);
+            WallX(aRoot, "GreatHall_Wall_S", -11, 11, 20, 0f, aM.Wall, (-3, 3));
+            WallX(aRoot, "GreatHall_Wall_N", -11, 11, 44, 0f, aM.Wall);
+            WallZ(aRoot, "GreatHall_Wall_W", 20, 44, -11, 0f, aM.Wall);
+            WallZ(aRoot, "GreatHall_Wall_E", 20, 44, 11, 0f, aM.Wall);
+            Pickup(aRoot, "pickup_hammer_jump", new Vector3(6f, 0f, 40f), "高い段差に跳び乗れる(移動スキル)", iSkill.HammerJump);
+            Pickup(aRoot, "pickup_hammer_quake", new Vector3(-6f, 0f, 40f), "", iSkill.HammerQuake);
+            Zone(aRoot, "zone_great_hall", new Vector3(0f, 0f, 32f), new Vector3(20f, 8f, 22f),
+                (iEnemy.Armored, new Vector3(-4f, 0f, 34f)), (iEnemy.Grunt, new Vector3(4f, 0f, 30f)), (iEnemy.Grunt, new Vector3(4f, 0f, 38f)));
             // 大広間の中の高台(ハンマージャンプで乗る)
-            Block(root, "GreatHall_Ledge", new Vector3(-10f, -1f, 22f), new Vector3(-4f, LedgeHeight, 28f), m.raised);
-            Marker(root, "GreatHall_Ledge_Label", new Vector3(-7f, LedgeHeight, 28.5f), "高い段差", new Color(0.8f, 1f, 0.7f), 0.8f);
-            Pickup(root, "pickup_hammer_meteor", new Vector3(-7f, LedgeHeight, 25f), "高所に隠されていた", skill.hammerMeteor);
+            Block(aRoot, "GreatHall_Ledge", new Vector3(-10f, -1f, 22f), new Vector3(-4f, mLedgeHeight, 28f), aM.Raised);
+            Marker(aRoot, "GreatHall_Ledge_Label", new Vector3(-7f, mLedgeHeight, 28.5f), "高い段差", new Color(0.8f, 1f, 0.7f), 0.8f);
+            Pickup(aRoot, "pickup_hammer_meteor", new Vector3(-7f, mLedgeHeight, 25f), "高所に隠されていた", iSkill.HammerMeteor);
 
             // ---------- 高台の庭(x -36..-12, z -12..12, 床の高さ 3) ----------
-            Block(root, "Garden_Floor", new Vector3(-36f, -1f, -12f), new Vector3(-12f, LedgeHeight, 12f), m.raised);
-            Marker(root, "Garden_Ledge_Label", new Vector3(-12.6f, 0f, 0f), "高い段差", new Color(0.8f, 1f, 0.7f), 3.6f);
-            WallX(root, "Garden_Wall_S", -36, -12, -12, LedgeHeight, m.wall);
-            WallX(root, "Garden_Wall_N", -36, -12, 12, LedgeHeight, m.wall, (-30, -18));
-            WallZ(root, "Garden_Wall_W", -12, 12, -36, LedgeHeight, m.wall);
-            Pickup(root, "pickup_chain_wire", new Vector3(-32f, LedgeHeight, -8f), "◎ のポイントへ飛べる。谷を渡れる(移動スキル)", skill.chainWire);
-            Pickup(root, "pickup_chain_pull", new Vector3(-32f, LedgeHeight, 8f), "", skill.chainPull);
-            Pickup(root, "pickup_chain_combo", new Vector3(-16f, LedgeHeight, -9f), "", skill.chainCombo);
-            Zone(root, "zone_garden", new Vector3(-24f, LedgeHeight, 0f), new Vector3(22f, 8f, 22f),
-                (enemy.shooter, new Vector3(-30f, LedgeHeight, 6f)), (enemy.shooter, new Vector3(-30f, LedgeHeight, -6f)),
-                (enemy.dasher, new Vector3(-18f, LedgeHeight, 0f)));
-            Safe(root, "safe_garden_edge", new Vector3(-24f, LedgeHeight, 9f));
+            Block(aRoot, "Garden_Floor", new Vector3(-36f, -1f, -12f), new Vector3(-12f, mLedgeHeight, 12f), aM.Raised);
+            Marker(aRoot, "Garden_Ledge_Label", new Vector3(-12.6f, 0f, 0f), "高い段差", new Color(0.8f, 1f, 0.7f), 3.6f);
+            WallX(aRoot, "Garden_Wall_S", -36, -12, -12, mLedgeHeight, aM.Wall);
+            WallX(aRoot, "Garden_Wall_N", -36, -12, 12, mLedgeHeight, aM.Wall, (-30, -18));
+            WallZ(aRoot, "Garden_Wall_W", -12, 12, -36, mLedgeHeight, aM.Wall);
+            Pickup(aRoot, "pickup_chain_wire", new Vector3(-32f, mLedgeHeight, -8f), "◎ のポイントへ飛べる。谷を渡れる(移動スキル)", iSkill.ChainWire);
+            Pickup(aRoot, "pickup_chain_pull", new Vector3(-32f, mLedgeHeight, 8f), "", iSkill.ChainPull);
+            Pickup(aRoot, "pickup_chain_combo", new Vector3(-16f, mLedgeHeight, -9f), "", iSkill.ChainCombo);
+            Zone(aRoot, "zone_garden", new Vector3(-24f, mLedgeHeight, 0f), new Vector3(22f, 8f, 22f),
+                (iEnemy.Shooter, new Vector3(-30f, mLedgeHeight, 6f)), (iEnemy.Shooter, new Vector3(-30f, mLedgeHeight, -6f)),
+                (iEnemy.Dasher, new Vector3(-18f, mLedgeHeight, 0f)));
+            Safe(aRoot, "safe_garden_edge", new Vector3(-24f, mLedgeHeight, 9f));
 
             // ---------- 谷(x -30..-18, z 12..30。床がない)。ワイヤーのポイントで渡る ----------
-            Block(root, "Chasm_Wall_W", new Vector3(-31f, -8f, 12f), new Vector3(-30f, LedgeHeight + WallHeight, 30f), m.wall);
-            Block(root, "Chasm_Wall_E", new Vector3(-18f, -8f, 12f), new Vector3(-17f, LedgeHeight + WallHeight, 30f), m.wall);
-            Marker(root, "Chasm_Label", new Vector3(-24f, LedgeHeight, 12.5f), "谷  ◎ にワイヤーで渡れそうだ", new Color(0.85f, 0.7f, 1f), 1.2f);
-            Vector3[] grapplePoints = { new Vector3(-24f, 8f, 15f), new Vector3(-24f, 9f, 22f), new Vector3(-24f, 8.5f, 31.5f) };
-            for (int i = 0; i < grapplePoints.Length; i++)
+            Block(aRoot, "Chasm_Wall_W", new Vector3(-31f, -8f, 12f), new Vector3(-30f, mLedgeHeight + mWallHeight, 30f), aM.Wall);
+            Block(aRoot, "Chasm_Wall_E", new Vector3(-18f, -8f, 12f), new Vector3(-17f, mLedgeHeight + mWallHeight, 30f), aM.Wall);
+            Marker(aRoot, "Chasm_Label", new Vector3(-24f, mLedgeHeight, 12.5f), "谷  ◎ にワイヤーで渡れそうだ", new Color(0.85f, 0.7f, 1f), 1.2f);
+            Vector3[] aGrapplePoints = { new Vector3(-24f, 8f, 15f), new Vector3(-24f, 9f, 22f), new Vector3(-24f, 8.5f, 31.5f) };
+            for (int aI = 0; aI < aGrapplePoints.Length; aI++)
             {
-                var point = Part(PrimitiveType.Sphere, $"Chasm_GrapplePoint_{i + 1}", root, grapplePoints[i], Vector3.one * 0.8f, m.grapple);
-                point.gameObject.AddComponent<GrapplePoint>();
+                var aPoint = Part(PrimitiveType.Sphere, $"Chasm_GrapplePoint_{aI + 1}", aRoot, aGrapplePoints[aI], Vector3.one * 0.8f, aM.Grapple);
+                aPoint.gameObject.AddComponent<GrapplePoint>();
             }
 
             // ---------- 塔の麓(x -34..-14, z 30..50, 床の高さ 3) ----------
-            Floor(root, "Tower_Floor", -34, -14, 30, 50, LedgeHeight, m.floor);
-            WallX(root, "Tower_Wall_S", -34, -14, 30, LedgeHeight, m.wall, (-30, -18));
-            WallX(root, "Tower_Wall_N", -34, -14, 50, LedgeHeight, m.wall, (-27, -21));
-            WallZ(root, "Tower_Wall_W", 30, 50, -34, LedgeHeight, m.wall);
-            WallZ(root, "Tower_Wall_E", 30, 50, -14, LedgeHeight, m.wall);
-            Altar(root, "cp_tower", new Vector3(-24f, LedgeHeight, 38f), m);
-            Safe(root, "safe_tower_edge", new Vector3(-24f, LedgeHeight, 33f));
-            Pickup(root, "pickup_staff_bolt", new Vector3(-30f, LedgeHeight, 46f), "", skill.staffBolt);
-            Pickup(root, "pickup_staff_blink", new Vector3(-18f, LedgeHeight, 46f), "", skill.staffBlink);
-            Zone(root, "zone_tower", new Vector3(-24f, LedgeHeight, 42f), new Vector3(18f, 8f, 14f),
-                (enemy.flyer, new Vector3(-28f, LedgeHeight, 46f)), (enemy.dasher, new Vector3(-20f, LedgeHeight, 46f)));
+            Floor(aRoot, "Tower_Floor", -34, -14, 30, 50, mLedgeHeight, aM.Floor);
+            WallX(aRoot, "Tower_Wall_S", -34, -14, 30, mLedgeHeight, aM.Wall, (-30, -18));
+            WallX(aRoot, "Tower_Wall_N", -34, -14, 50, mLedgeHeight, aM.Wall, (-27, -21));
+            WallZ(aRoot, "Tower_Wall_W", 30, 50, -34, mLedgeHeight, aM.Wall);
+            WallZ(aRoot, "Tower_Wall_E", 30, 50, -14, mLedgeHeight, aM.Wall);
+            Altar(aRoot, "cp_tower", new Vector3(-24f, mLedgeHeight, 38f), aM);
+            Safe(aRoot, "safe_tower_edge", new Vector3(-24f, mLedgeHeight, 33f));
+            Pickup(aRoot, "pickup_staff_bolt", new Vector3(-30f, mLedgeHeight, 46f), "", iSkill.StaffBolt);
+            Pickup(aRoot, "pickup_staff_blink", new Vector3(-18f, mLedgeHeight, 46f), "", iSkill.StaffBlink);
+            Zone(aRoot, "zone_tower", new Vector3(-24f, mLedgeHeight, 42f), new Vector3(18f, 8f, 14f),
+                (iEnemy.Flyer, new Vector3(-28f, mLedgeHeight, 46f)), (iEnemy.Dasher, new Vector3(-20f, mLedgeHeight, 46f)));
 
             // ---------- 闘技の間への道 → 闘技の間(x -38..-10, z 56..84) ----------
-            Floor(root, "BossRoad_Floor", -27, -21, 50, 56, LedgeHeight, m.floor);
-            WallZ(root, "BossRoad_Wall_W", 50, 56, -27, LedgeHeight, m.wall);
-            WallZ(root, "BossRoad_Wall_E", 50, 56, -21, LedgeHeight, m.wall);
-            Marker(root, "BossRoad_Label", new Vector3(-24f, LedgeHeight, 53f), "闘技の間", new Color(1f, 0.6f, 0.55f), 3.5f);
+            Floor(aRoot, "BossRoad_Floor", -27, -21, 50, 56, mLedgeHeight, aM.Floor);
+            WallZ(aRoot, "BossRoad_Wall_W", 50, 56, -27, mLedgeHeight, aM.Wall);
+            WallZ(aRoot, "BossRoad_Wall_E", 50, 56, -21, mLedgeHeight, aM.Wall);
+            Marker(aRoot, "BossRoad_Label", new Vector3(-24f, mLedgeHeight, 53f), "闘技の間", new Color(1f, 0.6f, 0.55f), 3.5f);
 
-            Floor(root, "Arena_Floor", -38, -10, 56, 84, LedgeHeight, m.floor);
-            WallX(root, "Arena_Wall_S", -38, -10, 56, LedgeHeight, m.wall, (-27, -21));
-            WallX(root, "Arena_Wall_N", -38, -10, 84, LedgeHeight, m.wall);
-            WallZ(root, "Arena_Wall_W", 56, 84, -38, LedgeHeight, m.wall);
-            WallZ(root, "Arena_Wall_E", 56, 84, -10, LedgeHeight, m.wall);
+            Floor(aRoot, "Arena_Floor", -38, -10, 56, 84, mLedgeHeight, aM.Floor);
+            WallX(aRoot, "Arena_Wall_S", -38, -10, 56, mLedgeHeight, aM.Wall, (-27, -21));
+            WallX(aRoot, "Arena_Wall_N", -38, -10, 84, mLedgeHeight, aM.Wall);
+            WallZ(aRoot, "Arena_Wall_W", 56, 84, -38, mLedgeHeight, aM.Wall);
+            WallZ(aRoot, "Arena_Wall_E", 56, 84, -10, mLedgeHeight, aM.Wall);
             // ボスと戦っている間は入口を閉じる
-            var barrier = Block(root, "Arena_Barrier", new Vector3(-27f, LedgeHeight, 55.5f), new Vector3(-21f, LedgeHeight + WallHeight, 56.5f), m.barrier);
-            var bossZoneSize = new Vector3(26f, 8f, 26f);
-            var bossZone = Zone(root, "zone_boss", new Vector3(-24f, LedgeHeight, 71f), bossZoneSize);
+            var aBarrier = Block(aRoot, "Arena_Barrier", new Vector3(-27f, mLedgeHeight, 55.5f), new Vector3(-21f, mLedgeHeight + mWallHeight, 56.5f), aM.Barrier);
+            var aBossZoneSize = new Vector3(26f, 8f, 26f);
+            var aBossZone = Zone(aRoot, "zone_boss", new Vector3(-24f, mLedgeHeight, 71f), aBossZoneSize);
             // 床の高さ(ゾーンの中心から半分下)の、部屋の奥に出す
-            bossZone.Setup("zone_boss", bossZoneSize,
-                new List<EncounterZone.Spawn> { new EncounterZone.Spawn { profile = enemy.boss, offset = new Vector3(0f, -bossZoneSize.y * 0.5f, 6f) } },
-                new[] { skill.staffFireball, skill.staffThunder }, true, new[] { barrier.gameObject });
+            aBossZone.Setup("zone_boss", aBossZoneSize,
+                new List<EncounterZone.Spawn> { new EncounterZone.Spawn { Profile = iEnemy.Boss, Offset = new Vector3(0f, -aBossZoneSize.y * 0.5f, 6f) } },
+                new[] { iSkill.StaffFireball, iSkill.StaffThunder }, true, new[] { aBarrier.gameObject });
 
             // ---------- マップ全体 ----------
-            var region = root.gameObject.AddComponent<ExplorationRegion>();
-            region.Setup("古城", spawn,
-                new[] { skill.swordCombo, skill.swordIai, skill.swordStep },
-                new[] { new SkillPreset("剣士", skill.swordCombo, skill.swordIai, skill.swordStep) },
+            var aRegion = aRoot.gameObject.AddComponent<ExplorationRegion>();
+            aRegion.Setup("古城", aSpawn,
+                new[] { iSkill.SwordCombo, iSkill.SwordIai, iSkill.SwordStep },
+                new[] { new SkillPreset("剣士", iSkill.SwordCombo, iSkill.SwordIai, iSkill.SwordStep) },
                 -8f,
                 new List<ExplorationRegion.Room>
                 {
@@ -189,149 +214,149 @@ namespace BattleFight.EditorTools
                     Room("隠し部屋", 32, -14, 8, 8, 0f),
                     Room("北の回廊", 0, 16, 6, 8, 0f),
                     Room("崩れた大広間", 0, 32, 22, 24, 0f),
-                    Room("高台の庭", -24, 0, 24, 24, LedgeHeight),
-                    Room("谷", -24, 21, 12, 18, LedgeHeight),
-                    Room("塔の麓", -24, 40, 20, 20, LedgeHeight),
-                    Room("闘技の間への道", -24, 53, 6, 6, LedgeHeight),
-                    Room("闘技の間", -24, 70, 28, 28, LedgeHeight),
+                    Room("高台の庭", -24, 0, 24, 24, mLedgeHeight),
+                    Room("谷", -24, 21, 12, 18, mLedgeHeight),
+                    Room("塔の麓", -24, 40, 20, 20, mLedgeHeight),
+                    Room("闘技の間への道", -24, 53, 6, 6, mLedgeHeight),
+                    Room("闘技の間", -24, 70, 28, 28, mLedgeHeight),
                 });
 
             // 探索のステージを選ぶまでは出さない
-            root.gameObject.SetActive(false);
-            return region;
+            aRoot.gameObject.SetActive(false);
+            return aRegion;
         }
 
         // ---------- 部品 ----------
 
-        static ExplorationRegion.Room Room(string name, float x, float z, float width, float depth, float floor) => new ExplorationRegion.Room
+        static ExplorationRegion.Room Room(string iName, float iX, float iZ, float iWidth, float iDepth, float iFloor) => new ExplorationRegion.Room
         {
-            name = name,
+            Name = iName,
             // 床の少し下から、壁の上までを部屋とみなす
-            center = new Vector3(x, floor + 3f, z),
-            size = new Vector3(width, 16f, depth),
+            Center = new Vector3(iX, iFloor + 3f, iZ),
+            Size = new Vector3(iWidth, 16f, iDepth),
         };
 
         /// <summary>最小と最大の角で指定する箱(地形。当たり判定あり)</summary>
-        static Transform Block(Transform root, string name, Vector3 min, Vector3 max, Material material) =>
-            Part(PrimitiveType.Cube, name, root, (min + max) * 0.5f, max - min, material, true);
+        static Transform Block(Transform iRoot, string iName, Vector3 iMin, Vector3 iMax, Material iMaterial) =>
+            Part(PrimitiveType.Cube, iName, iRoot, (iMin + iMax) * 0.5f, iMax - iMin, iMaterial, true);
 
         /// <summary>厚さ1mの床。上面が floorTop になる</summary>
-        static void Floor(Transform root, string name, float x0, float x1, float z0, float z1, float floorTop, Material material) =>
-            Block(root, name, new Vector3(x0, floorTop - 1f, z0), new Vector3(x1, floorTop, z1), material);
+        static void Floor(Transform iRoot, string iName, float iX0, float iX1, float iZ0, float iZ1, float iFloorTop, Material iMaterial) =>
+            Block(iRoot, iName, new Vector3(iX0, iFloorTop - 1f, iZ0), new Vector3(iX1, iFloorTop, iZ1), iMaterial);
 
         /// <summary>z が一定の壁(東西に伸びる)。gaps は x の範囲で、そこだけ開ける</summary>
-        static void WallX(Transform root, string name, float x0, float x1, float z, float floorTop, Material material,
-            params (float from, float to)[] gaps)
+        static void WallX(Transform iRoot, string iName, float iX0, float iX1, float iZ, float iFloorTop, Material iMaterial,
+            params (float from, float to)[] iGaps)
         {
-            int index = 0;
-            foreach (var (from, to) in Segments(x0, x1, gaps))
+            int aIndex = 0;
+            foreach (var (aFrom, aTo) in Segments(iX0, iX1, iGaps))
             {
-                Block(root, $"{name}_{++index}", new Vector3(from, floorTop, z - 0.5f), new Vector3(to, floorTop + WallHeight, z + 0.5f), material);
+                Block(iRoot, $"{iName}_{++aIndex}", new Vector3(aFrom, iFloorTop, iZ - 0.5f), new Vector3(aTo, iFloorTop + mWallHeight, iZ + 0.5f), iMaterial);
             }
         }
 
         /// <summary>x が一定の壁(南北に伸びる)。gaps は z の範囲</summary>
-        static void WallZ(Transform root, string name, float z0, float z1, float x, float floorTop, Material material,
-            params (float from, float to)[] gaps)
+        static void WallZ(Transform iRoot, string iName, float iZ0, float iZ1, float iX, float iFloorTop, Material iMaterial,
+            params (float from, float to)[] iGaps)
         {
-            int index = 0;
-            foreach (var (from, to) in Segments(z0, z1, gaps))
+            int aIndex = 0;
+            foreach (var (aFrom, aTo) in Segments(iZ0, iZ1, iGaps))
             {
-                Block(root, $"{name}_{++index}", new Vector3(x - 0.5f, floorTop, from), new Vector3(x + 0.5f, floorTop + WallHeight, to), material);
+                Block(iRoot, $"{iName}_{++aIndex}", new Vector3(iX - 0.5f, iFloorTop, aFrom), new Vector3(iX + 0.5f, iFloorTop + mWallHeight, aTo), iMaterial);
             }
         }
 
-        static IEnumerable<(float, float)> Segments(float start, float end, (float from, float to)[] gaps)
+        static IEnumerable<(float, float)> Segments(float iStart, float iEnd, (float from, float to)[] iGaps)
         {
-            var sorted = new List<(float from, float to)>(gaps);
-            sorted.Sort((a, b) => a.from.CompareTo(b.from));
-            float cursor = start;
-            foreach (var (from, to) in sorted)
+            var aSorted = new List<(float from, float to)>(iGaps);
+            aSorted.Sort((iA, iB) => iA.from.CompareTo(iB.from));
+            float aCursor = iStart;
+            foreach (var (aFrom, aTo) in aSorted)
             {
-                if (from > cursor) yield return (cursor, from);
-                cursor = Mathf.Max(cursor, to);
+                if (aFrom > aCursor) yield return (aCursor, aFrom);
+                aCursor = Mathf.Max(aCursor, aTo);
             }
-            if (end > cursor) yield return (cursor, end);
+            if (iEnd > aCursor) yield return (aCursor, iEnd);
         }
 
-        static void Pillar(Transform root, string name, Vector3 basePosition, Material material) =>
-            Block(root, name, basePosition + new Vector3(-1f, 0f, -1f), basePosition + new Vector3(1f, WallHeight, 1f), material);
+        static void Pillar(Transform iRoot, string iName, Vector3 iBasePosition, Material iMaterial) =>
+            Block(iRoot, iName, iBasePosition + new Vector3(-1f, 0f, -1f), iBasePosition + new Vector3(1f, mWallHeight, 1f), iMaterial);
 
-        static void Marker(Transform root, string name, Vector3 position, string text, Color color, float height)
+        static void Marker(Transform iRoot, string iName, Vector3 iPosition, string iText, Color iColor, float iHeight)
         {
-            var marker = new GameObject(name);
-            marker.transform.SetParent(root, false);
-            marker.transform.localPosition = position;
-            WorldLabel.Attach(marker, text, color, height);
+            var aMarker = new GameObject(iName);
+            aMarker.transform.SetParent(iRoot, false);
+            aMarker.transform.localPosition = iPosition;
+            WorldLabel.Attach(aMarker, iText, iColor, iHeight);
         }
 
         /// <summary>ひび割れた壁。center は床の中央。横幅 width、厚さ 1m、高さは壁と同じ</summary>
-        static void CrackedWall(Transform root, string id, Vector3 center, float width, bool alongX, ExplorationMaterials m)
+        static void CrackedWall(Transform iRoot, string iId, Vector3 iCenter, float iWidth, bool iAlongX, ExplorationMaterials iM)
         {
-            var size = alongX ? new Vector3(width, WallHeight, 1f) : new Vector3(1f, WallHeight, width);
-            var wall = Part(PrimitiveType.Cube, id, root, center + Vector3.up * (WallHeight * 0.5f), size, m.cracked, true);
+            var aSize = iAlongX ? new Vector3(iWidth, mWallHeight, 1f) : new Vector3(1f, mWallHeight, iWidth);
+            var aWall = Part(PrimitiveType.Cube, iId, iRoot, iCenter + Vector3.up * (mWallHeight * 0.5f), aSize, iM.Cracked, true);
             // ひびの模様(見た目だけ。子なので壁と一緒に消える)
-            Vector3[] cracks = { new Vector3(-0.2f, 0.1f, 0f), new Vector3(0.15f, -0.15f, 0f), new Vector3(0.05f, 0.3f, 0f) };
-            float[] angles = { 35f, -50f, 80f };
-            for (int i = 0; i < cracks.Length; i++)
+            Vector3[] aCracks = { new Vector3(-0.2f, 0.1f, 0f), new Vector3(0.15f, -0.15f, 0f), new Vector3(0.05f, 0.3f, 0f) };
+            float[] aAngles = { 35f, -50f, 80f };
+            for (int aI = 0; aI < aCracks.Length; aI++)
             {
-                var crack = Part(PrimitiveType.Cube, $"Crack_{i + 1}", wall, cracks[i], new Vector3(0.45f, 0.03f, 1.06f), m.crack);
-                crack.localRotation = Quaternion.Euler(0f, 0f, angles[i]);
-                if (!alongX) crack.localRotation = Quaternion.Euler(0f, 90f, 0f) * crack.localRotation;
+                var aCrack = Part(PrimitiveType.Cube, $"Crack_{aI + 1}", aWall, aCracks[aI], new Vector3(0.45f, 0.03f, 1.06f), iM.Crack);
+                aCrack.localRotation = Quaternion.Euler(0f, 0f, aAngles[aI]);
+                if (!iAlongX) aCrack.localRotation = Quaternion.Euler(0f, 90f, 0f) * aCrack.localRotation;
             }
-            wall.gameObject.AddComponent<BreakableWall>().Setup(id, WeaponType.Hammer);
-            WorldLabel.Attach(wall.gameObject, "ひび割れた壁", new Color(1f, 0.8f, 0.6f), 0.3f);
+            aWall.gameObject.AddComponent<BreakableWall>().Setup(iId, WeaponType.Hammer);
+            WorldLabel.Attach(aWall.gameObject, "ひび割れた壁", new Color(1f, 0.8f, 0.6f), 0.3f);
         }
 
-        static void Pickup(Transform root, string id, Vector3 floorPosition, string hint, params SkillData[] skills)
+        static void Pickup(Transform iRoot, string iId, Vector3 iFloorPosition, string iHint, params SkillData[] iSkills)
         {
-            var pickup = new GameObject(id).transform;
-            pickup.SetParent(root, false);
-            pickup.localPosition = floorPosition + Vector3.up * 1f;
-            var orb = Part(PrimitiveType.Sphere, "Orb", pickup, new Vector3(0f, 0.2f, 0f), Vector3.one * 0.7f,
+            var aPickup = new GameObject(iId).transform;
+            aPickup.SetParent(iRoot, false);
+            aPickup.localPosition = iFloorPosition + Vector3.up * 1f;
+            var aOrb = Part(PrimitiveType.Sphere, "Orb", aPickup, new Vector3(0f, 0.2f, 0f), Vector3.one * 0.7f,
                 Mat("SkillOrb", new Color(1f, 0.9f, 0.5f)));
-            Part(PrimitiveType.Cylinder, "Base", pickup, new Vector3(0f, -0.95f, 0f), new Vector3(1.2f, 0.05f, 1.2f),
+            Part(PrimitiveType.Cylinder, "Base", aPickup, new Vector3(0f, -0.95f, 0f), new Vector3(1.2f, 0.05f, 1.2f),
                 Mat("Altar", new Color(0.55f, 0.55f, 0.6f)));
-            pickup.gameObject.AddComponent<SkillPickup>().Setup(id, skills, hint, orb);
-            WorldLabel.Attach(pickup.gameObject, "スキル", new Color(1f, 0.9f, 0.5f), 1.1f);
+            aPickup.gameObject.AddComponent<SkillPickup>().Setup(iId, iSkills, iHint, aOrb);
+            WorldLabel.Attach(aPickup.gameObject, "スキル", new Color(1f, 0.9f, 0.5f), 1.1f);
         }
 
-        static void Altar(Transform root, string id, Vector3 floorPosition, ExplorationMaterials m)
+        static void Altar(Transform iRoot, string iId, Vector3 iFloorPosition, ExplorationMaterials iM)
         {
-            var altar = new GameObject(id).transform;
-            altar.SetParent(root, false);
-            altar.localPosition = floorPosition;
+            var aAltar = new GameObject(iId).transform;
+            aAltar.SetParent(iRoot, false);
+            aAltar.localPosition = iFloorPosition;
             // 復帰位置は祭壇の南(forward の逆)に出したいので、南を向ける
-            altar.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            Part(PrimitiveType.Cylinder, "Pedestal", altar, new Vector3(0f, 0.5f, 0f), new Vector3(1.4f, 0.5f, 1.4f), m.altar, true);
-            var crystal = Part(PrimitiveType.Cube, "Crystal", altar, new Vector3(0f, 1.6f, 0f), new Vector3(0.5f, 0.8f, 0.5f), m.crystal);
-            crystal.localRotation = Quaternion.Euler(45f, 0f, 45f);
-            altar.gameObject.AddComponent<Checkpoint>().Setup(id, crystal.GetComponent<Renderer>());
-            WorldLabel.Attach(altar.gameObject, "祭壇", new Color(0.6f, 0.9f, 1f), 2.6f);
+            aAltar.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            Part(PrimitiveType.Cylinder, "Pedestal", aAltar, new Vector3(0f, 0.5f, 0f), new Vector3(1.4f, 0.5f, 1.4f), iM.Altar, true);
+            var aCrystal = Part(PrimitiveType.Cube, "Crystal", aAltar, new Vector3(0f, 1.6f, 0f), new Vector3(0.5f, 0.8f, 0.5f), iM.Crystal);
+            aCrystal.localRotation = Quaternion.Euler(45f, 0f, 45f);
+            aAltar.gameObject.AddComponent<Checkpoint>().Setup(iId, aCrystal.GetComponent<Renderer>());
+            WorldLabel.Attach(aAltar.gameObject, "祭壇", new Color(0.6f, 0.9f, 1f), 2.6f);
         }
 
-        static void Safe(Transform root, string name, Vector3 floorPosition)
+        static void Safe(Transform iRoot, string iName, Vector3 iFloorPosition)
         {
-            var point = new GameObject(name);
-            point.transform.SetParent(root, false);
-            point.transform.localPosition = floorPosition;
-            point.AddComponent<SafePoint>();
+            var aPoint = new GameObject(iName);
+            aPoint.transform.SetParent(iRoot, false);
+            aPoint.transform.localPosition = iFloorPosition;
+            aPoint.AddComponent<SafePoint>();
         }
 
-        static EncounterZone Zone(Transform root, string id, Vector3 floorCenter, Vector3 size,
-            params (EnemyProfile profile, Vector3 position)[] enemies)
+        static EncounterZone Zone(Transform iRoot, string iId, Vector3 iFloorCenter, Vector3 iSize,
+            params (EnemyProfile profile, Vector3 position)[] iEnemies)
         {
-            var zone = new GameObject(id).transform;
-            zone.SetParent(root, false);
-            zone.localPosition = floorCenter + Vector3.up * (size.y * 0.5f);
-            var spawns = new List<EncounterZone.Spawn>();
-            foreach (var (profile, position) in enemies)
+            var aZone = new GameObject(iId).transform;
+            aZone.SetParent(iRoot, false);
+            aZone.localPosition = iFloorCenter + Vector3.up * (iSize.y * 0.5f);
+            var aSpawns = new List<EncounterZone.Spawn>();
+            foreach (var (aProfile, aPosition) in iEnemies)
             {
-                spawns.Add(new EncounterZone.Spawn { profile = profile, offset = position - zone.localPosition });
+                aSpawns.Add(new EncounterZone.Spawn { Profile = aProfile, Offset = aPosition - aZone.localPosition });
             }
-            var component = zone.gameObject.AddComponent<EncounterZone>();
-            component.Setup(id, size, spawns, new SkillData[0], false, new GameObject[0]);
-            return component;
+            var aComponent = aZone.gameObject.AddComponent<EncounterZone>();
+            aComponent.Setup(iId, iSize, aSpawns, new SkillData[0], false, new GameObject[0]);
+            return aComponent;
         }
     }
 }

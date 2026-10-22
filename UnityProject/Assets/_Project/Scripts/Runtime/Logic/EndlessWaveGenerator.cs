@@ -11,59 +11,59 @@ namespace BattleFight
     {
         public const int MaxEnemiesPerWave = 8;
 
-        public static float BudgetFor(int wave) => 2f + wave * 1.5f;
+        public static float BudgetFor(int iWave) => 2f + iWave * 1.5f;
 
-        public static bool IsBossWave(int wave, int bossEvery) => bossEvery > 0 && wave > 0 && wave % bossEvery == 0;
+        public static bool IsBossWave(int iWave, int iBossEvery) => iBossEvery > 0 && iWave > 0 && iWave % iBossEvery == 0;
 
-        public static List<EnemyProfile> Generate(int wave, IReadOnlyList<EndlessEntry> pool, IReadOnlyList<EnemyProfile> bosses,
-            int bossEvery, Random random)
+        public static List<EnemyProfile> Generate(int iWave, IReadOnlyList<EndlessEntry> iPool, IReadOnlyList<EnemyProfile> iBosses,
+            int iBossEvery, Random iRandom)
         {
-            var result = new List<EnemyProfile>();
-            float budget = BudgetFor(wave);
+            var aResult = new List<EnemyProfile>();
+            float aBudget = BudgetFor(iWave);
 
-            if (IsBossWave(wave, bossEvery) && bosses != null && bosses.Count > 0)
+            if (IsBossWave(iWave, iBossEvery) && iBosses != null && iBosses.Count > 0)
             {
-                result.Add(bosses[(wave / bossEvery - 1) % bosses.Count]);
+                aResult.Add(iBosses[(iWave / iBossEvery - 1) % iBosses.Count]);
                 // ボスのウェーブは護衛を少なめにする
-                budget = 1f + wave * 0.3f;
+                aBudget = 1f + iWave * 0.3f;
             }
 
-            var candidates = new List<EndlessEntry>();
-            if (pool != null)
+            var aCandidates = new List<EndlessEntry>();
+            if (iPool != null)
             {
-                foreach (var entry in pool)
+                foreach (var aEntry in iPool)
                 {
-                    if (entry != null && entry.profile != null && entry.minWave <= wave && entry.cost > 0f) candidates.Add(entry);
+                    if (aEntry != null && aEntry.Profile != null && aEntry.MinWave <= iWave && aEntry.Cost > 0f) aCandidates.Add(aEntry);
                 }
             }
-            if (candidates.Count == 0) return result;
+            if (aCandidates.Count == 0) return aResult;
 
-            var affordable = new List<EndlessEntry>();
-            while (result.Count < MaxEnemiesPerWave)
+            var aAffordable = new List<EndlessEntry>();
+            while (aResult.Count < MaxEnemiesPerWave)
             {
-                affordable.Clear();
-                foreach (var entry in candidates)
+                aAffordable.Clear();
+                foreach (var aEntry in aCandidates)
                 {
-                    if (entry.cost <= budget) affordable.Add(entry);
+                    if (aEntry.Cost <= aBudget) aAffordable.Add(aEntry);
                 }
-                if (affordable.Count == 0) break;
+                if (aAffordable.Count == 0) break;
 
-                var pick = affordable[random.Next(affordable.Count)];
-                result.Add(pick.profile);
-                budget -= pick.cost;
+                var aPick = aAffordable[iRandom.Next(aAffordable.Count)];
+                aResult.Add(aPick.Profile);
+                aBudget -= aPick.Cost;
             }
 
             // 予算が足りなくても最低1体は出す
-            if (result.Count == 0)
+            if (aResult.Count == 0)
             {
-                var cheapest = candidates[0];
-                foreach (var entry in candidates)
+                var aCheapest = aCandidates[0];
+                foreach (var aEntry in aCandidates)
                 {
-                    if (entry.cost < cheapest.cost) cheapest = entry;
+                    if (aEntry.Cost < aCheapest.Cost) aCheapest = aEntry;
                 }
-                result.Add(cheapest.profile);
+                aResult.Add(aCheapest.Profile);
             }
-            return result;
+            return aResult;
         }
     }
 }

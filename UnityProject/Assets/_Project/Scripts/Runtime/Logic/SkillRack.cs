@@ -7,31 +7,31 @@ namespace BattleFight
     {
         public const int Capacity = 3;
 
-        readonly List<SkillData> skills = new List<SkillData>(Capacity);
-        int index;
+        readonly List<SkillData> mSkills = new List<SkillData>(Capacity);
+        int mIndex;
 
-        public SkillRack(IEnumerable<SkillData> source)
+        public SkillRack(IEnumerable<SkillData> iSource)
         {
-            if (source == null) return;
-            foreach (var skill in source)
+            if (iSource == null) return;
+            foreach (var aSkill in iSource)
             {
-                if (skill == null) continue;
-                if (skills.Count >= Capacity) break;
-                skills.Add(skill);
+                if (aSkill == null) continue;
+                if (mSkills.Count >= Capacity) break;
+                mSkills.Add(aSkill);
             }
         }
 
-        public int Count => skills.Count;
-        public int CurrentIndex => index;
-        public IReadOnlyList<SkillData> Skills => skills;
-        public SkillData Current => skills.Count == 0 ? null : skills[index];
-        public SkillData Next => skills.Count == 0 ? null : skills[(index + 1) % skills.Count];
+        public int Count => mSkills.Count;
+        public int CurrentIndex => mIndex;
+        public IReadOnlyList<SkillData> Skills => mSkills;
+        public SkillData Current => mSkills.Count == 0 ? null : mSkills[mIndex];
+        public SkillData Next => mSkills.Count == 0 ? null : mSkills[(mIndex + 1) % mSkills.Count];
 
         /// <summary>次の候補へ切り替える。候補が1つ以下なら何もしない。</summary>
         public bool Cycle()
         {
-            if (skills.Count <= 1) return false;
-            index = (index + 1) % skills.Count;
+            if (mSkills.Count <= 1) return false;
+            mIndex = (mIndex + 1) % mSkills.Count;
             return true;
         }
     }

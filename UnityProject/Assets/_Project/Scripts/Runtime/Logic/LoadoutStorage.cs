@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -15,82 +16,82 @@ namespace BattleFight
         [Serializable]
         class SavedPreset
         {
-            public string name;
-            public string attackA;
-            public string attackB;
-            public string movement;
+            [FormerlySerializedAs("name")] public string Name;
+            [FormerlySerializedAs("attackA")] public string AttackA;
+            [FormerlySerializedAs("attackB")] public string AttackB;
+            [FormerlySerializedAs("movement")] public string Movement;
         }
 
         [Serializable]
         class SavedLoadout
         {
-            public int version = 1;
-            public SwapMode mode;
-            public int presetIndex;
-            public SavedPreset[] presets;
+            [FormerlySerializedAs("version")] public int Version = 1;
+            [FormerlySerializedAs("mode")] public SwapMode Mode;
+            [FormerlySerializedAs("presetIndex")] public int PresetIndex;
+            [FormerlySerializedAs("presets")] public SavedPreset[] Presets;
         }
 
         public struct Loadout
         {
-            public SwapMode mode;
-            public int presetIndex;
-            public List<SkillPreset> presets;
+            public SwapMode Mode;
+            public int PresetIndex;
+            public List<SkillPreset> Presets;
         }
 
-        public static string Serialize(SwapMode mode, int presetIndex, IReadOnlyList<SkillPreset> presets)
+        public static string Serialize(SwapMode iMode, int iPresetIndex, IReadOnlyList<SkillPreset> iPresets)
         {
-            var saved = new SavedLoadout
+            var aSaved = new SavedLoadout
             {
-                mode = mode,
-                presetIndex = presetIndex,
-                presets = new SavedPreset[presets.Count],
+                Mode = iMode,
+                PresetIndex = iPresetIndex,
+                Presets = new SavedPreset[iPresets.Count],
             };
-            for (int i = 0; i < presets.Count; i++)
+            for (int aI = 0; aI < iPresets.Count; aI++)
             {
-                var preset = presets[i];
-                saved.presets[i] = new SavedPreset
+                var aPreset = iPresets[aI];
+                aSaved.Presets[aI] = new SavedPreset
                 {
-                    name = preset.name,
-                    attackA = preset.attackA != null ? preset.attackA.name : null,
-                    attackB = preset.attackB != null ? preset.attackB.name : null,
-                    movement = preset.movement != null ? preset.movement.name : null,
+                    Name = aPreset.Name,
+                    AttackA = aPreset.AttackA != null ? aPreset.AttackA.name : null,
+                    AttackB = aPreset.AttackB != null ? aPreset.AttackB.name : null,
+                    Movement = aPreset.Movement != null ? aPreset.Movement.name : null,
                 };
             }
-            return JsonUtility.ToJson(saved);
+            return JsonUtility.ToJson(aSaved);
         }
 
         /// <summary>見つからないスキルは null になる(データを消したときなど)</summary>
-        public static bool TryDeserialize(string json, SkillDatabase database, out Loadout loadout)
+        public static bool TryDeserialize(string iJson, SkillDatabase iDatabase, out Loadout oLoadout)
         {
-            loadout = default;
-            if (string.IsNullOrEmpty(json) || database == null) return false;
+            oLoadout = default;
+            if (string.IsNullOrEmpty(iJson) || iDatabase == null) return false;
 
-            SavedLoadout saved;
+            SavedLoadout aSaved;
             try
             {
-                saved = JsonUtility.FromJson<SavedLoadout>(json);
+                aSaved = JsonUtility.FromJson<SavedLoadout>(iJson);
             }
             catch (ArgumentException)
             {
                 return false;
             }
-            if (saved == null || saved.presets == null) return false;
+            if (aSaved == null || aSaved.Presets == null) return false;
 
-            var presets = new List<SkillPreset>(saved.presets.Length);
-            foreach (var p in saved.presets)
+            var aPresets = new List<SkillPreset>(aSaved.Presets.Length);
+            foreach (var aP in aSaved.Presets)
             {
-                var preset = new SkillPreset { name = p.name };
-                preset.Set(SlotType.AttackA, database.Find(p.attackA));
-                preset.Set(SlotType.AttackB, database.Find(p.attackB));
-                preset.Set(SlotType.Movement, database.Find(p.movement));
-                presets.Add(preset);
+                var aPreset = new SkillPreset { Name = aP.Name };
+                aPreset.Set(SlotType.AttackA, iDatabase.Find(aP.AttackA));
+                aPreset.Set(SlotType.AttackB, iDatabase.Find(aP.AttackB));
+                aPreset.Set(SlotType.Movement, iDatabase.Find(aP.Movement));
+                aPresets.Add(aPreset);
             }
 
-            loadout = new Loadout
+            oLoadout = new Loadout
             {
-                mode = saved.mode,
-                presetIndex = Mathf.Clamp(saved.presetIndex, 0, Mathf.Max(0, presets.Count - 1)),
-                presets = presets,
+                Mode = aSaved.Mode,
+                PresetIndex = Mathf.Clamp(aSaved.PresetIndex, 0, Mathf.Max(0, aPresets.Count - 1)),
+                Presets = aPresets,
             };
             return true;
         }
@@ -98,19 +99,19 @@ namespace BattleFight
         /// <summary>探索モードの編成(集めたスキルだけで組む)。アリーナの編成とは別に保存する</summary>
         public const string ExplorationPrefsKey = "BattleFight.Loadout.Explore.v1";
 
-        public static void Save(SwapMode mode, int presetIndex, IReadOnlyList<SkillPreset> presets) =>
-            Save(PrefsKey, mode, presetIndex, presets);
+        public static void Save(SwapMode iMode, int iPresetIndex, IReadOnlyList<SkillPreset> iPresets) =>
+            Save(PrefsKey, iMode, iPresetIndex, iPresets);
 
-        public static void Save(string key, SwapMode mode, int presetIndex, IReadOnlyList<SkillPreset> presets)
+        public static void Save(string iKey, SwapMode iMode, int iPresetIndex, IReadOnlyList<SkillPreset> iPresets)
         {
-            PlayerPrefs.SetString(key, Serialize(mode, presetIndex, presets));
+            PlayerPrefs.SetString(iKey, Serialize(iMode, iPresetIndex, iPresets));
             PlayerPrefs.Save();
         }
 
-        public static bool TryLoad(SkillDatabase database, out Loadout loadout) => TryLoad(PrefsKey, database, out loadout);
+        public static bool TryLoad(SkillDatabase iDatabase, out Loadout oLoadout) => TryLoad(PrefsKey, iDatabase, out oLoadout);
 
-        public static bool TryLoad(string key, SkillDatabase database, out Loadout loadout) =>
-            TryDeserialize(PlayerPrefs.GetString(key, null), database, out loadout);
+        public static bool TryLoad(string iKey, SkillDatabase iDatabase, out Loadout oLoadout) =>
+            TryDeserialize(PlayerPrefs.GetString(iKey, null), iDatabase, out oLoadout);
 
         /// <summary>アリーナと探索の両方の編成を消す</summary>
         public static void Clear()

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -8,28 +9,28 @@ namespace BattleFight
     {
         public static readonly List<WorldLabel> All = new List<WorldLabel>();
 
-        public string text;
-        public Color color = Color.white;
-        [Tooltip("この位置からの高さ")] public float height = 2f;
-        [Tooltip("プレイヤーがこの距離より近いときだけ出す")] public float showDistance = 14f;
+        [FormerlySerializedAs("text")] public string Text;
+        [FormerlySerializedAs("color")] public Color Color = Color.white;
+        [Tooltip("この位置からの高さ")] [FormerlySerializedAs("height")] public float Height = 2f;
+        [Tooltip("プレイヤーがこの距離より近いときだけ出す")] [FormerlySerializedAs("showDistance")] public float ShowDistance = 14f;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() => All.Clear();
 
-        public Vector3 Position => transform.position + Vector3.up * height;
+        public Vector3 Position => transform.position + Vector3.up * Height;
 
         void OnEnable() => All.Add(this);
         void OnDisable() => All.Remove(this);
 
-        public static WorldLabel Attach(GameObject target, string text, Color color, float height, float showDistance = 14f)
+        public static WorldLabel Attach(GameObject iTarget, string iText, Color iColor, float iHeight, float iShowDistance = 14f)
         {
-            var label = target.GetComponent<WorldLabel>();
-            if (label == null) label = target.AddComponent<WorldLabel>();
-            label.text = text;
-            label.color = color;
-            label.height = height;
-            label.showDistance = showDistance;
-            return label;
+            var aLabel = iTarget.GetComponent<WorldLabel>();
+            if (aLabel == null) aLabel = iTarget.AddComponent<WorldLabel>();
+            aLabel.Text = iText;
+            aLabel.Color = iColor;
+            aLabel.Height = iHeight;
+            aLabel.ShowDistance = iShowDistance;
+            return aLabel;
         }
     }
 }

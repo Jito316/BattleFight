@@ -15,9 +15,9 @@ namespace BattleFight.EditorTools
     /// </summary>
     public static class WindowsBuilder
     {
-        const string OutputDirectory = "Builds/Windows";
-        const string ExecutableName = "BattleFight.exe";
-        const string ZipPath = "Builds/BattleFight-Windows.zip";
+        const string mOutputDirectory = "Builds/Windows";
+        const string mExecutableName = "BattleFight.exe";
+        const string mZipPath = "Builds/BattleFight-Windows.zip";
 
         [MenuItem("BattleFight/Build Windows")]
         public static void BuildFromMenu() => Build();
@@ -28,9 +28,9 @@ namespace BattleFight.EditorTools
             {
                 EditorApplication.Exit(Build() ? 0 : 1);
             }
-            catch (Exception e)
+            catch (Exception aE)
             {
-                Debug.LogException(e);
+                Debug.LogException(aE);
                 EditorApplication.Exit(1);
             }
         }
@@ -45,34 +45,34 @@ namespace BattleFight.EditorTools
             PlayerSettings.runInBackground = false;
 
             // 前回の出力を消してから作る(古いファイルを配布しない)
-            if (Directory.Exists(OutputDirectory)) Directory.Delete(OutputDirectory, true);
+            if (Directory.Exists(mOutputDirectory)) Directory.Delete(mOutputDirectory, true);
 
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            var aReport = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = new[] { PrototypeSceneBuilder.ScenePath },
-                locationPathName = Path.Combine(OutputDirectory, ExecutableName),
+                locationPathName = Path.Combine(mOutputDirectory, mExecutableName),
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.None,
             });
 
-            var summary = report.summary;
-            bool succeeded = summary.result == BuildResult.Succeeded;
-            if (succeeded) CreateZip();
+            var aSummary = aReport.summary;
+            bool aSucceeded = aSummary.result == BuildResult.Succeeded;
+            if (aSucceeded) CreateZip();
 
-            Debug.Log($"[BattleFight] Windows ビルド: {summary.result} / {summary.totalSize / (1024f * 1024f):0.0} MB / {summary.totalTime}");
-            return succeeded;
+            Debug.Log($"[BattleFight] Windows ビルド: {aSummary.result} / {aSummary.totalSize / (1024f * 1024f):0.0} MB / {aSummary.totalTime}");
+            return aSucceeded;
         }
 
         /// <summary>配布しやすいように zip にまとめる(デバッグ用の BurstDebugInformation などは除く)</summary>
         static void CreateZip()
         {
-            if (File.Exists(ZipPath)) File.Delete(ZipPath);
-            using var zip = ZipFile.Open(ZipPath, ZipArchiveMode.Create);
-            foreach (var file in Directory.GetFiles(OutputDirectory, "*", SearchOption.AllDirectories))
+            if (File.Exists(mZipPath)) File.Delete(mZipPath);
+            using var aZip = ZipFile.Open(mZipPath, ZipArchiveMode.Create);
+            foreach (var aFile in Directory.GetFiles(mOutputDirectory, "*", SearchOption.AllDirectories))
             {
-                string relative = Path.GetRelativePath(OutputDirectory, file);
-                if (relative.Contains("DoNotShip")) continue;
-                zip.CreateEntryFromFile(file, Path.Combine("BattleFight", relative), System.IO.Compression.CompressionLevel.Optimal);
+                string aRelative = Path.GetRelativePath(mOutputDirectory, aFile);
+                if (aRelative.Contains("DoNotShip")) continue;
+                aZip.CreateEntryFromFile(aFile, Path.Combine("BattleFight", aRelative), System.IO.Compression.CompressionLevel.Optimal);
             }
         }
     }
