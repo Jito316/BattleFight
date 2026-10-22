@@ -114,9 +114,9 @@ namespace BattleFight
 
         public bool IsWeakTo(WeaponType iWeapon)
         {
-            foreach (var aW in Weaknesses)
+            foreach (var aWeapon in Weaknesses)
             {
-                if (aW == iWeapon) return true;
+                if (aWeapon == iWeapon) return true;
             }
             return false;
         }
@@ -150,7 +150,7 @@ namespace BattleFight
             mTarget = iPlayer;
             mRenderers = GetComponentsInChildren<Renderer>();
             mBaseColors = new Color[mRenderers.Length];
-            for (int aI = 0; aI < mRenderers.Length; aI++) mBaseColors[aI] = mRenderers[aI].material.color;
+            for (int aRendererIndex = 0; aRendererIndex < mRenderers.Length; aRendererIndex++) mBaseColors[aRendererIndex] = mRenderers[aRendererIndex].material.color;
             mCooldown = Random.Range(0.6f, 1.6f);
             mStrafeSign = Random.value < 0.5f ? -1f : 1f;
             mState = State.Chase;
@@ -197,23 +197,23 @@ namespace BattleFight
         {
             if (mProfile == null) return;
             // 「見切り」(ジャスト回避)の間は敵だけ遅くなる
-            float aDt = EnemyTime.DeltaTime;
+            float aDeltaTime = EnemyTime.DeltaTime;
 
             if (mState == State.Dead)
             {
-                mStateTime += aDt;
+                mStateTime += aDeltaTime;
                 transform.localScale = Vector3.one * (mProfile.Scale * Mathf.Max(0f, 1f - mStateTime / mDeathDuration));
                 if (mStateTime >= mDeathDuration) Destroy(gameObject);
                 return;
             }
 
-            mStateTime += aDt;
-            mCooldown -= aDt;
+            mStateTime += aDeltaTime;
+            mCooldown -= aDeltaTime;
 
             // 型の切り替え(攻撃していないときだけ)
             if (mProfile.SkillSets != null && mProfile.SkillSets.Count > 1 && mProfile.SkillSwapInterval > 0f)
             {
-                mSwapTimer -= aDt;
+                mSwapTimer -= aDeltaTime;
                 if (mSwapTimer <= 0f && mState == State.Chase) SwapSkillSet();
             }
 
@@ -221,10 +221,10 @@ namespace BattleFight
             switch (mState)
             {
                 case State.Chase:
-                    aPlanar = TickChase(aDt);
+                    aPlanar = TickChase(aDeltaTime);
                     break;
                 case State.Windup:
-                    aPlanar = TickWindup(aDt);
+                    aPlanar = TickWindup(aDeltaTime);
                     break;
                 case State.Attack:
                     aPlanar = TickAttack();
@@ -240,7 +240,7 @@ namespace BattleFight
                     }
                     break;
                 case State.Pulled:
-                    aPlanar = TickPulled(aDt);
+                    aPlanar = TickPulled(aDeltaTime);
                     break;
             }
 
@@ -255,11 +255,11 @@ namespace BattleFight
             }
             else if (mState != State.Pulled)
             {
-                mVerticalVelocity += (mJuggled ? mJuggleGravity : mGravity) * aDt;
+                mVerticalVelocity += (mJuggled ? mJuggleGravity : mGravity) * aDeltaTime;
             }
-            mKnockback = Vector3.Lerp(mKnockback, Vector3.zero, 1f - Mathf.Exp(-6f * aDt));
+            mKnockback = Vector3.Lerp(mKnockback, Vector3.zero, 1f - Mathf.Exp(-6f * aDeltaTime));
 
-            var aFlags = mController.Move((aPlanar + mKnockback + Vector3.up * mVerticalVelocity) * aDt);
+            var aFlags = mController.Move((aPlanar + mKnockback + Vector3.up * mVerticalVelocity) * aDeltaTime);
             mGrounded = (aFlags & CollisionFlags.Below) != 0;
             if (mGrounded && mVerticalVelocity < 0f)
             {
@@ -267,19 +267,19 @@ namespace BattleFight
                 mJuggled = false;
             }
 
-            UpdateColor(aDt);
+            UpdateColor(aDeltaTime);
         }
 
         // ---------- 状態 ----------
 
-        Vector3 TickChase(float iDt)
+        Vector3 TickChase(float iDeltaTime)
         {
             if (mTarget == null) return Vector3.zero;
 
-            Vector3 aTo = Flat(mTarget.position - transform.position);
-            float aDistance = aTo.magnitude;
+            Vector3 aOffset = Flat(mTarget.position - transform.position);
+            float aDistance = aOffset.magnitude;
             if (mAttack == null) mAttack = PickAttack();
-            Face(aTo, iDt);
+            Face(aOffset, iDeltaTime);
 
             // 攻撃を持たない敵(訓練用の人形など)は向きを変えるだけ
             if (mAttack == null) return Separation() * mMoveSpeed * 0.6f;
@@ -290,7 +290,7 @@ namespace BattleFight
                 return Vector3.zero;
             }
 
-            Vector3 aDirection = aDistance > 0.01f ? aTo / aDistance : transform.forward;
+            Vector3 aDirection = aDistance > 0.01f ? aOffset / aDistance : transform.forward;
             Vector3 aMove;
             if (mProfile.PreferredDistance > 0f && aDistance < mProfile.PreferredDistance * 0.7f)
                 aMove = -aDirection * (mMoveSpeed * 0.8f);
@@ -348,17 +348,17 @@ namespace BattleFight
             if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, mProfile.TelegraphColor);
         }
 
-        Vector3 TickWindup(float iDt)
+        Vector3 TickWindup(float iDeltaTime)
         {
             if (mAttack.TeleportBehind && !mTeleported && mStateTime >= mAttack.Windup * 0.5f) TeleportBehindTarget();
-            if (mStateTime < mAttack.Windup * 0.6f && mTarget != null) Face(Flat(mTarget.position - transform.position), iDt);
+            if (mStateTime < mAttack.Windup * 0.6f && mTarget != null) Face(Flat(mTarget.position - transform.position), iDeltaTime);
 
             Vector3 aPlanar = Vector3.zero;
             if (mAttack.JumpSlam)
             {
-                Vector3 aTo = Flat(mSlamDestination - transform.position);
+                Vector3 aOffset = Flat(mSlamDestination - transform.position);
                 float aRemaining = Mathf.Max(0.05f, mAttack.Windup - mStateTime);
-                aPlanar = Vector3.ClampMagnitude(aTo / aRemaining, 20f);
+                aPlanar = Vector3.ClampMagnitude(aOffset / aRemaining, 20f);
             }
 
             if (mStateTime >= mAttack.Windup && (!mAttack.JumpSlam || mGrounded))
@@ -376,8 +376,8 @@ namespace BattleFight
             mAttackDirection = transform.forward;
             if (mProfile.Flying && mTarget != null)
             {
-                Vector3 aTo = mTarget.position + Vector3.up - CenterPoint;
-                if (aTo.sqrMagnitude > 0.01f) mAttackDirection = aTo.normalized;
+                Vector3 aOffset = mTarget.position + Vector3.up - CenterPoint;
+                if (aOffset.sqrMagnitude > 0.01f) mAttackDirection = aOffset.normalized;
             }
 
             if (mAttack.Ranged)
@@ -396,9 +396,9 @@ namespace BattleFight
             }
             else if (mAttack.Summon != null && mAttack.SummonCount > 0)
             {
-                for (int aI = 0; aI < mAttack.SummonCount; aI++)
+                for (int aIndex = 0; aIndex < mAttack.SummonCount; aIndex++)
                 {
-                    float aAngle = 360f * aI / mAttack.SummonCount;
+                    float aAngle = 360f * aIndex / mAttack.SummonCount;
                     Vector3 aOffset = Quaternion.Euler(0f, aAngle, 0f) * Vector3.forward * (Radius + 2f);
                     if (ArenaDirector.Instance != null) ArenaDirector.Instance.SpawnExtra(mAttack.Summon, transform.position + aOffset);
                 }
@@ -425,9 +425,9 @@ namespace BattleFight
             Vector3 aAim = mTarget.position + Vector3.up * 1.1f - aOrigin;
             aAim = aAim.sqrMagnitude > 0.01f ? aAim.normalized : transform.forward;
             int aCount = Mathf.Max(1, mAttack.ProjectileCount);
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                float aAngle = aCount == 1 ? 0f : Mathf.Lerp(-mAttack.ProjectileSpread * 0.5f, mAttack.ProjectileSpread * 0.5f, aI / (aCount - 1f));
+                float aAngle = aCount == 1 ? 0f : Mathf.Lerp(-mAttack.ProjectileSpread * 0.5f, mAttack.ProjectileSpread * 0.5f, aIndex / (aCount - 1f));
                 Vector3 aDirection = Quaternion.AngleAxis(aAngle, Vector3.up) * aAim;
                 EnemyProjectile.Spawn(gameObject, aOrigin, aDirection * mAttack.ProjectileSpeed, mAttack.ProjectileRadius, mAttack.Damage,
                     mAttack.Knockback, mProfile.TelegraphColor);
@@ -467,9 +467,9 @@ namespace BattleFight
             Vector3 aCenter = transform.TransformPoint(mAttack.Offset);
             float aRadius = mAttack.Radius * mProfile.Scale;
             int aCount = Physics.OverlapSphereNonAlloc(aCenter, aRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aVictim = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aVictim = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aVictim == null || aVictim.Team != Team.Player || aVictim.IsDead) continue;
 
                 Vector3 aDirection = Flat(aVictim.transform.position - transform.position);
@@ -515,17 +515,17 @@ namespace BattleFight
             mVerticalVelocity = 0f;
         }
 
-        Vector3 TickPulled(float iDt)
+        Vector3 TickPulled(float iDeltaTime)
         {
             mVerticalVelocity = 0f;
-            Vector3 aTo = mPullDestination - transform.position;
-            aTo.y = 0f;
-            if (aTo.magnitude < 0.3f || mStateTime > 0.6f)
+            Vector3 aOffset = mPullDestination - transform.position;
+            aOffset.y = 0f;
+            if (aOffset.magnitude < 0.3f || mStateTime > 0.6f)
             {
                 EnterStagger(0.7f);
                 return Vector3.zero;
             }
-            return aTo.normalized * Mathf.Min(mPullSpeed, aTo.magnitude / Mathf.Max(iDt, 1e-4f));
+            return aOffset.normalized * Mathf.Min(mPullSpeed, aOffset.magnitude / Mathf.Max(iDeltaTime, 1e-4f));
         }
 
         // ---------- 被弾 ----------
@@ -611,12 +611,12 @@ namespace BattleFight
             var aAttacks = AvailableAttacks();
             if (aAttacks.Count == 0) return null;
             float aTotal = 0f;
-            foreach (var aA in aAttacks) aTotal += Mathf.Max(0f, aA.Weight);
+            foreach (var aAttack in aAttacks) aTotal += Mathf.Max(0f, aAttack.Weight);
             float aRoll = Random.value * aTotal;
-            foreach (var aA in aAttacks)
+            foreach (var aAttack in aAttacks)
             {
-                aRoll -= Mathf.Max(0f, aA.Weight);
-                if (aRoll <= 0f) return aA;
+                aRoll -= Mathf.Max(0f, aAttack.Weight);
+                if (aRoll <= 0f) return aAttack;
             }
             return aAttacks[0];
         }
@@ -681,38 +681,38 @@ namespace BattleFight
             return aPush;
         }
 
-        void Face(Vector3 iDirection, float iDt)
+        void Face(Vector3 iDirection, float iDeltaTime)
         {
             if (iDirection.sqrMagnitude < 1e-4f) return;
             var aRotation = Quaternion.LookRotation(iDirection);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, aRotation, mProfile.TurnSpeed * iDt);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, aRotation, mProfile.TurnSpeed * iDeltaTime);
         }
 
-        void UpdateColor(float iDt)
+        void UpdateColor(float iDeltaTime)
         {
             if (mRenderers == null) return;
-            mFlashTimer -= iDt;
-            for (int aI = 0; aI < mRenderers.Length; aI++)
+            mFlashTimer -= iDeltaTime;
+            for (int aRendererIndex = 0; aRendererIndex < mRenderers.Length; aRendererIndex++)
             {
-                Color aColor = mBaseColors[aI];
+                Color aColor = mBaseColors[aRendererIndex];
                 if (mFlashTimer > 0f)
                 {
                     aColor = Color.white;
                 }
                 else if (mState == State.Windup)
                 {
-                    float aT = Mathf.Clamp01(mStateTime / Mathf.Max(0.01f, mAttack.Windup));
+                    float aProgress = Mathf.Clamp01(mStateTime / Mathf.Max(0.01f, mAttack.Windup));
                     float aBlink = Mathf.PingPong(mStateTime * 8f, 1f);
-                    aColor = Color.Lerp(mBaseColors[aI], mProfile.TelegraphColor, aT * (0.6f + 0.4f * aBlink));
+                    aColor = Color.Lerp(mBaseColors[aRendererIndex], mProfile.TelegraphColor, aProgress * (0.6f + 0.4f * aBlink));
                 }
                 else if (mState == State.Stagger)
                 {
-                    aColor = Color.Lerp(mBaseColors[aI], Color.gray, 0.4f);
+                    aColor = Color.Lerp(mBaseColors[aRendererIndex], Color.gray, 0.4f);
                 }
-                mRenderers[aI].material.color = aColor;
+                mRenderers[aRendererIndex].material.color = aColor;
             }
         }
 
-        static Vector3 Flat(Vector3 iV) => new Vector3(iV.x, 0f, iV.z);
+        static Vector3 Flat(Vector3 iVector) => new Vector3(iVector.x, 0f, iVector.z);
     }
 }

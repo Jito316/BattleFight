@@ -87,14 +87,14 @@ namespace BattleFight
             mModePreset = mRoot.Q<Button>("mode-preset");
             mClose = mRoot.Q<Button>("close");
             mReset = mRoot.Q<Button>("reset");
-            for (int aI = 0; aI < 3; aI++) mLists[aI] = mRoot.Q<ScrollView>(mListNames[aI]);
+            for (int aIndex = 0; aIndex < 3; aIndex++) mLists[aIndex] = mRoot.Q<ScrollView>(mListNames[aIndex]);
 
             mPresetCards.Clear();
-            for (int aI = 0; aI < SkillSlotController.PresetCount; aI++)
+            for (int aInnerIndex = 0; aInnerIndex < SkillSlotController.PresetCount; aInnerIndex++)
             {
-                var aInstance = mRoot.Q($"preset-card-{aI + 1}");
+                var aInstance = mRoot.Q($"preset-card-{aInnerIndex + 1}");
                 var aCard = aInstance.Q("card");
-                int aIndex = aI;
+                int aIndex = aInnerIndex;
                 aCard.RegisterCallback<ClickEvent>(_ => SelectPreset(aIndex));
                 mPresetCards.Add((aCard, aInstance.Q<Label>("number"), aInstance.Q<Label>("title"), aInstance.Q<Label>("in-use"),
                     new[] { aInstance.Q<Label>("a"), aInstance.Q<Label>("b"), aInstance.Q<Label>("m") }, aInstance.Q<Label>("bonus")));
@@ -104,11 +104,11 @@ namespace BattleFight
             mModePreset.clicked += () => { mSlots.SetMode(SwapMode.Preset); Refresh(); };
             mClose.clicked += Close;
             mReset.clicked += () => { mSlots.RestoreDefaultPresets(); Refresh(); };
-            mPresetName.RegisterValueChangedCallback(iE =>
+            mPresetName.RegisterValueChangedCallback(iEvent =>
             {
-                if (IsOpen && iE.newValue != mSlots.Presets[mEditIndex].Name)
+                if (IsOpen && iEvent.newValue != mSlots.Presets[mEditIndex].Name)
                 {
-                    mSlots.RenamePreset(mEditIndex, iE.newValue);
+                    mSlots.RenamePreset(mEditIndex, iEvent.newValue);
                     RefreshPresets();
                 }
             });
@@ -203,21 +203,21 @@ namespace BattleFight
 
         void RefreshPresets()
         {
-            for (int aI = 0; aI < mPresetCards.Count && aI < mSlots.Presets.Count; aI++)
+            for (int aIndex = 0; aIndex < mPresetCards.Count && aIndex < mSlots.Presets.Count; aIndex++)
             {
-                var (aCard, aNumber, aTitle, aInUse, aSkills, aBonus) = mPresetCards[aI];
-                var aPreset = mSlots.Presets[aI];
-                aCard.EnableInClassList("preset-card--editing", aI == mEditIndex);
-                aInUse.style.display = mSlots.Mode == SwapMode.Preset && aI == mSlots.PresetIndex ? DisplayStyle.Flex : DisplayStyle.None;
-                aNumber.text = (aI + 1).ToString();
+                var (aCard, aNumber, aTitle, aInUse, aSkills, aBonus) = mPresetCards[aIndex];
+                var aPreset = mSlots.Presets[aIndex];
+                aCard.EnableInClassList("preset-card--editing", aIndex == mEditIndex);
+                aInUse.style.display = mSlots.Mode == SwapMode.Preset && aIndex == mSlots.PresetIndex ? DisplayStyle.Flex : DisplayStyle.None;
+                aNumber.text = (aIndex + 1).ToString();
                 aTitle.text = aPreset.Name;
-                var aA = aPreset.AttackA;
-                aCard.style.borderLeftColor = aA != null ? WeaponColor(aA) : new Color(1f, 1f, 1f, 0.2f);
-                for (int aS = 0; aS < 3; aS++)
+                var aAttackA = aPreset.AttackA;
+                aCard.style.borderLeftColor = aAttackA != null ? WeaponColor(aAttackA) : new Color(1f, 1f, 1f, 0.2f);
+                for (int aSlot = 0; aSlot < 3; aSlot++)
                 {
-                    var aSkill = aPreset.Get((SlotType)aS);
+                    var aSkill = aPreset.Get((SlotType)aSlot);
                     string aName = aSkill != null ? $"<color=#{Hex(WeaponColor(aSkill))}>{aSkill.DisplayName}</color>" : "<color=#666666>(なし)</color>";
-                    aSkills[aS].text = $"<color=#8A93A3>{mSlotLabels[aS]}</color>  {aName}";
+                    aSkills[aSlot].text = $"<color=#8A93A3>{mSlotLabels[aSlot]}</color>  {aName}";
                 }
                 aBonus.text = BonusText(aPreset.Bonus);
             }
@@ -230,10 +230,10 @@ namespace BattleFight
         {
             mListsDirty = false;
             mSkillRows.Clear();
-            for (int aS = 0; aS < 3; aS++)
+            for (int aSlotIndex = 0; aSlotIndex < 3; aSlotIndex++)
             {
-                var aSlot = (SlotType)aS;
-                var aList = mLists[aS];
+                var aSlot = (SlotType)aSlotIndex;
+                var aList = mLists[aSlotIndex];
                 aList.Clear();
                 foreach (var aWeapon in mSlots.Weapons)
                 {
@@ -308,7 +308,7 @@ namespace BattleFight
             var aWeaponData = mSlots.GetWeaponData(aSkill.Weapon);
             mDetailName.text = aSkill.DisplayName;
             mDetailName.style.color = aWeaponData != null ? aWeaponData.Color : Color.white;
-            string aBehavior = mBehaviorLabels.TryGetValue(aSkill.Behavior, out var aB) ? aB : aSkill.Behavior.ToString();
+            string aBehavior = mBehaviorLabels.TryGetValue(aSkill.Behavior, out var aText) ? aText : aSkill.Behavior.ToString();
             mDetailMeta.text = $"{(aWeaponData != null ? aWeaponData.DisplayName : "")}  /  {mSlotLabels[(int)aSkill.Slot]}  /  {aBehavior}";
             mDetailDesc.text = aSkill.Description;
             foreach (var aLine in StatLines(aSkill)) mDetailStats.Add(Classed(new Label(aLine), "detail__stat"));

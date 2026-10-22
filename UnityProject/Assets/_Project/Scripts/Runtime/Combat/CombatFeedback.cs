@@ -47,24 +47,24 @@ namespace BattleFight
         /// <summary>ビームの見た目。from から to へ伸びる細い円柱を、duration 秒だけ出す。</summary>
         public void SpawnBeam(Vector3 iFrom, Vector3 iTo, float iRadius, Color iColor, float iDuration)
         {
-            var aGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            aGo.name = "Beam";
-            DestroyImmediate(aGo.GetComponent<Collider>());
-            var aRenderer = aGo.GetComponent<Renderer>();
+            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            aObject.name = "Beam";
+            DestroyImmediate(aObject.GetComponent<Collider>());
+            var aRenderer = aObject.GetComponent<Renderer>();
             if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
             aRenderer.material.color = iColor;
 
             Vector3 aDirection = iTo - iFrom;
-            aGo.transform.position = iFrom + aDirection * 0.5f;
-            aGo.transform.rotation = Quaternion.FromToRotation(Vector3.up, aDirection.normalized);
-            aGo.transform.localScale = new Vector3(iRadius * 2f, aDirection.magnitude * 0.5f, iRadius * 2f);
-            Destroy(aGo, iDuration);
+            aObject.transform.position = iFrom + aDirection * 0.5f;
+            aObject.transform.rotation = Quaternion.FromToRotation(Vector3.up, aDirection.normalized);
+            aObject.transform.localScale = new Vector3(iRadius * 2f, aDirection.magnitude * 0.5f, iRadius * 2f);
+            Destroy(aObject, iDuration);
         }
 
         void Update()
         {
             if (!GamePause.IsPaused) Time.timeScale = CurrentTimeScale();
-            DamageNumbers.RemoveAll(iN => Time.unscaledTime - iN.Time > DamageNumberLifetime);
+            DamageNumbers.RemoveAll(iNumber => Time.unscaledTime - iNumber.Time > DamageNumberLifetime);
         }
 
         /// <summary>ヒットストップ(ごく短く止める)とスローモーション(しばらく遅くする)のうち、遅い方</summary>
@@ -97,7 +97,7 @@ namespace BattleFight
         /// <summary>当たった場所から火花を散らす(小さな欠片が飛んで消える)</summary>
         public void SpawnSparks(Vector3 iPosition, Color iColor, int iCount, float iSpeed = 7f)
         {
-            for (int aI = 0; aI < iCount; aI++)
+            for (int aIndex = 0; aIndex < iCount; aIndex++)
             {
                 var aVelocity = (Random.onUnitSphere + Vector3.up * 0.6f).normalized * (iSpeed * Random.Range(0.5f, 1.2f));
                 SpawnDebris(iPosition, aVelocity, iColor, Random.Range(0.08f, 0.16f), Random.Range(0.25f, 0.45f), null);
@@ -107,13 +107,13 @@ namespace BattleFight
         /// <summary>倒した敵が砕け散り、刻片がプレイヤーへ飛んでくる</summary>
         public void SpawnDefeatBurst(Vector3 iCenter, Color iBodyColor, float iSize, Transform iCollector, int iShards)
         {
-            for (int aI = 0; aI < 10; aI++)
+            for (int aIndex = 0; aIndex < 10; aIndex++)
             {
                 var aVelocity = (Random.onUnitSphere + Vector3.up).normalized * Random.Range(4f, 9f);
                 SpawnDebris(iCenter, aVelocity, iBodyColor, Random.Range(0.18f, 0.32f) * iSize, Random.Range(0.5f, 0.8f), null);
             }
             var aShardColor = new Color(0.55f, 0.85f, 1f);
-            for (int aI = 0; aI < iShards; aI++)
+            for (int aIndex = 0; aIndex < iShards; aIndex++)
             {
                 var aVelocity = (Random.onUnitSphere + Vector3.up * 1.5f).normalized * Random.Range(3f, 6f);
                 SpawnDebris(iCenter, aVelocity, aShardColor, 0.14f, 0.9f, iCollector);
@@ -123,16 +123,16 @@ namespace BattleFight
 
         void SpawnDebris(Vector3 iPosition, Vector3 iVelocity, Color iColor, float iSize, float iLifetime, Transform iHoming)
         {
-            var aGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            aGo.name = iHoming != null ? "Shard" : "Debris";
-            DestroyImmediate(aGo.GetComponent<Collider>());
-            var aRenderer = aGo.GetComponent<Renderer>();
+            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            aObject.name = iHoming != null ? "Shard" : "Debris";
+            DestroyImmediate(aObject.GetComponent<Collider>());
+            var aRenderer = aObject.GetComponent<Renderer>();
             if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
             aRenderer.material.color = iColor;
-            aGo.transform.position = iPosition;
-            aGo.transform.rotation = Random.rotation;
-            aGo.transform.localScale = Vector3.one * iSize;
-            aGo.AddComponent<DebrisFx>().Play(iVelocity, iLifetime, iHoming);
+            aObject.transform.position = iPosition;
+            aObject.transform.rotation = Random.rotation;
+            aObject.transform.localScale = Vector3.one * iSize;
+            aObject.AddComponent<DebrisFx>().Play(iVelocity, iLifetime, iHoming);
         }
 
         public void Shake(float iAmount)
@@ -153,12 +153,12 @@ namespace BattleFight
 
         public void SpawnShockwave(Vector3 iPosition, float iRadius, Color iColor)
         {
-            var aGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            aGo.name = "Shockwave";
-            DestroyImmediate(aGo.GetComponent<Collider>());
-            if (mEffectMaterial != null) aGo.GetComponent<Renderer>().sharedMaterial = mEffectMaterial;
-            aGo.transform.position = new Vector3(iPosition.x, Mathf.Max(0.05f, iPosition.y), iPosition.z);
-            aGo.AddComponent<ShockwaveFx>().Play(iRadius, iColor);
+            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            aObject.name = "Shockwave";
+            DestroyImmediate(aObject.GetComponent<Collider>());
+            if (mEffectMaterial != null) aObject.GetComponent<Renderer>().sharedMaterial = mEffectMaterial;
+            aObject.transform.position = new Vector3(iPosition.x, Mathf.Max(0.05f, iPosition.y), iPosition.z);
+            aObject.AddComponent<ShockwaveFx>().Play(iRadius, iColor);
         }
     }
 
@@ -181,24 +181,24 @@ namespace BattleFight
 
         void Update()
         {
-            float aDt = Time.deltaTime;
-            mElapsed += aDt;
-            float aT = mElapsed / mLifetime;
-            if (mHoming != null && aT > 0.35f)
+            float aDeltaTime = Time.deltaTime;
+            mElapsed += aDeltaTime;
+            float aProgress = mElapsed / mLifetime;
+            if (mHoming != null && aProgress > 0.35f)
             {
                 // 刻片: 途中からプレイヤーへ向かう
-                Vector3 aTo = mHoming.position + Vector3.up - transform.position;
-                mVelocity = Vector3.Lerp(mVelocity, aTo.normalized * 22f, 1f - Mathf.Exp(-10f * aDt));
-                if (aTo.sqrMagnitude < 0.4f) aT = 1f;
+                Vector3 aOffset = mHoming.position + Vector3.up - transform.position;
+                mVelocity = Vector3.Lerp(mVelocity, aOffset.normalized * 22f, 1f - Mathf.Exp(-10f * aDeltaTime));
+                if (aOffset.sqrMagnitude < 0.4f) aProgress = 1f;
             }
             else
             {
-                mVelocity += Physics.gravity * (0.6f * aDt);
+                mVelocity += Physics.gravity * (0.6f * aDeltaTime);
             }
-            transform.position += mVelocity * aDt;
-            transform.Rotate(mVelocity * (40f * aDt), Space.World);
-            transform.localScale = Vector3.one * (mSize * Mathf.Clamp01(1.2f - aT));
-            if (aT >= 1f) Destroy(gameObject);
+            transform.position += mVelocity * aDeltaTime;
+            transform.Rotate(mVelocity * (40f * aDeltaTime), Space.World);
+            transform.localScale = Vector3.one * (mSize * Mathf.Clamp01(1.2f - aProgress));
+            if (aProgress >= 1f) Destroy(gameObject);
         }
     }
 
@@ -219,10 +219,10 @@ namespace BattleFight
         void Update()
         {
             mElapsed += Time.deltaTime;
-            float aT = mElapsed / mDuration;
-            float aDiameter = mRadius * 2f * Mathf.Sqrt(Mathf.Clamp01(aT));
-            transform.localScale = new Vector3(aDiameter, 0.02f * (1f - aT) + 0.005f, aDiameter);
-            if (aT >= 1f) Destroy(gameObject);
+            float aProgress = mElapsed / mDuration;
+            float aDiameter = mRadius * 2f * Mathf.Sqrt(Mathf.Clamp01(aProgress));
+            transform.localScale = new Vector3(aDiameter, 0.02f * (1f - aProgress) + 0.005f, aDiameter);
+            if (aProgress >= 1f) Destroy(gameObject);
         }
     }
 }

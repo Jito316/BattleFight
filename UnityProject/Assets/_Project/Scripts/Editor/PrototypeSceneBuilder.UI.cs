@@ -97,12 +97,12 @@ namespace BattleFight.EditorTools
 
         static T UiDocument<T>(string iObjectName, string iUxml, PanelSettings iPanel, int iSortingOrder) where T : MonoBehaviour
         {
-            var aGo = new GameObject(iObjectName);
-            var aDocument = aGo.AddComponent<UIDocument>();
+            var aObject = new GameObject(iObjectName);
+            var aDocument = aObject.AddComponent<UIDocument>();
             aDocument.panelSettings = iPanel;
             aDocument.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{mUiRoot}/{iUxml}.uxml");
             aDocument.sortingOrder = iSortingOrder;
-            return aGo.AddComponent<T>();
+            return aObject.AddComponent<T>();
         }
     }
 }

@@ -64,9 +64,9 @@ namespace BattleFight
             if (mOrb != null)
             {
                 mOrb.Rotate(0f, 120f * Time.deltaTime, 0f, Space.World);
-                var aP = mOrb.localPosition;
-                aP.y = mBaseHeight + Mathf.Sin(Time.time * 2.5f) * 0.15f;
-                mOrb.localPosition = aP;
+                var aPoint = mOrb.localPosition;
+                aPoint.y = mBaseHeight + Mathf.Sin(Time.time * 2.5f) * 0.15f;
+                mOrb.localPosition = aPoint;
             }
 
             var aRegion = ExplorationRegion.Active;

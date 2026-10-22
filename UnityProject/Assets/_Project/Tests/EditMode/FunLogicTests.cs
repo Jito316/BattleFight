@@ -24,7 +24,7 @@ namespace BattleFight.Tests
         public void Combo_BreaksImmediately_AndRatesBigCombos()
         {
             var aCombo = new ComboCounter();
-            for (int aI = 0; aI < 30; aI++) aCombo.AddHit(aI * 0.1f);
+            for (int aIndex = 0; aIndex < 30; aIndex++) aCombo.AddHit(aIndex * 0.1f);
             Assert.AreEqual(30, aCombo.Break(3f));
             Assert.AreEqual(0, aCombo.Break(3.1f), "途切れたあとにもう一度途切れた");
             Assert.AreEqual("", ComboCounter.Rating(9));

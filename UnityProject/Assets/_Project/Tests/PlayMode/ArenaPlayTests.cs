@@ -136,7 +136,7 @@ namespace BattleFight.Tests
 
             Assert.IsFalse(mExecutor.IsBusy, "硬直中の切り替えで技がキャンセルされていない");
             Assert.AreEqual("重撃", mSlots.GetCurrent(SlotType.AttackA).DisplayName);
-            Assert.IsTrue(mStyle.Announcements.Exists(iA => iA.Text == "SWAP CANCEL"));
+            Assert.IsTrue(mStyle.Announcements.Exists(iAnnouncement => iAnnouncement.Text == "SWAP CANCEL"));
         }
 
         [UnityTest]
@@ -222,7 +222,7 @@ namespace BattleFight.Tests
 
             yield return Tap(mKeyboard.digit3Key);
             Assert.IsFalse(mExecutor.IsBusy, "プリセットの切り替えで技がキャンセルされていない");
-            Assert.IsTrue(mStyle.Announcements.Exists(iA => iA.Text == "SWAP CANCEL"));
+            Assert.IsTrue(mStyle.Announcements.Exists(iAnnouncement => iAnnouncement.Text == "SWAP CANCEL"));
         }
 
         [UnityTest]
@@ -254,10 +254,10 @@ namespace BattleFight.Tests
             foreach (var aWeapon in mSlots.Weapons)
             {
                 if (aWeapon.MasteryFinisher == null) continue;
-                for (int aS = 0; aS < 3; aS++)
+                for (int aSlot = 0; aSlot < 3; aSlot++)
                 {
                     SkillData aPick = null;
-                    foreach (var aSkill in mSlots.Database.ForSlot((SlotType)aS))
+                    foreach (var aSkill in mSlots.Database.ForSlot((SlotType)aSlot))
                     {
                         if (aSkill.Weapon == aWeapon.Weapon)
                         {
@@ -265,8 +265,8 @@ namespace BattleFight.Tests
                             break;
                         }
                     }
-                    Assert.NotNull(aPick, $"{aWeapon.DisplayName} の {(SlotType)aS} スキルがない");
-                    mSlots.AssignPresetSkill(0, (SlotType)aS, aPick);
+                    Assert.NotNull(aPick, $"{aWeapon.DisplayName} の {(SlotType)aSlot} スキルがない");
+                    mSlots.AssignPresetSkill(0, (SlotType)aSlot, aPick);
                 }
                 Assert.AreSame(aWeapon.MasteryFinisher, mSlots.MasteryFinisher);
 
@@ -382,7 +382,7 @@ namespace BattleFight.Tests
             yield return Tap(mKeyboard.jKey);
             yield return WaitUntil(() => mExecutor.SwapChain.Chain == 1, 2f);
             Assert.AreEqual(1.1f, mExecutor.SwapChain.DamageMultiplier, 1e-4f);
-            Assert.IsTrue(mStyle.Announcements.Exists(iA => iA.Text.StartsWith("CHAIN")));
+            Assert.IsTrue(mStyle.Announcements.Exists(iAnnouncement => iAnnouncement.Text.StartsWith("CHAIN")));
         }
 
         EnemyProfile ShadowBoss()
@@ -432,7 +432,7 @@ namespace BattleFight.Tests
             Assert.IsFalse(aBoss.IsPhase2, "半分を切る前に第二形態になった");
 
             bool aAnnounced = false;
-            System.Action<EnemyController> aOnPhase = iE => aAnnounced |= iE == aBoss;
+            System.Action<EnemyController> aOnPhase = iEnemy => aAnnounced |= iEnemy == aBoss;
             EnemyController.PhaseChanged += aOnPhase;
             aDamageable.ApplyHit(new HitInfo { Damage = aDamageable.MaxHealth * 0.1f });
             EnemyController.PhaseChanged -= aOnPhase;
@@ -460,14 +460,14 @@ namespace BattleFight.Tests
         {
             yield return LoadArena(iStage: -1);
             int aCount = mDirector.Stages.Count;
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
                 // 探索は部屋に入るまで敵が出ない(ExplorationPlayTests で確かめる)
-                if (mDirector.Stages[aI].Kind == StageKind.Exploration) continue;
-                yield return LoadArena(SwapMode.Preset, aI);
+                if (mDirector.Stages[aIndex].Kind == StageKind.Exploration) continue;
+                yield return LoadArena(SwapMode.Preset, aIndex);
                 MakePlayerSturdy();
                 yield return WaitUntil(() => EnemyController.Active.Count > 0, 6f);
-                Assert.AreEqual(mDirector.Stages[aI], mDirector.CurrentStage);
+                Assert.AreEqual(mDirector.Stages[aIndex], mDirector.CurrentStage);
                 yield return new WaitForSeconds(1f);
             }
         }
@@ -484,9 +484,9 @@ namespace BattleFight.Tests
             var aProfiles = new System.Collections.Generic.HashSet<EnemyProfile>();
             foreach (var aStage in mDirector.Stages)
             {
-                if (aStage.Waves != null) foreach (var aWave in aStage.Waves) foreach (var aE in aWave.Enemies) aProfiles.Add(aE);
-                if (aStage.TrainingDummies != null) foreach (var aE in aStage.TrainingDummies) aProfiles.Add(aE);
-                if (aStage.EndlessBosses != null) foreach (var aE in aStage.EndlessBosses) aProfiles.Add(aE);
+                if (aStage.Waves != null) foreach (var aWave in aStage.Waves) foreach (var aProfile in aWave.Enemies) aProfiles.Add(aProfile);
+                if (aStage.TrainingDummies != null) foreach (var aProfile in aStage.TrainingDummies) aProfiles.Add(aProfile);
+                if (aStage.EndlessBosses != null) foreach (var aProfile in aStage.EndlessBosses) aProfiles.Add(aProfile);
                 foreach (var aEntry in aStage.EndlessPool) aProfiles.Add(aEntry.Profile);
             }
             Assert.GreaterOrEqual(aProfiles.Count, 11);

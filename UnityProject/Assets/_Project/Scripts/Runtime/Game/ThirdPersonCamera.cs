@@ -76,9 +76,9 @@ namespace BattleFight
             const float aRadius = 0.3f;
             int aCount = Physics.SphereCastNonAlloc(iFrom, aRadius, iDirection, mCameraHits, iMaxDistance, ~0, QueryTriggerInteraction.Ignore);
             float aNearest = iMaxDistance;
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aHit = mCameraHits[aI];
+                var aHit = mCameraHits[aIndex];
                 if (aHit.distance <= 0f || aHit.collider.GetComponentInParent<Damageable>() != null) continue;
                 if (mTarget != null && aHit.collider.transform.IsChildOf(mTarget)) continue;
                 aNearest = Mathf.Min(aNearest, aHit.distance);
@@ -89,22 +89,22 @@ namespace BattleFight
         void LateUpdate()
         {
             if (mTarget == null || GamePause.IsPaused) return;
-            float aDt = Time.unscaledDeltaTime;
+            float aDeltaTime = Time.unscaledDeltaTime;
 
-            Vector2 aLook = mInput.StickLook * (mStickSensitivity * aDt);
+            Vector2 aLook = mInput.StickLook * (mStickSensitivity * aDeltaTime);
             if (Cursor.lockState == CursorLockMode.Locked) aLook += mInput.MouseDelta * mMouseSensitivity;
 
             var aLockTarget = mLockOn != null ? mLockOn.Target : null;
             if (aLockTarget != null)
             {
-                Vector3 aTo = aLockTarget.CenterPoint - mTarget.position;
-                aTo.y = 0f;
-                if (aTo.sqrMagnitude > 0.01f)
+                Vector3 aOffset = aLockTarget.CenterPoint - mTarget.position;
+                aOffset.y = 0f;
+                if (aOffset.sqrMagnitude > 0.01f)
                 {
-                    float aDesiredYaw = Mathf.Atan2(aTo.x, aTo.z) * Mathf.Rad2Deg;
-                    mYaw = Mathf.LerpAngle(mYaw, aDesiredYaw, 1f - Mathf.Exp(-mLockOnTurnSpeed * aDt));
+                    float aDesiredYaw = Mathf.Atan2(aOffset.x, aOffset.z) * Mathf.Rad2Deg;
+                    mYaw = Mathf.LerpAngle(mYaw, aDesiredYaw, 1f - Mathf.Exp(-mLockOnTurnSpeed * aDeltaTime));
                 }
-                mPitch = Mathf.Lerp(mPitch, mLockOnPitch, 1f - Mathf.Exp(-4f * aDt));
+                mPitch = Mathf.Lerp(mPitch, mLockOnPitch, 1f - Mathf.Exp(-4f * aDeltaTime));
             }
             else
             {
@@ -114,14 +114,14 @@ namespace BattleFight
 
             Vector3 aDesiredFocus = mTarget.position + Vector3.up * mFocusHeight;
             if (aLockTarget != null) aDesiredFocus = Vector3.Lerp(aDesiredFocus, aLockTarget.CenterPoint, 0.25f);
-            mFocus = Vector3.Lerp(mFocus, aDesiredFocus, 1f - Mathf.Exp(-mFollowSharpness * aDt));
+            mFocus = Vector3.Lerp(mFocus, aDesiredFocus, 1f - Mathf.Exp(-mFollowSharpness * aDeltaTime));
 
             Quaternion aRotation = Quaternion.Euler(mPitch, mYaw, 0f);
             Vector3 aBack = -(aRotation * Vector3.forward);
             Vector3 aPosition = mFocus + aBack * ObstructedDistance(mFocus, aBack, mDistance);
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
             aPosition += Random.insideUnitSphere * mShake;
-            mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDt));
+            mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDeltaTime));
 
             transform.SetPositionAndRotation(aPosition, Quaternion.LookRotation(mFocus - aPosition));
         }

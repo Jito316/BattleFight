@@ -57,7 +57,7 @@ namespace BattleFight.EditorTools
                 string aName = aRenderer.name.ToLowerInvariant();
                 var aMaterial = aName.Contains("eyebrow") ? aHair : aName.Contains("eye") ? aAccent : aSuit;
                 var aSlots = new Material[aRenderer.sharedMaterials.Length];
-                for (int aI = 0; aI < aSlots.Length; aI++) aSlots[aI] = aMaterial;
+                for (int aSlotIndex = 0; aSlotIndex < aSlots.Length; aSlotIndex++) aSlots[aSlotIndex] = aMaterial;
                 aRenderer.sharedMaterials = aSlots;
                 if (aRenderer is SkinnedMeshRenderer aSkinned) aSkinned.updateWhenOffscreen = true;
             }

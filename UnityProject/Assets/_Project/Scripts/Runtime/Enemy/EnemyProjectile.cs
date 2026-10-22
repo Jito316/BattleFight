@@ -24,18 +24,18 @@ namespace BattleFight
         public static EnemyProjectile Spawn(GameObject iSource, Vector3 iPosition, Vector3 iVelocity, float iRadius, float iDamage,
             float iKnockback, Color iColor, float iLifetime = 3f, float iDelay = 0f)
         {
-            var aGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            aGo.name = "EnemyProjectile";
-            DestroyImmediate(aGo.GetComponent<Collider>());
-            aGo.transform.position = iPosition;
-            aGo.transform.localScale = Vector3.one * (iRadius * 2f);
+            var aObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            aObject.name = "EnemyProjectile";
+            DestroyImmediate(aObject.GetComponent<Collider>());
+            aObject.transform.position = iPosition;
+            aObject.transform.localScale = Vector3.one * (iRadius * 2f);
 
             var aMaterial = CombatFeedback.Instance != null ? CombatFeedback.Instance.EffectMaterial : null;
-            var aRenderer = aGo.GetComponent<Renderer>();
+            var aRenderer = aObject.GetComponent<Renderer>();
             if (aMaterial != null) aRenderer.sharedMaterial = aMaterial;
             aRenderer.material.color = iColor;
 
-            var aProjectile = aGo.AddComponent<EnemyProjectile>();
+            var aProjectile = aObject.AddComponent<EnemyProjectile>();
             aProjectile.mSource = iSource;
             aProjectile.mVelocity = iVelocity;
             aProjectile.mRadius = iRadius;
@@ -64,24 +64,24 @@ namespace BattleFight
         void Update()
         {
             // 敵の弾も「見切り」の間は遅くなる
-            float aDt = EnemyTime.DeltaTime;
-            mAge += aDt;
+            float aDeltaTime = EnemyTime.DeltaTime;
+            mAge += aDeltaTime;
 
             if (mDelay > 0f)
             {
                 if (mTelegraph != null)
                 {
                     // 爆発が近づくほど速く点滅する
-                    float aT = mAge / mDelay;
-                    float aBlink = Mathf.PingPong(mAge * (6f + 14f * aT), 1f);
-                    float aDiameter = mRadius * 2f * (0.6f + 0.4f * aT) * (0.9f + 0.1f * aBlink);
+                    float aProgress = mAge / mDelay;
+                    float aBlink = Mathf.PingPong(mAge * (6f + 14f * aProgress), 1f);
+                    float aDiameter = mRadius * 2f * (0.6f + 0.4f * aProgress) * (0.9f + 0.1f * aBlink);
                     mTelegraph.localScale = new Vector3(aDiameter, 0.01f, aDiameter);
                 }
                 if (mAge >= mDelay) Explode();
                 return;
             }
 
-            Vector3 aStep = mVelocity * aDt;
+            Vector3 aStep = mVelocity * aDeltaTime;
             if (Physics.SphereCast(transform.position, mRadius * 0.5f, aStep.normalized, out var aHit, aStep.magnitude, ~0,
                     QueryTriggerInteraction.Ignore))
             {
@@ -96,9 +96,9 @@ namespace BattleFight
             transform.position += aStep;
 
             int aCount = Physics.OverlapSphereNonAlloc(transform.position, mRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aVictim = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aVictim = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aVictim != null && aVictim.Team == Team.Player)
                 {
                     HitPlayer(aVictim);
@@ -127,9 +127,9 @@ namespace BattleFight
         void Explode()
         {
             int aCount = Physics.OverlapSphereNonAlloc(transform.position, mRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aVictim = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aVictim = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aVictim == null || aVictim.Team != Team.Player) continue;
                 Vector3 aDirection = aVictim.transform.position - transform.position;
                 aDirection.y = 0f;

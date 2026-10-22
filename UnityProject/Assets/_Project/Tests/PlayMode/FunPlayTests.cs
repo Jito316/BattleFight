@@ -185,9 +185,9 @@ namespace BattleFight.Tests
 
             aElite.Damageable.Kill();
             yield return null;
-            var aSplits = EnemyController.Active.Where(iE => iE.Profile.DisplayName.EndsWith("の分身")).ToList();
+            var aSplits = EnemyController.Active.Where(iEnemy => iEnemy.Profile.DisplayName.EndsWith("の分身")).ToList();
             Assert.AreEqual(2, aSplits.Count, "分裂のエリートを倒しても分身が出ない");
-            Assert.IsTrue(mStyle.Announcements.Any(iA => iA.Text == "ELITE DOWN"));
+            Assert.IsTrue(mStyle.Announcements.Any(iAnnouncement => iAnnouncement.Text == "ELITE DOWN"));
         }
 
         [UnityTest]
@@ -196,7 +196,7 @@ namespace BattleFight.Tests
             ArenaDirector.EliteChanceOverride = 1f;
             yield return LoadArena();
             yield return WaitUntil(() => EnemyController.Active.Count > 0, 5f);
-            Assert.IsTrue(EnemyController.Active.All(iE => iE.Profile.IsBoss || iE.Profile.Elite != EliteAffix.None),
+            Assert.IsTrue(EnemyController.Active.All(iEnemy => iEnemy.Profile.IsBoss || iEnemy.Profile.Elite != EliteAffix.None),
                 "確率を 100% にしてもエリートにならない敵がいる");
         }
 
@@ -208,7 +208,7 @@ namespace BattleFight.Tests
             var aFeedback = Object.FindFirstObjectByType<CombatFeedback>();
 
             var aEnemies = EnemyController.Active.ToArray();
-            for (int aI = 0; aI < aEnemies.Length - 1; aI++) aEnemies[aI].Damageable.Kill();
+            for (int aIndex = 0; aIndex < aEnemies.Length - 1; aIndex++) aEnemies[aIndex].Damageable.Kill();
             yield return null;
             Assert.IsFalse(aFeedback.InSlowMotion, "最後の1体の前にスローになった");
 

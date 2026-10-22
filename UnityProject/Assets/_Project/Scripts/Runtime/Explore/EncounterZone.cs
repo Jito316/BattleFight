@@ -57,7 +57,7 @@ namespace BattleFight
                 return;
             }
 
-            mAlive.RemoveAll(iE => iE == null || iE.IsDead);
+            mAlive.RemoveAll(iEnemy => iEnemy == null || iEnemy.IsDead);
             if (mAlive.Count == 0) Finish(aRegion);
         }
 

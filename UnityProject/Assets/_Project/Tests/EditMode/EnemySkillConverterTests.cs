@@ -12,7 +12,7 @@ namespace BattleFight.Tests
         [TearDown]
         public void TearDown()
         {
-            foreach (var aO in mCreated) Object.DestroyImmediate(aO);
+            foreach (var aCreated in mCreated) Object.DestroyImmediate(aCreated);
             mCreated.Clear();
         }
 
@@ -24,7 +24,7 @@ namespace BattleFight.Tests
             aSkill.Behavior = iBehavior;
             aSkill.Slot = iSlot;
             aSkill.Steps = new List<SkillStep>();
-            for (int aI = 0; aI < iSteps; aI++) aSkill.Steps.Add(new SkillStep { StartupFrames = iStartup, Damage = iDamage, HitboxRadius = 1.2f });
+            for (int aIndex = 0; aIndex < iSteps; aIndex++) aSkill.Steps.Add(new SkillStep { StartupFrames = iStartup, Damage = iDamage, HitboxRadius = 1.2f });
             return aSkill;
         }
 
@@ -74,9 +74,9 @@ namespace BattleFight.Tests
         [Test]
         public void MovementSkills_AreUsedLessOftenThanAttacks()
         {
-            var aA = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, SlotType.AttackA), 0.5f, 2.2f);
-            var aM = EnemySkillConverter.ToAttack(Skill(SkillBehavior.DashStrike, SlotType.Movement), 0.5f, 2.2f);
-            Assert.Greater(aA.Weight, aM.Weight);
+            var aAttack = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, SlotType.AttackA), 0.5f, 2.2f);
+            var aMoveAttack = EnemySkillConverter.ToAttack(Skill(SkillBehavior.DashStrike, SlotType.Movement), 0.5f, 2.2f);
+            Assert.Greater(aAttack.Weight, aMoveAttack.Weight);
         }
     }
 }

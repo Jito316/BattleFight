@@ -62,7 +62,7 @@ namespace BattleFight
 
             mButtons = new InputAction[mActionCount];
             mPressedAt = new float[mActionCount];
-            for (int aI = 0; aI < mActionCount; aI++) mPressedAt[aI] = float.NegativeInfinity;
+            for (int aIndex = 0; aIndex < mActionCount; aIndex++) mPressedAt[aIndex] = float.NegativeInfinity;
 
             Bind(PlayerAction.AttackA, "<Gamepad>/buttonWest", "<Mouse>/leftButton", "<Keyboard>/j");
             Bind(PlayerAction.AttackB, "<Gamepad>/buttonNorth", "<Mouse>/rightButton", "<Keyboard>/k");
@@ -147,7 +147,7 @@ namespace BattleFight
         /// <summary>先行入力をすべて捨てる(編成画面を閉じたときのクリックなどが技として出ないように)</summary>
         public void ClearBuffer()
         {
-            for (int aI = 0; aI < mPressedAt.Length; aI++) mPressedAt[aI] = float.NegativeInfinity;
+            for (int aPressedAtIndex = 0; aPressedAtIndex < mPressedAt.Length; aPressedAtIndex++) mPressedAt[aPressedAtIndex] = float.NegativeInfinity;
         }
 
         public static PlayerAction SwapAction(int iIndex) => iIndex switch

@@ -23,9 +23,9 @@ namespace BattleFight
         {
             get
             {
-                for (int aI = mConfig.RankThresholds.Length - 1; aI >= 0; aI--)
+                for (int aIndex = mConfig.RankThresholds.Length - 1; aIndex >= 0; aIndex--)
                 {
-                    if (Points >= mConfig.RankThresholds[aI]) return aI;
+                    if (Points >= mConfig.RankThresholds[aIndex]) return aIndex;
                 }
                 return 0;
             }

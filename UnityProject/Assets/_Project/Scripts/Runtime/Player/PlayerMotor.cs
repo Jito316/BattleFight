@@ -63,24 +63,24 @@ namespace BattleFight
 
         void Update()
         {
-            float aDt = Time.deltaTime;
+            float aDeltaTime = Time.deltaTime;
 
             Vector3 aDesired = DesiredDirection;
             aDesired.y = 0f;
             Vector3 aTargetVelocity = LocomotionEnabled ? Vector3.ClampMagnitude(aDesired, 1f) * mMoveSpeed : Vector3.zero;
             float aAccel = !LocomotionEnabled ? mAcceleration * 2f : IsGrounded ? mAcceleration : mAirAcceleration;
-            mPlanarVelocity = Vector3.MoveTowards(mPlanarVelocity, aTargetVelocity, aAccel * aDt);
+            mPlanarVelocity = Vector3.MoveTowards(mPlanarVelocity, aTargetVelocity, aAccel * aDeltaTime);
 
             if (LocomotionEnabled && aDesired.sqrMagnitude > 0.01f)
             {
                 var aTargetRotation = Quaternion.LookRotation(aDesired);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, aTargetRotation, mTurnSpeed * aDt);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, aTargetRotation, mTurnSpeed * aDeltaTime);
             }
 
-            mVerticalVelocity = Mathf.Max(mVerticalVelocity + mGravity * GravityScale * aDt, mMaxFallSpeed);
-            mImpulseVelocity = Vector3.Lerp(mImpulseVelocity, Vector3.zero, 1f - Mathf.Exp(-mImpulseDamping * aDt));
+            mVerticalVelocity = Mathf.Max(mVerticalVelocity + mGravity * GravityScale * aDeltaTime, mMaxFallSpeed);
+            mImpulseVelocity = Vector3.Lerp(mImpulseVelocity, Vector3.zero, 1f - Mathf.Exp(-mImpulseDamping * aDeltaTime));
 
-            Vector3 aMotion = (mPlanarVelocity + mImpulseVelocity + Vector3.up * mVerticalVelocity) * aDt + mPendingDisplacement;
+            Vector3 aMotion = (mPlanarVelocity + mImpulseVelocity + Vector3.up * mVerticalVelocity) * aDeltaTime + mPendingDisplacement;
             mPendingDisplacement = Vector3.zero;
 
             var aFlags = mController.Move(aMotion);

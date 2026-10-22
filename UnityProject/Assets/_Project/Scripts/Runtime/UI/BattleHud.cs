@@ -267,10 +267,10 @@ namespace BattleFight
             mDriveLabel = mRoot.Q<Label>("drive-label");
             mDriveFill = mRoot.Q("drive-fill");
 
-            for (int aI = 0; aI < 3; aI++)
+            for (int aIndex = 0; aIndex < 3; aIndex++)
             {
-                var aInstance = mRoot.Q(mSlotNames[aI]);
-                mSlotViews[aI] = new SlotView
+                var aInstance = mRoot.Q(mSlotNames[aIndex]);
+                mSlotViews[aIndex] = new SlotView
                 {
                     Card = aInstance.Q("card"),
                     Popup = aInstance.Q<Label>("popup"),
@@ -281,12 +281,12 @@ namespace BattleFight
                     Weapon = aInstance.Q<Label>("weapon"),
                     Desc = aInstance.Q<Label>("desc"),
                 };
-                mSlotViews[aI].Label.text = mSlotLabels[aI];
+                mSlotViews[aIndex].Label.text = mSlotLabels[aIndex];
             }
-            for (int aI = 0; aI < mPresetViews.Length; aI++)
+            for (int aPresetViewIndex = 0; aPresetViewIndex < mPresetViews.Length; aPresetViewIndex++)
             {
-                var aInstance = mRoot.Q($"preset-{aI + 1}");
-                mPresetViews[aI] = new PresetView { Chip = aInstance.Q("chip"), Key = aInstance.Q<Label>("key"), Name = aInstance.Q<Label>("name") };
+                var aInstance = mRoot.Q($"preset-{aPresetViewIndex + 1}");
+                mPresetViews[aPresetViewIndex] = new PresetView { Chip = aInstance.Q("chip"), Key = aInstance.Q<Label>("key"), Name = aInstance.Q<Label>("name") };
             }
 
             mResultNext.clicked += () => mDirector.NextStage();
@@ -357,11 +357,11 @@ namespace BattleFight
 
         void OnSlotChanged(SlotType iSlot)
         {
-            int aI = (int)iSlot;
+            int aIndex = (int)iSlot;
             // 表示中のスキルはすぐ更新する(編成を変えた直後に ShownSkill を読んでも古くならないように)
-            mShownSkills[aI] = mSlots.GetCurrent(iSlot);
+            mShownSkills[aIndex] = mSlots.GetCurrent(iSlot);
             // 切り替えた瞬間だけ大きくし、新しいスキル名を上に出す(戻りは USS の transition)
-            var aView = mSlotViews[aI];
+            var aView = mSlotViews[aIndex];
             if (aView == null) return;
             var aSkill = mSlots.GetCurrent(iSlot);
             aView.Card.AddToClassList("slot--swapped");
@@ -544,21 +544,21 @@ namespace BattleFight
                 mAnnouncementLabels.Add(aLabel);
                 mAnnouncements.Add(aLabel);
             }
-            for (int aI = 0; aI < mAnnouncementLabels.Count; aI++)
+            for (int aAnnouncementLabelIndex = 0; aAnnouncementLabelIndex < mAnnouncementLabels.Count; aAnnouncementLabelIndex++)
             {
-                var aLabel = mAnnouncementLabels[aI];
-                if (aI >= aCount)
+                var aLabel = mAnnouncementLabels[aAnnouncementLabelIndex];
+                if (aAnnouncementLabelIndex >= aCount)
                 {
                     Show(aLabel, false);
                     continue;
                 }
-                var aAnnouncement = mStyle.Announcements[aCount - 1 - aI];
+                var aAnnouncement = mStyle.Announcements[aCount - 1 - aAnnouncementLabelIndex];
                 float aAge = Time.unscaledTime - aAnnouncement.Time;
                 Show(aLabel, true);
                 SetText(aLabel, aAnnouncement.Text);
-                var aC = aAnnouncement.Color;
-                aC.a = Mathf.Clamp01((1f - aAge / StyleRankSystem.AnnouncementLifetime) * 1.5f);
-                aLabel.style.color = aC;
+                var aOtherColor = aAnnouncement.Color;
+                aOtherColor.a = Mathf.Clamp01((1f - aAge / StyleRankSystem.AnnouncementLifetime) * 1.5f);
+                aLabel.style.color = aOtherColor;
             }
 
             var aChainMeter = mExecutor.SwapChain;
@@ -578,12 +578,12 @@ namespace BattleFight
         void RefreshSlots()
         {
             bool aRackMode = mSlots.Mode == SwapMode.Rack;
-            for (int aI = 0; aI < 3; aI++)
+            for (int aIndex = 0; aIndex < 3; aIndex++)
             {
-                var aSlot = (SlotType)aI;
-                var aView = mSlotViews[aI];
+                var aSlot = (SlotType)aIndex;
+                var aView = mSlotViews[aIndex];
                 var aCurrent = mSlots.GetCurrent(aSlot);
-                mShownSkills[aI] = aCurrent;
+                mShownSkills[aIndex] = aCurrent;
                 if (aView == null) continue;
 
                 var aWeaponData = aCurrent != null ? mSlots.GetWeaponData(aCurrent.Weapon) : null;
@@ -596,7 +596,7 @@ namespace BattleFight
                 aView.Card.EnableInClassList("slot--cancel", aCancelReady && Mathf.PingPong(Time.unscaledTime * 8f, 1f) > 0.4f);
                 Show(aView.Cancel, aCancelReady);
                 Show(aView.Key, aRackMode);
-                SetText(aView.Key, SlotKey(aI));
+                SetText(aView.Key, SlotKey(aIndex));
 
                 SetText(aView.Name, aCurrent != null ? aCurrent.DisplayName : "(なし)");
                 aView.Name.style.color = aCurrent != null ? aWeaponColor : new Color(1f, 1f, 1f, 0.35f);
@@ -608,12 +608,12 @@ namespace BattleFight
         string RackLine(SkillRack iRack)
         {
             mBuilder.Clear();
-            for (int aJ = 0; aJ < iRack.Count; aJ++)
+            for (int aRackIndex = 0; aRackIndex < iRack.Count; aRackIndex++)
             {
-                var aSkill = iRack.Skills[aJ];
+                var aSkill = iRack.Skills[aRackIndex];
                 string aHex = ColorUtility.ToHtmlStringRGB(WeaponColor(aSkill));
-                if (aJ > 0) mBuilder.Append("  ");
-                if (aJ == iRack.CurrentIndex) mBuilder.Append($"<color=#{aHex}>■{aSkill.DisplayName}</color>");
+                if (aRackIndex > 0) mBuilder.Append("  ");
+                if (aRackIndex == iRack.CurrentIndex) mBuilder.Append($"<color=#{aHex}>■{aSkill.DisplayName}</color>");
                 else if (aSkill == iRack.Next) mBuilder.Append($"<color=#{aHex}>▶{aSkill.DisplayName}</color>");
                 else mBuilder.Append($"<color=#777777>{aSkill.DisplayName}</color>");
             }
@@ -658,20 +658,20 @@ namespace BattleFight
             Show(mPresetsRoot, aPresetMode);
             if (aPresetMode)
             {
-                for (int aI = 0; aI < mPresetViews.Length; aI++)
+                for (int aPresetViewIndex = 0; aPresetViewIndex < mPresetViews.Length; aPresetViewIndex++)
                 {
-                    var aView = mPresetViews[aI];
-                    bool aExists = aI < mSlots.Presets.Count;
+                    var aView = mPresetViews[aPresetViewIndex];
+                    bool aExists = aPresetViewIndex < mSlots.Presets.Count;
                     Show(aView.Chip, aExists);
                     if (!aExists) continue;
-                    var aPreset = mSlots.Presets[aI];
-                    var aA = aPreset.AttackA;
-                    aView.Chip.style.borderLeftColor = aA != null ? WeaponColor(aA) : new Color(1f, 1f, 1f, 0.2f);
-                    aView.Chip.EnableInClassList("preset--current", aI == mSlots.PresetIndex);
+                    var aPreset = mSlots.Presets[aPresetViewIndex];
+                    var aAttackA = aPreset.AttackA;
+                    aView.Chip.style.borderLeftColor = aAttackA != null ? WeaponColor(aAttackA) : new Color(1f, 1f, 1f, 0.2f);
+                    aView.Chip.EnableInClassList("preset--current", aPresetViewIndex == mSlots.PresetIndex);
                     aView.Chip.EnableInClassList("preset--empty", aPreset.IsEmpty);
                     aView.Chip.EnableInClassList("preset--cancel",
-                        aI != mSlots.PresetIndex && mExecutor.CanPresetCancel(aI) && Mathf.PingPong(Time.unscaledTime * 8f, 1f) > 0.4f);
-                    SetText(aView.Key, SlotKey(aI));
+                        aPresetViewIndex != mSlots.PresetIndex && mExecutor.CanPresetCancel(aPresetViewIndex) && Mathf.PingPong(Time.unscaledTime * 8f, 1f) > 0.4f);
+                    SetText(aView.Key, SlotKey(aPresetViewIndex));
                     SetText(aView.Name, aPreset.Name);
                 }
             }
@@ -704,12 +704,12 @@ namespace BattleFight
             Show(mPhaseBanner, aPhase);
             if (aPhase)
             {
-                var aC = mPhaseEnemy.Profile.TelegraphColor;
-                aC.a = Mathf.Clamp01((2f - aSincePhase) / 0.5f);
+                var aColor = mPhaseEnemy.Profile.TelegraphColor;
+                aColor.a = Mathf.Clamp01((2f - aSincePhase) / 0.5f);
                 SetText(mPhaseTitle, $"{mPhaseEnemy.Profile.DisplayName}  第二形態");
                 SetText(mPhaseSub, mPhaseEnemy.Profile.Phase2Message);
-                mPhaseTitle.style.color = aC;
-                mPhaseSub.style.color = aC;
+                mPhaseTitle.style.color = aColor;
+                mPhaseSub.style.color = aColor;
             }
 
             // 探索のお知らせ(4秒で消える)
@@ -809,7 +809,7 @@ namespace BattleFight
                     aTag.Skill.style.color = aSet.Color;
                 }
             }
-            for (int aI = aUsed; aI < mEnemyTags.Count; aI++) Show(mEnemyTags[aI].Root, false);
+            for (int aEnemyTagIndex = aUsed; aEnemyTagIndex < mEnemyTags.Count; aEnemyTagIndex++) Show(mEnemyTags[aEnemyTagIndex].Root, false);
 
             // 探索の目印(近いものだけ)
             aUsed = 0;
@@ -823,11 +823,11 @@ namespace BattleFight
                 var aLabel = PooledLabel(mWorldLabels, aUsed++, "world-label");
                 Place(aLabel, aPoint);
                 SetText(aLabel, aWorldLabel.Text);
-                var aC = aWorldLabel.Color;
-                aC.a *= Mathf.Clamp01((aWorldLabel.ShowDistance - aDistance) / 3f);
-                aLabel.style.color = aC;
+                var aColor = aWorldLabel.Color;
+                aColor.a *= Mathf.Clamp01((aWorldLabel.ShowDistance - aDistance) / 3f);
+                aLabel.style.color = aColor;
             }
-            for (int aI = aUsed; aI < mWorldLabels.Count; aI++) Show(mWorldLabels[aI], false);
+            for (int aWorldLabelIndex = aUsed; aWorldLabelIndex < mWorldLabels.Count; aWorldLabelIndex++) Show(mWorldLabels[aWorldLabelIndex], false);
 
             // ワイヤーで飛ぶ先
             var aGrapple = mExecutor.GrapplePreview;
@@ -860,12 +860,12 @@ namespace BattleFight
                     var aLabel = PooledLabel(mDamageLabels, aUsed++, "damage");
                     Place(aLabel, aPoint);
                     SetText(aLabel, aNumber.Text);
-                    var aC = aNumber.Color;
-                    aC.a = 1f - aAge / CombatFeedback.DamageNumberLifetime;
-                    aLabel.style.color = aC;
+                    var aColor = aNumber.Color;
+                    aColor.a = 1f - aAge / CombatFeedback.DamageNumberLifetime;
+                    aLabel.style.color = aColor;
                 }
             }
-            for (int aI = aUsed; aI < mDamageLabels.Count; aI++) Show(mDamageLabels[aI], false);
+            for (int aDamageLabelIndex = aUsed; aDamageLabelIndex < mDamageLabels.Count; aDamageLabelIndex++) Show(mDamageLabels[aDamageLabelIndex], false);
         }
 
         EnemyTag EnemyTagAt(int iIndex)

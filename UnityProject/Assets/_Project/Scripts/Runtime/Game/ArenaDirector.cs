@@ -195,15 +195,15 @@ namespace BattleFight
                     }
 
                 default:
-                    for (int aI = 0; aI < WaveCount; aI++)
+                    for (int aIndex = 0; aIndex < WaveCount; aIndex++)
                     {
-                        WaveNumber = aI + 1;
-                        WaveLabel = CurrentStage.Waves[aI].Label;
-                        Spawn(CurrentStage.Waves[aI].Enemies);
+                        WaveNumber = aIndex + 1;
+                        WaveLabel = CurrentStage.Waves[aIndex].Label;
+                        Spawn(CurrentStage.Waves[aIndex].Enemies);
                         State = GameState.Fighting;
                         while (mAlive.Count > 0) yield return null;
 
-                        if (aI < WaveCount - 1)
+                        if (aIndex < WaveCount - 1)
                         {
                             State = GameState.Intermission;
                             yield return new WaitForSeconds(mWaveInterval);
@@ -226,15 +226,15 @@ namespace BattleFight
             int aCount = iEnemies.Count;
             float aSpread = aCount > 1 ? Mathf.Min(200f, 40f * aCount) : 0f;
 
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                if (iEnemies[aI] == null) continue;
-                float aAngle = (aBaseAngle - aSpread * 0.5f + (aCount > 1 ? aSpread * aI / (aCount - 1) : 0f)) * Mathf.Deg2Rad;
+                if (iEnemies[aIndex] == null) continue;
+                float aAngle = (aBaseAngle - aSpread * 0.5f + (aCount > 1 ? aSpread * aIndex / (aCount - 1) : 0f)) * Mathf.Deg2Rad;
                 Vector3 aPosition = mArenaCenter + new Vector3(Mathf.Sin(aAngle), 0f, Mathf.Cos(aAngle)) * mSpawnRadius;
                 // ときどきエリート(巨大・俊足・分裂・障壁)になる
-                var aAffix = EliteMaker.Roll(iEnemies[aI], EliteChance(), mRandom);
-                if (aAffix != EliteAffix.None) SpawnElite(iEnemies[aI], aAffix, aPosition);
-                else SpawnEnemy(iEnemies[aI], aPosition);
+                var aAffix = EliteMaker.Roll(iEnemies[aIndex], EliteChance(), mRandom);
+                if (aAffix != EliteAffix.None) SpawnElite(iEnemies[aIndex], aAffix, aPosition);
+                else SpawnEnemy(iEnemies[aIndex], aPosition);
             }
         }
 
@@ -242,7 +242,7 @@ namespace BattleFight
         public EnemyController SpawnExtra(EnemyProfile iProfile, Vector3 iPosition)
         {
             // 倒れずに消えた敵(ウェーブの外で消したものなど)は数えない
-            mAlive.RemoveAll(iE => iE == null);
+            mAlive.RemoveAll(iEnemy => iEnemy == null);
             if (iProfile == null || mAlive.Count >= mMaxAliveEnemies || State == GameState.GameOver) return null;
             if (IsExploring) return SpawnEnemy(iProfile, iPosition, true);
             // アリーナの外に出ないようにする
@@ -305,9 +305,9 @@ namespace BattleFight
                 if (iProfile.Elite == EliteAffix.Splitter && State != GameState.GameOver && iEnemy != null)
                 {
                     var aSplit = EliteMaker.CreateSplit(iProfile.EliteSource != null ? iProfile.EliteSource : iProfile);
-                    for (int aI = 0; aI < 2; aI++)
+                    for (int aIndex = 0; aIndex < 2; aIndex++)
                     {
-                        Vector3 aOffset = Quaternion.Euler(0f, 90f + 180f * aI, 0f) * iEnemy.transform.forward * 1.2f;
+                        Vector3 aOffset = Quaternion.Euler(0f, 90f + 180f * aIndex, 0f) * iEnemy.transform.forward * 1.2f;
                         var aChild = SpawnEnemy(aSplit, iEnemy.transform.position + aOffset, true);
                         DestroyWithOwner.Attach(aChild.gameObject, aSplit);
                     }
@@ -355,9 +355,9 @@ namespace BattleFight
 
         int NextStageIndex()
         {
-            for (int aI = StageIndex + 1; aI < mStages.Length; aI++)
+            for (int aStageIndex = StageIndex + 1; aStageIndex < mStages.Length; aStageIndex++)
             {
-                if (mStages[aI] != null && mStages[aI].Kind == StageKind.Waves) return aI;
+                if (mStages[aStageIndex] != null && mStages[aStageIndex].Kind == StageKind.Waves) return aStageIndex;
             }
             return -1;
         }

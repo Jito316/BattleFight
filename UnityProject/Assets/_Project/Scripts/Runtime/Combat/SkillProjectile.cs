@@ -45,17 +45,17 @@ namespace BattleFight
             EnemyController iHomingTarget, Color iColor, float iDelay = 0f)
         {
             var aSkill = iContext.Skill;
-            var aGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            aGo.name = $"Projectile_{aSkill.name}";
-            DestroyImmediate(aGo.GetComponent<Collider>());
-            aGo.transform.position = iPosition;
+            var aObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            aObject.name = $"Projectile_{aSkill.name}";
+            DestroyImmediate(aObject.GetComponent<Collider>());
+            aObject.transform.position = iPosition;
 
             var aMaterial = CombatFeedback.Instance != null ? CombatFeedback.Instance.EffectMaterial : null;
-            var aRenderer = aGo.GetComponent<Renderer>();
+            var aRenderer = aObject.GetComponent<Renderer>();
             if (aMaterial != null) aRenderer.sharedMaterial = aMaterial;
             aRenderer.material.color = iColor;
 
-            var aProjectile = aGo.AddComponent<SkillProjectile>();
+            var aProjectile = aObject.AddComponent<SkillProjectile>();
             aProjectile.mOwner = iOwner;
             aProjectile.mOwnerRoot = iOwner.transform;
             aProjectile.mContext = iContext;
@@ -69,7 +69,7 @@ namespace BattleFight
             aProjectile.mPierce = aSkill.ProjectilePierce;
             aProjectile.mColor = iColor;
 
-            aGo.transform.localScale = Vector3.one * (aProjectile.mRadius * 2f);
+            aObject.transform.localScale = Vector3.one * (aProjectile.mRadius * 2f);
             if (iDelay > 0f) aProjectile.CreateTelegraph(aMaterial);
             return aProjectile;
         }
@@ -92,8 +92,8 @@ namespace BattleFight
 
         void Update()
         {
-            float aDt = Time.deltaTime;
-            mAge += aDt;
+            float aDeltaTime = Time.deltaTime;
+            mAge += aDeltaTime;
 
             if (mAge < mDelay)
             {
@@ -116,11 +116,11 @@ namespace BattleFight
             if (mHoming > 0f && mHomingTarget != null && !mHomingTarget.IsDead && mVelocity.sqrMagnitude > 0.01f)
             {
                 Vector3 aDesired = (mHomingTarget.CenterPoint - transform.position).normalized * mVelocity.magnitude;
-                mVelocity = Vector3.RotateTowards(mVelocity, aDesired, mHoming * Mathf.Deg2Rad * aDt, 0f);
+                mVelocity = Vector3.RotateTowards(mVelocity, aDesired, mHoming * Mathf.Deg2Rad * aDeltaTime, 0f);
             }
 
             Vector3 aStart = transform.position;
-            Vector3 aStep = mVelocity * aDt;
+            Vector3 aStep = mVelocity * aDeltaTime;
 
             // 壁や床に当たったら止まる(爆発する弾は爆発)
             if (aStep.sqrMagnitude > 0f
@@ -147,9 +147,9 @@ namespace BattleFight
         {
             mHits.Clear();
             int aCount = Physics.OverlapSphereNonAlloc(transform.position, mRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aTarget = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aTarget == null || aTarget.IsDead || aTarget.Team == Team.Player || mAlreadyHit.Contains(aTarget)) continue;
                 if (mOwnerRoot != null && aTarget.transform.IsChildOf(mOwnerRoot)) continue;
                 mHits.Add(aTarget);
@@ -176,9 +176,9 @@ namespace BattleFight
         {
             mHits.Clear();
             int aCount = Physics.OverlapSphereNonAlloc(iPosition, mExplosionRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aTarget = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aTarget == null || aTarget.IsDead || aTarget.Team == Team.Player || mHits.Contains(aTarget)) continue;
                 mHits.Add(aTarget);
             }
