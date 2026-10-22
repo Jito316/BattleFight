@@ -5,64 +5,64 @@ namespace BattleFight.Tests
 {
     public class ExplorationSaveTests
     {
-        SkillData hammer;
-        SkillData wire;
+        SkillData mHammer;
+        SkillData mWire;
 
         [SetUp]
         public void SetUp()
         {
             ExplorationSave.Reset();
-            hammer = ScriptableObject.CreateInstance<SkillData>();
-            hammer.name = "Test_Hammer";
-            wire = ScriptableObject.CreateInstance<SkillData>();
-            wire.name = "Test_Wire";
+            mHammer = ScriptableObject.CreateInstance<SkillData>();
+            mHammer.name = "Test_Hammer";
+            mWire = ScriptableObject.CreateInstance<SkillData>();
+            mWire.name = "Test_Wire";
         }
 
         [TearDown]
         public void TearDown()
         {
             ExplorationSave.Reset();
-            Object.DestroyImmediate(hammer);
-            Object.DestroyImmediate(wire);
+            Object.DestroyImmediate(mHammer);
+            Object.DestroyImmediate(mWire);
         }
 
         [Test]
         public void Unlock_OnlyCountsNewSkills()
         {
             Assert.IsFalse(ExplorationSave.HasStarted);
-            Assert.IsTrue(ExplorationSave.Unlock(hammer));
-            Assert.IsFalse(ExplorationSave.Unlock(hammer), "同じスキルを2回手に入れたことになった");
-            Assert.IsTrue(ExplorationSave.IsUnlocked(hammer));
-            Assert.IsFalse(ExplorationSave.IsUnlocked(wire));
+            Assert.IsTrue(ExplorationSave.Unlock(mHammer));
+            Assert.IsFalse(ExplorationSave.Unlock(mHammer), "同じスキルを2回手に入れたことになった");
+            Assert.IsTrue(ExplorationSave.IsUnlocked(mHammer));
+            Assert.IsFalse(ExplorationSave.IsUnlocked(mWire));
             Assert.AreEqual(1, ExplorationSave.UnlockedCount);
         }
 
         [Test]
         public void Unlock_RaisesEventOnlyTheFirstTime()
         {
-            int raised = 0;
-            void OnUnlocked(SkillData _) => raised++;
+            int aRaised = 0;
+            void OnUnlocked(SkillData _) => aRaised++;
             ExplorationSave.SkillUnlocked += OnUnlocked;
-            ExplorationSave.Unlock(wire);
-            ExplorationSave.Unlock(wire);
+            ExplorationSave.Unlock(mWire);
+            ExplorationSave.Unlock(mWire);
             ExplorationSave.SkillUnlocked -= OnUnlocked;
-            Assert.AreEqual(1, raised);
+            Assert.AreEqual(1, aRaised);
         }
 
         [Test]
         public void Progress_SurvivesSaveAndLoad()
         {
-            ExplorationSave.Unlock(hammer);
+            ExplorationSave.Unlock(mHammer);
             ExplorationSave.SetFlag("wall_hall_north");
             ExplorationSave.Checkpoint = "cp_tower";
             ExplorationSave.TotalSkills = 15;
-            string json = ExplorationSave.Serialize();
+            string aJson = ExplorationSave.Serialize();
 
             ExplorationSave.LoadFrom("");
             Assert.AreEqual(0, ExplorationSave.UnlockedCount);
 
-            ExplorationSave.LoadFrom(json);
-            Assert.IsTrue(ExplorationSave.IsUnlocked(hammer));
+            ExplorationSave.LoadFrom(aJson);
+            Assert.IsTrue(ExplorationSave.IsUnlocked(mHammer));
             Assert.IsTrue(ExplorationSave.HasFlag("wall_hall_north"));
             Assert.IsFalse(ExplorationSave.HasFlag("wall_barracks_secret"));
             Assert.AreEqual("cp_tower", ExplorationSave.Checkpoint);
@@ -80,7 +80,7 @@ namespace BattleFight.Tests
         [Test]
         public void Reset_ForgetsEverything()
         {
-            ExplorationSave.Unlock(hammer);
+            ExplorationSave.Unlock(mHammer);
             ExplorationSave.SetFlag("pickup_hammer_combo");
             ExplorationSave.Checkpoint = "cp_hall";
             ExplorationSave.Reset();

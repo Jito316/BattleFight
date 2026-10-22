@@ -14,42 +14,42 @@ namespace BattleFight.EditorTools
     /// </summary>
     public static partial class PrototypeSceneBuilder
     {
-        const string UiRoot = Root + "/UI";
-        const string FontAssetPath = UiRoot + "/NotoSansJP-Bold.asset";
-        const string TextSettingsPath = UiRoot + "/BattleFightText.asset";
-        const string PanelSettingsPath = UiRoot + "/BattleFightPanel.asset";
-        const string ThemePath = UiRoot + "/BattleFightTheme.tss";
+        const string mUiRoot = mRoot + "/UI";
+        const string mFontAssetPath = mUiRoot + "/NotoSansJP-Bold.asset";
+        const string mTextSettingsPath = mUiRoot + "/BattleFightText.asset";
+        const string mPanelSettingsPath = mUiRoot + "/BattleFightPanel.asset";
+        const string mThemePath = mUiRoot + "/BattleFightTheme.tss";
 
         static PanelSettings BuildPanelSettings()
         {
-            var fontAsset = EnsureFontAsset();
+            var aFontAsset = EnsureFontAsset();
 
-            var textSettings = AssetDatabase.LoadAssetAtPath<PanelTextSettings>(TextSettingsPath);
-            if (textSettings == null)
+            var aTextSettings = AssetDatabase.LoadAssetAtPath<PanelTextSettings>(mTextSettingsPath);
+            if (aTextSettings == null)
             {
-                textSettings = ScriptableObject.CreateInstance<PanelTextSettings>();
-                AssetDatabase.CreateAsset(textSettings, TextSettingsPath);
+                aTextSettings = ScriptableObject.CreateInstance<PanelTextSettings>();
+                AssetDatabase.CreateAsset(aTextSettings, mTextSettingsPath);
             }
-            textSettings.defaultFontAsset = fontAsset;
-            EditorUtility.SetDirty(textSettings);
+            aTextSettings.defaultFontAsset = aFontAsset;
+            EditorUtility.SetDirty(aTextSettings);
 
-            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
-            if (panel == null)
+            var aPanel = AssetDatabase.LoadAssetAtPath<PanelSettings>(mPanelSettingsPath);
+            if (aPanel == null)
             {
-                panel = ScriptableObject.CreateInstance<PanelSettings>();
-                AssetDatabase.CreateAsset(panel, PanelSettingsPath);
+                aPanel = ScriptableObject.CreateInstance<PanelSettings>();
+                AssetDatabase.CreateAsset(aPanel, mPanelSettingsPath);
             }
-            panel.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(ThemePath);
-            panel.textSettings = textSettings;
+            aPanel.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(mThemePath);
+            aPanel.textSettings = aTextSettings;
             // 1920x1080 を基準に、画面の高さに合わせて拡大縮小する(以前の HUD と同じ考え方)
-            panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-            panel.referenceResolution = new Vector2Int(1920, 1080);
-            panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
-            panel.match = 1f;
-            panel.clearColor = false;
-            EditorUtility.SetDirty(panel);
+            aPanel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+            aPanel.referenceResolution = new Vector2Int(1920, 1080);
+            aPanel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
+            aPanel.match = 1f;
+            aPanel.clearColor = false;
+            EditorUtility.SetDirty(aPanel);
             AssetDatabase.SaveAssets();
-            return panel;
+            return aPanel;
         }
 
         /// <summary>
@@ -58,51 +58,51 @@ namespace BattleFight.EditorTools
         /// </summary>
         static FontAsset EnsureFontAsset()
         {
-            var fontAsset = AssetDatabase.LoadAssetAtPath<FontAsset>(FontAssetPath);
-            if (fontAsset == null)
+            var aFontAsset = AssetDatabase.LoadAssetAtPath<FontAsset>(mFontAssetPath);
+            if (aFontAsset == null)
             {
-                var font = AssetDatabase.LoadAssetAtPath<Font>(HudFontPath);
-                fontAsset = FontAsset.CreateFontAsset(font, 64, 6, GlyphRenderMode.SDFAA, 1024, 1024, AtlasPopulationMode.Dynamic, true);
-                fontAsset.name = "NotoSansJP-Bold";
-                AssetDatabase.CreateAsset(fontAsset, FontAssetPath);
+                var aFont = AssetDatabase.LoadAssetAtPath<Font>(mHudFontPath);
+                aFontAsset = FontAsset.CreateFontAsset(aFont, 64, 6, GlyphRenderMode.SDFAA, 1024, 1024, AtlasPopulationMode.Dynamic, true);
+                aFontAsset.name = "NotoSansJP-Bold";
+                AssetDatabase.CreateAsset(aFontAsset, mFontAssetPath);
                 // アトラスとマテリアルはアセットの中に入れておかないと、シーンを保存したときに消える
-                foreach (var texture in fontAsset.atlasTextures)
+                foreach (var aTexture in aFontAsset.atlasTextures)
                 {
-                    if (texture == null) continue;
-                    texture.name = "NotoSansJP-Bold Atlas";
-                    AssetDatabase.AddObjectToAsset(texture, fontAsset);
+                    if (aTexture == null) continue;
+                    aTexture.name = "NotoSansJP-Bold Atlas";
+                    AssetDatabase.AddObjectToAsset(aTexture, aFontAsset);
                 }
-                if (fontAsset.material != null)
+                if (aFontAsset.material != null)
                 {
-                    fontAsset.material.name = "NotoSansJP-Bold Material";
-                    AssetDatabase.AddObjectToAsset(fontAsset.material, fontAsset);
+                    aFontAsset.material.name = "NotoSansJP-Bold Material";
+                    AssetDatabase.AddObjectToAsset(aFontAsset.material, aFontAsset);
                 }
                 AssetDatabase.SaveAssets();
-                foreach (var uss in new[] { "Common.uss", "Hud.uss", "LoadoutEditor.uss", "StageSelect.uss" })
+                foreach (var aUss in new[] { "Common.uss", "Hud.uss", "LoadoutEditor.uss", "StageSelect.uss" })
                 {
-                    AssetDatabase.ImportAsset($"{UiRoot}/{uss}", ImportAssetOptions.ForceUpdate);
+                    AssetDatabase.ImportAsset($"{mUiRoot}/{aUss}", ImportAssetOptions.ForceUpdate);
                 }
-                AssetDatabase.ImportAsset(ThemePath, ImportAssetOptions.ForceUpdate);
+                AssetDatabase.ImportAsset(mThemePath, ImportAssetOptions.ForceUpdate);
             }
             else
             {
                 // フォントを作り直す(文字を足す)と、字形の番号が変わる。前のフォントで作った字形を残さないよう毎回消す
                 // (字形は実行時に必要な分だけ作られる)
-                fontAsset.ClearFontAssetData(true);
-                EditorUtility.SetDirty(fontAsset);
+                aFontAsset.ClearFontAssetData(true);
+                EditorUtility.SetDirty(aFontAsset);
                 AssetDatabase.SaveAssets();
             }
-            return fontAsset;
+            return aFontAsset;
         }
 
-        static T UiDocument<T>(string objectName, string uxml, PanelSettings panel, int sortingOrder) where T : MonoBehaviour
+        static T UiDocument<T>(string iObjectName, string iUxml, PanelSettings iPanel, int iSortingOrder) where T : MonoBehaviour
         {
-            var go = new GameObject(objectName);
-            var document = go.AddComponent<UIDocument>();
-            document.panelSettings = panel;
-            document.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{UiRoot}/{uxml}.uxml");
-            document.sortingOrder = sortingOrder;
-            return go.AddComponent<T>();
+            var aGo = new GameObject(iObjectName);
+            var aDocument = aGo.AddComponent<UIDocument>();
+            aDocument.panelSettings = iPanel;
+            aDocument.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>($"{mUiRoot}/{iUxml}.uxml");
+            aDocument.sortingOrder = iSortingOrder;
+            return aGo.AddComponent<T>();
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -22,396 +23,396 @@ namespace BattleFight
             Dead,
         }
 
-        const int MaxAttackTokens = 2;
-        const float FlashDuration = 0.08f;
-        const float DeathDuration = 0.5f;
+        const int mMaxAttackTokens = 2;
+        const float mFlashDuration = 0.08f;
+        const float mDeathDuration = 0.5f;
 
         public static readonly List<EnemyController> Active = new List<EnemyController>();
-        static int attackTokensInUse;
-        static readonly Collider[] OverlapBuffer = new Collider[16];
+        static int mAttackTokensInUse;
+        static readonly Collider[] mOverlapBuffer = new Collider[16];
 
-        [SerializeField] EnemyProfile profile;
-        [SerializeField] float gravity = -25f;
-        [SerializeField, Tooltip("打ち上げられている間の重力(空中コンボ用に弱め)")] float juggleGravity = -11f;
+        [SerializeField, FormerlySerializedAs("profile")] EnemyProfile mProfile;
+        [SerializeField, FormerlySerializedAs("gravity")] float mGravity = -25f;
+        [SerializeField, Tooltip("打ち上げられている間の重力(空中コンボ用に弱め)"), FormerlySerializedAs("juggleGravity")] float mJuggleGravity = -11f;
 
-        CharacterController controller;
-        Damageable damageable;
-        Transform target;
-        Renderer[] renderers;
-        Color[] baseColors;
+        CharacterController mController;
+        Damageable mDamageable;
+        Transform mTarget;
+        Renderer[] mRenderers;
+        Color[] mBaseColors;
 
-        State state;
-        float stateTime;
-        float stateDuration;
-        EnemyAttack attack;
-        float cooldown;
-        float verticalVelocity;
-        Vector3 knockback;
-        bool grounded;
-        bool juggled;
-        bool hasToken;
-        bool teleported;
-        int repeatsLeft;
-        readonly List<EnemyAttack> availableAttacks = new List<EnemyAttack>();
-        bool attackLanded;
-        float flashTimer;
-        float strafeSign = 1f;
-        Vector3 slamDestination;
-        Vector3 attackDirection;
-        Vector3 pullDestination;
-        float pullSpeed;
+        State mState;
+        float mStateTime;
+        float mStateDuration;
+        EnemyAttack mAttack;
+        float mCooldown;
+        float mVerticalVelocity;
+        Vector3 mKnockback;
+        bool mGrounded;
+        bool mJuggled;
+        bool mHasToken;
+        bool mTeleported;
+        int mRepeatsLeft;
+        readonly List<EnemyAttack> mAvailableAttacks = new List<EnemyAttack>();
+        bool mAttackLanded;
+        float mFlashTimer;
+        float mStrafeSign = 1f;
+        Vector3 mSlamDestination;
+        Vector3 mAttackDirection;
+        Vector3 mPullDestination;
+        float mPullSpeed;
 
         // プレイヤーのスキル: 型ごとに変換した攻撃、今の型、次に切り替えるまでの時間
-        readonly List<List<EnemyAttack>> skillAttacks = new List<List<EnemyAttack>>();
-        int skillSetIndex;
-        float swapTimer;
-        Renderer weaponRenderer;
-        int weaponRendererIndex = -1;
+        readonly List<List<EnemyAttack>> mSkillAttacks = new List<List<EnemyAttack>>();
+        int mSkillSetIndex;
+        float mSwapTimer;
+        Renderer mWeaponRenderer;
+        int mWeaponRendererIndex = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             Active.Clear();
-            attackTokensInUse = 0;
+            mAttackTokensInUse = 0;
             PhaseChanged = null;
         }
 
-        public EnemyProfile Profile => profile;
-        public Damageable Damageable => damageable;
-        public bool IsDead => damageable == null || damageable.IsDead;
-        public bool IsHeavy => profile != null && profile.heavy;
-        public bool IsBeingPulled => state == State.Pulled;
-        public bool IsTelegraphing => state == State.Windup;
+        public EnemyProfile Profile => mProfile;
+        public Damageable Damageable => mDamageable;
+        public bool IsDead => mDamageable == null || mDamageable.IsDead;
+        public bool IsHeavy => mProfile != null && mProfile.Heavy;
+        public bool IsBeingPulled => mState == State.Pulled;
+        public bool IsTelegraphing => mState == State.Windup;
         public bool IsPhase2 { get; private set; }
-        float MoveSpeed => profile.moveSpeed * (IsPhase2 ? profile.phase2SpeedMultiplier : 1f);
+        float mMoveSpeed => mProfile.MoveSpeed * (IsPhase2 ? mProfile.Phase2SpeedMultiplier : 1f);
 
         /// <summary>ボスが第二形態になった(HUD の告知用)</summary>
         public static event System.Action<EnemyController> PhaseChanged;
-        public float Height => controller.height * transform.lossyScale.y;
+        public float Height => mController.height * transform.lossyScale.y;
 
         /// <summary>今の型(プレイヤーのスキルを使わない敵は null)</summary>
-        public EnemySkillSet CurrentSkillSet => profile != null && profile.skillSets != null && profile.skillSets.Count > 0
-            ? profile.skillSets[Mathf.Clamp(skillSetIndex, 0, profile.skillSets.Count - 1)]
+        public EnemySkillSet CurrentSkillSet => mProfile != null && mProfile.SkillSets != null && mProfile.SkillSets.Count > 0
+            ? mProfile.SkillSets[Mathf.Clamp(mSkillSetIndex, 0, mProfile.SkillSets.Count - 1)]
             : null;
 
         /// <summary>最後に型を切り替えた時刻(HUD の演出用)</summary>
         public float SkillSetChangedAt { get; private set; } = -99f;
 
         /// <summary>予備動作中・攻撃中の攻撃(それ以外は null)</summary>
-        public EnemyAttack CurrentAttack => state == State.Windup || state == State.Attack ? attack : null;
+        public EnemyAttack CurrentAttack => mState == State.Windup || mState == State.Attack ? mAttack : null;
 
         /// <summary>今の弱点。型が弱点を持っていればそれ、なければ敵の弱点</summary>
         public WeaponType[] Weaknesses
         {
             get
             {
-                var set = CurrentSkillSet;
-                if (set != null && set.weaknesses != null && set.weaknesses.Length > 0) return set.weaknesses;
-                return profile != null && profile.weaknesses != null ? profile.weaknesses : System.Array.Empty<WeaponType>();
+                var aSet = CurrentSkillSet;
+                if (aSet != null && aSet.Weaknesses != null && aSet.Weaknesses.Length > 0) return aSet.Weaknesses;
+                return mProfile != null && mProfile.Weaknesses != null ? mProfile.Weaknesses : System.Array.Empty<WeaponType>();
             }
         }
 
-        public bool IsWeakTo(WeaponType weapon)
+        public bool IsWeakTo(WeaponType iWeapon)
         {
-            foreach (var w in Weaknesses)
+            foreach (var aW in Weaknesses)
             {
-                if (w == weapon) return true;
+                if (aW == iWeapon) return true;
             }
             return false;
         }
-        public float Radius => controller.radius * transform.lossyScale.x;
+        public float Radius => mController.radius * transform.lossyScale.x;
         public Vector3 CenterPoint => transform.position + Vector3.up * (Height * 0.5f);
 
         void Awake()
         {
-            controller = GetComponent<CharacterController>();
-            damageable = GetComponent<Damageable>();
+            mController = GetComponent<CharacterController>();
+            mDamageable = GetComponent<Damageable>();
         }
 
         void OnEnable()
         {
             Active.Add(this);
-            damageable.Damaged += OnDamaged;
-            damageable.Died += OnDied;
+            mDamageable.Damaged += OnDamaged;
+            mDamageable.Died += OnDied;
         }
 
         void OnDisable()
         {
             Active.Remove(this);
             ReleaseToken();
-            damageable.Damaged -= OnDamaged;
-            damageable.Died -= OnDied;
+            mDamageable.Damaged -= OnDamaged;
+            mDamageable.Died -= OnDied;
         }
 
-        public void Initialize(EnemyProfile newProfile, Transform player)
+        public void Initialize(EnemyProfile iNewProfile, Transform iPlayer)
         {
-            profile = newProfile;
-            target = player;
-            renderers = GetComponentsInChildren<Renderer>();
-            baseColors = new Color[renderers.Length];
-            for (int i = 0; i < renderers.Length; i++) baseColors[i] = renderers[i].material.color;
-            cooldown = Random.Range(0.6f, 1.6f);
-            strafeSign = Random.value < 0.5f ? -1f : 1f;
-            state = State.Chase;
+            mProfile = iNewProfile;
+            mTarget = iPlayer;
+            mRenderers = GetComponentsInChildren<Renderer>();
+            mBaseColors = new Color[mRenderers.Length];
+            for (int aI = 0; aI < mRenderers.Length; aI++) mBaseColors[aI] = mRenderers[aI].material.color;
+            mCooldown = Random.Range(0.6f, 1.6f);
+            mStrafeSign = Random.value < 0.5f ? -1f : 1f;
+            mState = State.Chase;
 
-            skillAttacks.Clear();
-            if (profile.skillSets != null)
+            mSkillAttacks.Clear();
+            if (mProfile.SkillSets != null)
             {
-                foreach (var set in profile.skillSets)
+                foreach (var aSet in mProfile.SkillSets)
                 {
-                    skillAttacks.Add(EnemySkillConverter.ToAttacks(set.skills, profile.skillDamageScale, profile.skillWindupScale));
+                    mSkillAttacks.Add(EnemySkillConverter.ToAttacks(aSet.Skills, mProfile.SkillDamageScale, mProfile.SkillWindupScale));
                 }
             }
-            skillSetIndex = 0;
-            swapTimer = profile.skillSwapInterval;
+            mSkillSetIndex = 0;
+            mSwapTimer = mProfile.SkillSwapInterval;
             // 手に持つ武器(EnemyFactory が付ける)は、型の色で塗る
-            var weapon = transform.Find("Weapon");
-            weaponRenderer = weapon != null ? weapon.GetComponent<Renderer>() : null;
-            weaponRendererIndex = weaponRenderer != null ? System.Array.IndexOf(renderers, weaponRenderer) : -1;
+            var aWeapon = transform.Find("Weapon");
+            mWeaponRenderer = aWeapon != null ? aWeapon.GetComponent<Renderer>() : null;
+            mWeaponRendererIndex = mWeaponRenderer != null ? System.Array.IndexOf(mRenderers, mWeaponRenderer) : -1;
             ApplySkillSetColor();
         }
 
         /// <summary>次の型に切り替える(プレイヤーのプリセットの切り替えと同じ)。弱点も変わる</summary>
         public bool SwapSkillSet()
         {
-            if (profile.skillSets == null || profile.skillSets.Count < 2 || IsDead) return false;
-            skillSetIndex = (skillSetIndex + 1) % profile.skillSets.Count;
-            swapTimer = profile.skillSwapInterval;
+            if (mProfile.SkillSets == null || mProfile.SkillSets.Count < 2 || IsDead) return false;
+            mSkillSetIndex = (mSkillSetIndex + 1) % mProfile.SkillSets.Count;
+            mSwapTimer = mProfile.SkillSwapInterval;
             SkillSetChangedAt = Time.time;
-            if (state == State.Chase) attack = null;
+            if (mState == State.Chase) mAttack = null;
             ApplySkillSetColor();
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1.2f, CurrentSkillSet.color);
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1.2f, CurrentSkillSet.Color);
             return true;
         }
 
         void ApplySkillSetColor()
         {
-            var set = CurrentSkillSet;
-            if (set == null || weaponRenderer == null) return;
-            if (weaponRendererIndex >= 0) baseColors[weaponRendererIndex] = set.color;
-            weaponRenderer.material.color = set.color;
+            var aSet = CurrentSkillSet;
+            if (aSet == null || mWeaponRenderer == null) return;
+            if (mWeaponRendererIndex >= 0) mBaseColors[mWeaponRendererIndex] = aSet.Color;
+            mWeaponRenderer.material.color = aSet.Color;
         }
 
         void Update()
         {
-            if (profile == null) return;
+            if (mProfile == null) return;
             // 「見切り」(ジャスト回避)の間は敵だけ遅くなる
-            float dt = EnemyTime.DeltaTime;
+            float aDt = EnemyTime.DeltaTime;
 
-            if (state == State.Dead)
+            if (mState == State.Dead)
             {
-                stateTime += dt;
-                transform.localScale = Vector3.one * (profile.scale * Mathf.Max(0f, 1f - stateTime / DeathDuration));
-                if (stateTime >= DeathDuration) Destroy(gameObject);
+                mStateTime += aDt;
+                transform.localScale = Vector3.one * (mProfile.Scale * Mathf.Max(0f, 1f - mStateTime / mDeathDuration));
+                if (mStateTime >= mDeathDuration) Destroy(gameObject);
                 return;
             }
 
-            stateTime += dt;
-            cooldown -= dt;
+            mStateTime += aDt;
+            mCooldown -= aDt;
 
             // 型の切り替え(攻撃していないときだけ)
-            if (profile.skillSets != null && profile.skillSets.Count > 1 && profile.skillSwapInterval > 0f)
+            if (mProfile.SkillSets != null && mProfile.SkillSets.Count > 1 && mProfile.SkillSwapInterval > 0f)
             {
-                swapTimer -= dt;
-                if (swapTimer <= 0f && state == State.Chase) SwapSkillSet();
+                mSwapTimer -= aDt;
+                if (mSwapTimer <= 0f && mState == State.Chase) SwapSkillSet();
             }
 
-            Vector3 planar = Vector3.zero;
-            switch (state)
+            Vector3 aPlanar = Vector3.zero;
+            switch (mState)
             {
                 case State.Chase:
-                    planar = TickChase(dt);
+                    aPlanar = TickChase(aDt);
                     break;
                 case State.Windup:
-                    planar = TickWindup(dt);
+                    aPlanar = TickWindup(aDt);
                     break;
                 case State.Attack:
-                    planar = TickAttack();
+                    aPlanar = TickAttack();
                     break;
                 case State.Recovery:
-                    if (stateTime >= attack.recovery) EnterChase();
+                    if (mStateTime >= mAttack.Recovery) EnterChase();
                     break;
                 case State.Stagger:
-                    if (stateTime >= stateDuration && (grounded || profile.flying))
+                    if (mStateTime >= mStateDuration && (mGrounded || mProfile.Flying))
                     {
-                        juggled = false;
+                        mJuggled = false;
                         EnterChase();
                     }
                     break;
                 case State.Pulled:
-                    planar = TickPulled(dt);
+                    aPlanar = TickPulled(aDt);
                     break;
             }
 
             // 自爆などでこのフレームに倒れた
-            if (state == State.Dead) return;
+            if (mState == State.Dead) return;
 
-            if (profile.flying && !juggled && state != State.Pulled)
+            if (mProfile.Flying && !mJuggled && mState != State.Pulled)
             {
                 // 地面から一定の高さに浮く。急降下中は高さを保たない
-                float targetY = GroundHeight() + profile.hoverHeight;
-                verticalVelocity = state == State.Attack ? 0f : Mathf.Clamp((targetY - transform.position.y) * 3f, -6f, 6f);
+                float aTargetY = GroundHeight() + mProfile.HoverHeight;
+                mVerticalVelocity = mState == State.Attack ? 0f : Mathf.Clamp((aTargetY - transform.position.y) * 3f, -6f, 6f);
             }
-            else if (state != State.Pulled)
+            else if (mState != State.Pulled)
             {
-                verticalVelocity += (juggled ? juggleGravity : gravity) * dt;
+                mVerticalVelocity += (mJuggled ? mJuggleGravity : mGravity) * aDt;
             }
-            knockback = Vector3.Lerp(knockback, Vector3.zero, 1f - Mathf.Exp(-6f * dt));
+            mKnockback = Vector3.Lerp(mKnockback, Vector3.zero, 1f - Mathf.Exp(-6f * aDt));
 
-            var flags = controller.Move((planar + knockback + Vector3.up * verticalVelocity) * dt);
-            grounded = (flags & CollisionFlags.Below) != 0;
-            if (grounded && verticalVelocity < 0f)
+            var aFlags = mController.Move((aPlanar + mKnockback + Vector3.up * mVerticalVelocity) * aDt);
+            mGrounded = (aFlags & CollisionFlags.Below) != 0;
+            if (mGrounded && mVerticalVelocity < 0f)
             {
-                verticalVelocity = -1f;
-                juggled = false;
+                mVerticalVelocity = -1f;
+                mJuggled = false;
             }
 
-            UpdateColor(dt);
+            UpdateColor(aDt);
         }
 
         // ---------- 状態 ----------
 
-        Vector3 TickChase(float dt)
+        Vector3 TickChase(float iDt)
         {
-            if (target == null) return Vector3.zero;
+            if (mTarget == null) return Vector3.zero;
 
-            Vector3 to = Flat(target.position - transform.position);
-            float distance = to.magnitude;
-            if (attack == null) attack = PickAttack();
-            Face(to, dt);
+            Vector3 aTo = Flat(mTarget.position - transform.position);
+            float aDistance = aTo.magnitude;
+            if (mAttack == null) mAttack = PickAttack();
+            Face(aTo, iDt);
 
             // 攻撃を持たない敵(訓練用の人形など)は向きを変えるだけ
-            if (attack == null) return Separation() * MoveSpeed * 0.6f;
+            if (mAttack == null) return Separation() * mMoveSpeed * 0.6f;
 
-            if (cooldown <= 0f && distance <= attack.range && TryTakeToken())
+            if (mCooldown <= 0f && aDistance <= mAttack.Range && TryTakeToken())
             {
                 EnterWindup();
                 return Vector3.zero;
             }
 
-            Vector3 direction = distance > 0.01f ? to / distance : transform.forward;
-            Vector3 move;
-            if (profile.preferredDistance > 0f && distance < profile.preferredDistance * 0.7f)
-                move = -direction * (MoveSpeed * 0.8f);
-            else if (distance > attack.range * 0.85f)
-                move = direction * MoveSpeed;
-            else if (!hasToken)
-                move = Vector3.Cross(Vector3.up, direction) * (strafeSign * MoveSpeed * 0.4f);
+            Vector3 aDirection = aDistance > 0.01f ? aTo / aDistance : transform.forward;
+            Vector3 aMove;
+            if (mProfile.PreferredDistance > 0f && aDistance < mProfile.PreferredDistance * 0.7f)
+                aMove = -aDirection * (mMoveSpeed * 0.8f);
+            else if (aDistance > mAttack.Range * 0.85f)
+                aMove = aDirection * mMoveSpeed;
+            else if (!mHasToken)
+                aMove = Vector3.Cross(Vector3.up, aDirection) * (mStrafeSign * mMoveSpeed * 0.4f);
             else
-                move = Vector3.zero;
+                aMove = Vector3.zero;
 
-            return move + Separation() * MoveSpeed * 0.6f;
+            return aMove + Separation() * mMoveSpeed * 0.6f;
         }
 
         void EnterWindup()
         {
-            state = State.Windup;
-            stateTime = 0f;
-            attackLanded = false;
-            teleported = false;
-            repeatsLeft = attack.repeat;
-            if (attack.jumpSlam)
+            mState = State.Windup;
+            mStateTime = 0f;
+            mAttackLanded = false;
+            mTeleported = false;
+            mRepeatsLeft = mAttack.Repeat;
+            if (mAttack.JumpSlam)
             {
-                verticalVelocity = 12f;
-                slamDestination = target.position;
+                mVerticalVelocity = 12f;
+                mSlamDestination = mTarget.position;
             }
         }
 
         /// <summary>連続攻撃の2発目以降。予備動作を短くしてもう一度出す</summary>
         void EnterRepeatWindup()
         {
-            repeatsLeft--;
-            state = State.Windup;
-            stateTime = Mathf.Max(0f, attack.windup - attack.repeatWindup);
-            attackLanded = false;
+            mRepeatsLeft--;
+            mState = State.Windup;
+            mStateTime = Mathf.Max(0f, mAttack.Windup - mAttack.RepeatWindup);
+            mAttackLanded = false;
         }
 
         /// <summary>予備動作の途中で消え、プレイヤーの背後に現れる(残りの予備動作は背後で見せる)</summary>
         void TeleportBehindTarget()
         {
-            teleported = true;
-            if (target == null) return;
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, profile.telegraphColor);
+            mTeleported = true;
+            if (mTarget == null) return;
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, mProfile.TelegraphColor);
 
-            Vector3 behind = target.position - Flat(target.forward).normalized * (Radius + 1.8f);
+            Vector3 aBehind = mTarget.position - Flat(mTarget.forward).normalized * (Radius + 1.8f);
             // アリーナの外に出ないようにする
-            Vector3 flat = Flat(behind);
-            if (flat.magnitude > 27f) behind = flat.normalized * 27f + Vector3.up * behind.y;
-            behind.y = target.position.y + 0.1f;
+            Vector3 aFlat = Flat(aBehind);
+            if (aFlat.magnitude > 27f) aBehind = aFlat.normalized * 27f + Vector3.up * aBehind.y;
+            aBehind.y = mTarget.position.y + 0.1f;
 
-            controller.enabled = false;
-            transform.position = behind;
-            controller.enabled = true;
-            Vector3 look = Flat(target.position - transform.position);
-            if (look.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(look);
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, profile.telegraphColor);
+            mController.enabled = false;
+            transform.position = aBehind;
+            mController.enabled = true;
+            Vector3 aLook = Flat(mTarget.position - transform.position);
+            if (aLook.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(aLook);
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, mProfile.TelegraphColor);
         }
 
-        Vector3 TickWindup(float dt)
+        Vector3 TickWindup(float iDt)
         {
-            if (attack.teleportBehind && !teleported && stateTime >= attack.windup * 0.5f) TeleportBehindTarget();
-            if (stateTime < attack.windup * 0.6f && target != null) Face(Flat(target.position - transform.position), dt);
+            if (mAttack.TeleportBehind && !mTeleported && mStateTime >= mAttack.Windup * 0.5f) TeleportBehindTarget();
+            if (mStateTime < mAttack.Windup * 0.6f && mTarget != null) Face(Flat(mTarget.position - transform.position), iDt);
 
-            Vector3 planar = Vector3.zero;
-            if (attack.jumpSlam)
+            Vector3 aPlanar = Vector3.zero;
+            if (mAttack.JumpSlam)
             {
-                Vector3 to = Flat(slamDestination - transform.position);
-                float remaining = Mathf.Max(0.05f, attack.windup - stateTime);
-                planar = Vector3.ClampMagnitude(to / remaining, 20f);
+                Vector3 aTo = Flat(mSlamDestination - transform.position);
+                float aRemaining = Mathf.Max(0.05f, mAttack.Windup - mStateTime);
+                aPlanar = Vector3.ClampMagnitude(aTo / aRemaining, 20f);
             }
 
-            if (stateTime >= attack.windup && (!attack.jumpSlam || grounded))
+            if (mStateTime >= mAttack.Windup && (!mAttack.JumpSlam || mGrounded))
             {
-                state = State.Attack;
-                stateTime = 0f;
+                mState = State.Attack;
+                mStateTime = 0f;
                 OnAttackStart();
             }
-            return planar;
+            return aPlanar;
         }
 
         void OnAttackStart()
         {
             // 飛んでいる敵はプレイヤーへ向かって斜めに急降下する
-            attackDirection = transform.forward;
-            if (profile.flying && target != null)
+            mAttackDirection = transform.forward;
+            if (mProfile.Flying && mTarget != null)
             {
-                Vector3 to = target.position + Vector3.up - CenterPoint;
-                if (to.sqrMagnitude > 0.01f) attackDirection = to.normalized;
+                Vector3 aTo = mTarget.position + Vector3.up - CenterPoint;
+                if (aTo.sqrMagnitude > 0.01f) mAttackDirection = aTo.normalized;
             }
 
-            if (attack.ranged)
+            if (mAttack.Ranged)
             {
                 FireProjectiles();
-                attackLanded = true;
+                mAttackLanded = true;
             }
-            else if (attack.targetedStrike)
+            else if (mAttack.TargetedStrike)
             {
-                if (target != null)
+                if (mTarget != null)
                 {
-                    EnemyProjectile.Spawn(gameObject, target.position + Vector3.up * 0.05f, Vector3.zero, attack.radius, attack.damage,
-                        attack.knockback, profile.telegraphColor, delay: attack.strikeDelay);
+                    EnemyProjectile.Spawn(gameObject, mTarget.position + Vector3.up * 0.05f, Vector3.zero, mAttack.Radius, mAttack.Damage,
+                        mAttack.Knockback, mProfile.TelegraphColor, iDelay: mAttack.StrikeDelay);
                 }
-                attackLanded = true;
+                mAttackLanded = true;
             }
-            else if (attack.summon != null && attack.summonCount > 0)
+            else if (mAttack.Summon != null && mAttack.SummonCount > 0)
             {
-                for (int i = 0; i < attack.summonCount; i++)
+                for (int aI = 0; aI < mAttack.SummonCount; aI++)
                 {
-                    float angle = 360f * i / attack.summonCount;
-                    Vector3 offset = Quaternion.Euler(0f, angle, 0f) * Vector3.forward * (Radius + 2f);
-                    if (ArenaDirector.Instance != null) ArenaDirector.Instance.SpawnExtra(attack.summon, transform.position + offset);
+                    float aAngle = 360f * aI / mAttack.SummonCount;
+                    Vector3 aOffset = Quaternion.Euler(0f, aAngle, 0f) * Vector3.forward * (Radius + 2f);
+                    if (ArenaDirector.Instance != null) ArenaDirector.Instance.SpawnExtra(mAttack.Summon, transform.position + aOffset);
                 }
-                if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 2f, profile.telegraphColor);
-                attackLanded = true;
+                if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 2f, mProfile.TelegraphColor);
+                mAttackLanded = true;
             }
 
-            if (attack.jumpSlam || attack.selfDestruct || attack.radius * profile.scale >= 3f)
+            if (mAttack.JumpSlam || mAttack.SelfDestruct || mAttack.Radius * mProfile.Scale >= 3f)
             {
-                var center = transform.TransformPoint(attack.offset);
-                if (CombatFeedback.Instance != null && !attack.ranged && !attack.targetedStrike)
+                var aCenter = transform.TransformPoint(mAttack.Offset);
+                if (CombatFeedback.Instance != null && !mAttack.Ranged && !mAttack.TargetedStrike)
                 {
-                    CombatFeedback.Instance.SpawnShockwave(new Vector3(center.x, transform.position.y, center.z),
-                        attack.radius * profile.scale, profile.telegraphColor);
+                    CombatFeedback.Instance.SpawnShockwave(new Vector3(aCenter.x, transform.position.y, aCenter.z),
+                        mAttack.Radius * mProfile.Scale, mProfile.TelegraphColor);
                     CombatFeedback.Instance.Shake(0.2f);
                 }
             }
@@ -419,167 +420,167 @@ namespace BattleFight
 
         void FireProjectiles()
         {
-            if (target == null) return;
-            Vector3 origin = CenterPoint + transform.forward * (Radius + 0.3f);
-            Vector3 aim = target.position + Vector3.up * 1.1f - origin;
-            aim = aim.sqrMagnitude > 0.01f ? aim.normalized : transform.forward;
-            int count = Mathf.Max(1, attack.projectileCount);
-            for (int i = 0; i < count; i++)
+            if (mTarget == null) return;
+            Vector3 aOrigin = CenterPoint + transform.forward * (Radius + 0.3f);
+            Vector3 aAim = mTarget.position + Vector3.up * 1.1f - aOrigin;
+            aAim = aAim.sqrMagnitude > 0.01f ? aAim.normalized : transform.forward;
+            int aCount = Mathf.Max(1, mAttack.ProjectileCount);
+            for (int aI = 0; aI < aCount; aI++)
             {
-                float angle = count == 1 ? 0f : Mathf.Lerp(-attack.projectileSpread * 0.5f, attack.projectileSpread * 0.5f, i / (count - 1f));
-                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * aim;
-                EnemyProjectile.Spawn(gameObject, origin, direction * attack.projectileSpeed, attack.projectileRadius, attack.damage,
-                    attack.knockback, profile.telegraphColor);
+                float aAngle = aCount == 1 ? 0f : Mathf.Lerp(-mAttack.ProjectileSpread * 0.5f, mAttack.ProjectileSpread * 0.5f, aI / (aCount - 1f));
+                Vector3 aDirection = Quaternion.AngleAxis(aAngle, Vector3.up) * aAim;
+                EnemyProjectile.Spawn(gameObject, aOrigin, aDirection * mAttack.ProjectileSpeed, mAttack.ProjectileRadius, mAttack.Damage,
+                    mAttack.Knockback, mProfile.TelegraphColor);
             }
         }
 
         Vector3 TickAttack()
         {
             DoAttackHit();
-            if (attack.selfDestruct && !IsDead)
+            if (mAttack.SelfDestruct && !IsDead)
             {
-                damageable.Kill();
+                mDamageable.Kill();
                 return Vector3.zero;
             }
 
-            Vector3 planar = attack.lunge > 0f && attack.active > 0f
-                ? attackDirection * (attack.lunge / attack.active)
+            Vector3 aPlanar = mAttack.Lunge > 0f && mAttack.Active > 0f
+                ? mAttackDirection * (mAttack.Lunge / mAttack.Active)
                 : Vector3.zero;
 
-            if (stateTime >= attack.active)
+            if (mStateTime >= mAttack.Active)
             {
-                if (repeatsLeft > 0 && !IsDead)
+                if (mRepeatsLeft > 0 && !IsDead)
                 {
                     EnterRepeatWindup();
-                    return planar;
+                    return aPlanar;
                 }
-                state = State.Recovery;
-                stateTime = 0f;
+                mState = State.Recovery;
+                mStateTime = 0f;
                 ReleaseToken();
             }
-            return planar;
+            return aPlanar;
         }
 
         void DoAttackHit()
         {
-            if (attackLanded) return;
-            Vector3 center = transform.TransformPoint(attack.offset);
-            float radius = attack.radius * profile.scale;
-            int count = Physics.OverlapSphereNonAlloc(center, radius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < count; i++)
+            if (mAttackLanded) return;
+            Vector3 aCenter = transform.TransformPoint(mAttack.Offset);
+            float aRadius = mAttack.Radius * mProfile.Scale;
+            int aCount = Physics.OverlapSphereNonAlloc(aCenter, aRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            for (int aI = 0; aI < aCount; aI++)
             {
-                var victim = OverlapBuffer[i].GetComponentInParent<Damageable>();
-                if (victim == null || victim.Team != Team.Player || victim.IsDead) continue;
+                var aVictim = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                if (aVictim == null || aVictim.Team != Team.Player || aVictim.IsDead) continue;
 
-                Vector3 direction = Flat(victim.transform.position - transform.position);
-                victim.ApplyHit(new HitInfo
+                Vector3 aDirection = Flat(aVictim.transform.position - transform.position);
+                aVictim.ApplyHit(new HitInfo
                 {
-                    damage = attack.damage,
-                    stagger = 100f,
-                    knockback = attack.knockback,
-                    direction = direction.sqrMagnitude > 1e-4f ? direction.normalized : transform.forward,
-                    source = gameObject,
+                    Damage = mAttack.Damage,
+                    Stagger = 100f,
+                    Knockback = mAttack.Knockback,
+                    Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
+                    Source = gameObject,
                 });
-                attackLanded = true;
+                mAttackLanded = true;
                 return;
             }
         }
 
         void EnterChase()
         {
-            state = State.Chase;
-            stateTime = 0f;
-            attack = null;
-            cooldown = profile.attackCooldown * Random.Range(0.7f, 1.3f) * (IsPhase2 ? profile.phase2CooldownMultiplier : 1f);
+            mState = State.Chase;
+            mStateTime = 0f;
+            mAttack = null;
+            mCooldown = mProfile.AttackCooldown * Random.Range(0.7f, 1.3f) * (IsPhase2 ? mProfile.Phase2CooldownMultiplier : 1f);
         }
 
-        void EnterStagger(float duration)
+        void EnterStagger(float iDuration)
         {
             ReleaseToken();
-            attack = null;
-            state = State.Stagger;
-            stateTime = 0f;
-            stateDuration = duration;
+            mAttack = null;
+            mState = State.Stagger;
+            mStateTime = 0f;
+            mStateDuration = iDuration;
         }
 
-        public void BeginPull(Vector3 destination, float speed)
+        public void BeginPull(Vector3 iDestination, float iSpeed)
         {
             if (IsDead) return;
             ReleaseToken();
-            attack = null;
-            state = State.Pulled;
-            stateTime = 0f;
-            pullDestination = destination;
-            pullSpeed = speed;
-            verticalVelocity = 0f;
+            mAttack = null;
+            mState = State.Pulled;
+            mStateTime = 0f;
+            mPullDestination = iDestination;
+            mPullSpeed = iSpeed;
+            mVerticalVelocity = 0f;
         }
 
-        Vector3 TickPulled(float dt)
+        Vector3 TickPulled(float iDt)
         {
-            verticalVelocity = 0f;
-            Vector3 to = pullDestination - transform.position;
-            to.y = 0f;
-            if (to.magnitude < 0.3f || stateTime > 0.6f)
+            mVerticalVelocity = 0f;
+            Vector3 aTo = mPullDestination - transform.position;
+            aTo.y = 0f;
+            if (aTo.magnitude < 0.3f || mStateTime > 0.6f)
             {
                 EnterStagger(0.7f);
                 return Vector3.zero;
             }
-            return to.normalized * Mathf.Min(pullSpeed, to.magnitude / Mathf.Max(dt, 1e-4f));
+            return aTo.normalized * Mathf.Min(mPullSpeed, aTo.magnitude / Mathf.Max(iDt, 1e-4f));
         }
 
         // ---------- 被弾 ----------
 
-        void OnDamaged(HitInfo hit, HitOutcome outcome)
+        void OnDamaged(HitInfo iHit, HitOutcome iOutcome)
         {
-            if (state == State.Dead) return;
-            flashTimer = FlashDuration;
+            if (mState == State.Dead) return;
+            mFlashTimer = mFlashDuration;
 
-            float knockScale = outcome == HitOutcome.Armored ? 0.15f : 1f;
-            if (profile.isBoss) knockScale *= 0.3f;
-            knockback += hit.direction * (hit.knockback * knockScale);
+            float aKnockScale = iOutcome == HitOutcome.Armored ? 0.15f : 1f;
+            if (mProfile.IsBoss) aKnockScale *= 0.3f;
+            mKnockback += iHit.Direction * (iHit.Knockback * aKnockScale);
 
             // 第二形態になったときは、そのひるみ(長め)を普通のひるみで上書きしない
-            if (outcome != HitOutcome.Killed && CheckPhase2()) return;
+            if (iOutcome != HitOutcome.Killed && CheckPhase2()) return;
 
-            switch (outcome)
+            switch (iOutcome)
             {
                 case HitOutcome.Killed:
                     return;
                 case HitOutcome.ArmorBroken:
-                    EnterStagger(profile.armorBreakStagger);
+                    EnterStagger(mProfile.ArmorBreakStagger);
                     break;
                 case HitOutcome.Armored:
                     return;
                 default:
-                    if (hit.stagger >= profile.staggerThreshold)
+                    if (iHit.Stagger >= mProfile.StaggerThreshold)
                     {
-                        EnterStagger(profile.staggerDuration);
-                        if (hit.launch > 0f && !profile.isBoss)
+                        EnterStagger(mProfile.StaggerDuration);
+                        if (iHit.Launch > 0f && !mProfile.IsBoss)
                         {
-                            verticalVelocity = hit.launch;
-                            juggled = true;
+                            mVerticalVelocity = iHit.Launch;
+                            mJuggled = true;
                         }
                     }
                     break;
             }
 
             // 空中で攻撃を受けている間は落ちにくくする
-            if (juggled && !grounded) verticalVelocity = Mathf.Max(verticalVelocity, 2.5f);
+            if (mJuggled && !mGrounded) mVerticalVelocity = Mathf.Max(mVerticalVelocity, 2.5f);
         }
 
         void OnDied()
         {
             ReleaseToken();
-            state = State.Dead;
-            stateTime = 0f;
-            controller.enabled = false;
+            mState = State.Dead;
+            mStateTime = 0f;
+            mController.enabled = false;
             Active.Remove(this);
             // 砕け散って、刻片がプレイヤーへ飛んでいく
             if (CombatFeedback.Instance != null)
             {
-                int shards = Mathf.Clamp(Mathf.RoundToInt(profile.shardValue * 3f), 2, 12);
-                CombatFeedback.Instance.SpawnDefeatBurst(CenterPoint, profile.color, Mathf.Max(0.6f, profile.scale), target, shards);
-                CombatFeedback.Instance.Shake(profile.isBoss ? 0.45f : 0.12f);
+                int aShards = Mathf.Clamp(Mathf.RoundToInt(mProfile.ShardValue * 3f), 2, 12);
+                CombatFeedback.Instance.SpawnDefeatBurst(CenterPoint, mProfile.Color, Mathf.Max(0.6f, mProfile.Scale), mTarget, aShards);
+                CombatFeedback.Instance.Shake(mProfile.IsBoss ? 0.45f : 0.12f);
             }
         }
 
@@ -587,9 +588,9 @@ namespace BattleFight
 
         float GroundHeight()
         {
-            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var hit, 60f, ~0, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(transform.position + Vector3.up * 0.2f, Vector3.down, out var aHit, 60f, ~0, QueryTriggerInteraction.Ignore))
             {
-                return hit.point.y;
+                return aHit.point.y;
             }
             return 0f;
         }
@@ -597,36 +598,36 @@ namespace BattleFight
         /// <summary>今使える攻撃(第二形態では増える)</summary>
         List<EnemyAttack> AvailableAttacks()
         {
-            availableAttacks.Clear();
-            if (profile.attacks != null) availableAttacks.AddRange(profile.attacks);
-            if (IsPhase2 && profile.phase2Attacks != null) availableAttacks.AddRange(profile.phase2Attacks);
+            mAvailableAttacks.Clear();
+            if (mProfile.Attacks != null) mAvailableAttacks.AddRange(mProfile.Attacks);
+            if (IsPhase2 && mProfile.Phase2Attacks != null) mAvailableAttacks.AddRange(mProfile.Phase2Attacks);
             // 今の型のスキル(プレイヤーと同じ技)
-            if (skillAttacks.Count > 0) availableAttacks.AddRange(skillAttacks[Mathf.Clamp(skillSetIndex, 0, skillAttacks.Count - 1)]);
-            return availableAttacks;
+            if (mSkillAttacks.Count > 0) mAvailableAttacks.AddRange(mSkillAttacks[Mathf.Clamp(mSkillSetIndex, 0, mSkillAttacks.Count - 1)]);
+            return mAvailableAttacks;
         }
 
         EnemyAttack PickAttack()
         {
-            var attacks = AvailableAttacks();
-            if (attacks.Count == 0) return null;
-            float total = 0f;
-            foreach (var a in attacks) total += Mathf.Max(0f, a.weight);
-            float roll = Random.value * total;
-            foreach (var a in attacks)
+            var aAttacks = AvailableAttacks();
+            if (aAttacks.Count == 0) return null;
+            float aTotal = 0f;
+            foreach (var aA in aAttacks) aTotal += Mathf.Max(0f, aA.Weight);
+            float aRoll = Random.value * aTotal;
+            foreach (var aA in aAttacks)
             {
-                roll -= Mathf.Max(0f, a.weight);
-                if (roll <= 0f) return a;
+                aRoll -= Mathf.Max(0f, aA.Weight);
+                if (aRoll <= 0f) return aA;
             }
-            return attacks[0];
+            return aAttacks[0];
         }
 
         /// <summary>指定した攻撃をすぐに始める(テストやデバッグ用)。使える攻撃の番号で指定する</summary>
-        public bool ForceAttack(int index)
+        public bool ForceAttack(int iIndex)
         {
-            var attacks = AvailableAttacks();
-            if (IsDead || index < 0 || index >= attacks.Count || target == null) return false;
+            var aAttacks = AvailableAttacks();
+            if (IsDead || iIndex < 0 || iIndex >= aAttacks.Count || mTarget == null) return false;
             ReleaseToken();
-            attack = attacks[index];
+            mAttack = aAttacks[iIndex];
             TryTakeToken();
             EnterWindup();
             return true;
@@ -635,15 +636,15 @@ namespace BattleFight
         /// <summary>体力が一定を下回ったら第二形態になる。少しひるんで、アーマーが戻る</summary>
         bool CheckPhase2()
         {
-            if (IsPhase2 || profile.phase2HealthRatio <= 0f || IsDead) return false;
-            if (damageable.Health > damageable.MaxHealth * profile.phase2HealthRatio) return false;
+            if (IsPhase2 || mProfile.Phase2HealthRatio <= 0f || IsDead) return false;
+            if (mDamageable.Health > mDamageable.MaxHealth * mProfile.Phase2HealthRatio) return false;
 
             IsPhase2 = true;
-            damageable.RestoreArmor();
+            mDamageable.RestoreArmor();
             EnterStagger(1.2f);
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 4f, profile.telegraphColor);
+                CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 4f, mProfile.TelegraphColor);
                 CombatFeedback.Instance.Shake(0.4f);
             }
             PhaseChanged?.Invoke(this);
@@ -652,66 +653,66 @@ namespace BattleFight
 
         bool TryTakeToken()
         {
-            if (hasToken) return true;
-            if (!profile.isBoss && attackTokensInUse >= MaxAttackTokens) return false;
-            hasToken = true;
-            attackTokensInUse++;
+            if (mHasToken) return true;
+            if (!mProfile.IsBoss && mAttackTokensInUse >= mMaxAttackTokens) return false;
+            mHasToken = true;
+            mAttackTokensInUse++;
             return true;
         }
 
         void ReleaseToken()
         {
-            if (!hasToken) return;
-            hasToken = false;
-            attackTokensInUse = Mathf.Max(0, attackTokensInUse - 1);
+            if (!mHasToken) return;
+            mHasToken = false;
+            mAttackTokensInUse = Mathf.Max(0, mAttackTokensInUse - 1);
         }
 
         Vector3 Separation()
         {
-            Vector3 push = Vector3.zero;
-            foreach (var other in Active)
+            Vector3 aPush = Vector3.zero;
+            foreach (var aOther in Active)
             {
-                if (other == this) continue;
-                Vector3 away = Flat(transform.position - other.transform.position);
-                float minDistance = (Radius + other.Radius) * 1.5f;
-                float distance = away.magnitude;
-                if (distance > 0.01f && distance < minDistance) push += away / distance * (1f - distance / minDistance);
+                if (aOther == this) continue;
+                Vector3 aAway = Flat(transform.position - aOther.transform.position);
+                float aMinDistance = (Radius + aOther.Radius) * 1.5f;
+                float aDistance = aAway.magnitude;
+                if (aDistance > 0.01f && aDistance < aMinDistance) aPush += aAway / aDistance * (1f - aDistance / aMinDistance);
             }
-            return push;
+            return aPush;
         }
 
-        void Face(Vector3 direction, float dt)
+        void Face(Vector3 iDirection, float iDt)
         {
-            if (direction.sqrMagnitude < 1e-4f) return;
-            var rotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, profile.turnSpeed * dt);
+            if (iDirection.sqrMagnitude < 1e-4f) return;
+            var aRotation = Quaternion.LookRotation(iDirection);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, aRotation, mProfile.TurnSpeed * iDt);
         }
 
-        void UpdateColor(float dt)
+        void UpdateColor(float iDt)
         {
-            if (renderers == null) return;
-            flashTimer -= dt;
-            for (int i = 0; i < renderers.Length; i++)
+            if (mRenderers == null) return;
+            mFlashTimer -= iDt;
+            for (int aI = 0; aI < mRenderers.Length; aI++)
             {
-                Color color = baseColors[i];
-                if (flashTimer > 0f)
+                Color aColor = mBaseColors[aI];
+                if (mFlashTimer > 0f)
                 {
-                    color = Color.white;
+                    aColor = Color.white;
                 }
-                else if (state == State.Windup)
+                else if (mState == State.Windup)
                 {
-                    float t = Mathf.Clamp01(stateTime / Mathf.Max(0.01f, attack.windup));
-                    float blink = Mathf.PingPong(stateTime * 8f, 1f);
-                    color = Color.Lerp(baseColors[i], profile.telegraphColor, t * (0.6f + 0.4f * blink));
+                    float aT = Mathf.Clamp01(mStateTime / Mathf.Max(0.01f, mAttack.Windup));
+                    float aBlink = Mathf.PingPong(mStateTime * 8f, 1f);
+                    aColor = Color.Lerp(mBaseColors[aI], mProfile.TelegraphColor, aT * (0.6f + 0.4f * aBlink));
                 }
-                else if (state == State.Stagger)
+                else if (mState == State.Stagger)
                 {
-                    color = Color.Lerp(baseColors[i], Color.gray, 0.4f);
+                    aColor = Color.Lerp(mBaseColors[aI], Color.gray, 0.4f);
                 }
-                renderers[i].material.color = color;
+                mRenderers[aI].material.color = aColor;
             }
         }
 
-        static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
+        static Vector3 Flat(Vector3 iV) => new Vector3(iV.x, 0f, iV.z);
     }
 }

@@ -1,18 +1,19 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
     public struct HitInfo
     {
-        public float damage;
-        public float stagger;
-        public float armorBreak;
-        public float knockback;
-        public float launch;
+        public float Damage;
+        public float Stagger;
+        public float ArmorBreak;
+        public float Knockback;
+        public float Launch;
         /// <summary>水平方向の、攻撃者から被弾者への向き</summary>
-        public Vector3 direction;
-        public GameObject source;
+        public Vector3 Direction;
+        public GameObject Source;
     }
 
     public enum HitOutcome
@@ -32,25 +33,25 @@ namespace BattleFight
     public static class HitOutcomeExtensions
     {
         /// <summary>ダメージが通ったか</summary>
-        public static bool Landed(this HitOutcome outcome) => outcome >= HitOutcome.Armored;
+        public static bool Landed(this HitOutcome iOutcome) => iOutcome >= HitOutcome.Armored;
     }
 
     /// <summary>体力とアーマー。プレイヤーと敵の両方が持つ。</summary>
     public class Damageable : MonoBehaviour
     {
-        [SerializeField] Team team = Team.Enemy;
-        [SerializeField] float maxHealth = 100f;
-        [SerializeField] float maxArmor;
-        [SerializeField] float armorRegenDelay = 6f;
-        [SerializeField, Range(0f, 1f)] float armoredDamageMultiplier = 0.4f;
+        [SerializeField, FormerlySerializedAs("team")] Team mTeam = Team.Enemy;
+        [SerializeField, FormerlySerializedAs("maxHealth")] float mMaxHealth = 100f;
+        [SerializeField, FormerlySerializedAs("maxArmor")] float mMaxArmor;
+        [SerializeField, FormerlySerializedAs("armorRegenDelay")] float mArmorRegenDelay = 6f;
+        [SerializeField, Range(0f, 1f), FormerlySerializedAs("armoredDamageMultiplier")] float mArmoredDamageMultiplier = 0.4f;
 
-        float armorBrokenTime;
-        bool initialized;
+        float mArmorBrokenTime;
+        bool mInitialized;
 
-        public Team Team => team;
-        public float MaxHealth => maxHealth;
+        public Team Team => mTeam;
+        public float MaxHealth => mMaxHealth;
         public float Health { get; private set; }
-        public float MaxArmor => maxArmor;
+        public float MaxArmor => mMaxArmor;
         public float Armor { get; private set; }
         public bool IsDead { get; private set; }
         public bool Invulnerable { get; set; }
@@ -66,43 +67,43 @@ namespace BattleFight
 
         void Awake()
         {
-            if (!initialized) ResetState();
+            if (!mInitialized) ResetState();
         }
 
-        public void Configure(Team newTeam, float newMaxHealth, float newMaxArmor, float newArmorRegenDelay)
+        public void Configure(Team iNewTeam, float iNewMaxHealth, float iNewMaxArmor, float iNewArmorRegenDelay)
         {
-            team = newTeam;
-            maxHealth = newMaxHealth;
-            maxArmor = newMaxArmor;
-            armorRegenDelay = newArmorRegenDelay;
+            mTeam = iNewTeam;
+            mMaxHealth = iNewMaxHealth;
+            mMaxArmor = iNewMaxArmor;
+            mArmorRegenDelay = iNewArmorRegenDelay;
             ResetState();
         }
 
         public void ResetState()
         {
-            Health = maxHealth;
-            Armor = maxArmor;
+            Health = mMaxHealth;
+            Armor = mMaxArmor;
             IsDead = false;
-            initialized = true;
+            mInitialized = true;
         }
 
         void Update()
         {
-            if (maxArmor > 0f && Armor <= 0f && !IsDead && Time.time - armorBrokenTime >= armorRegenDelay)
+            if (mMaxArmor > 0f && Armor <= 0f && !IsDead && Time.time - mArmorBrokenTime >= mArmorRegenDelay)
             {
-                Armor = maxArmor;
+                Armor = mMaxArmor;
             }
         }
 
         /// <summary>体力を回復する(探索の祭壇など)。倒れていたら何もしない</summary>
-        public void Heal(float amount)
+        public void Heal(float iAmount)
         {
             if (IsDead) return;
-            Health = Mathf.Min(maxHealth, Health + amount);
+            Health = Mathf.Min(mMaxHealth, Health + iAmount);
         }
 
         /// <summary>アーマーを最大まで戻す(ボスの第二形態など)</summary>
-        public void RestoreArmor() => Armor = maxArmor;
+        public void RestoreArmor() => Armor = mMaxArmor;
 
         /// <summary>攻撃によらず倒れる(自爆など)</summary>
         public void Kill()
@@ -113,46 +114,46 @@ namespace BattleFight
             Died?.Invoke();
         }
 
-        public HitOutcome ApplyHit(HitInfo hit)
+        public HitOutcome ApplyHit(HitInfo iHit)
         {
             if (IsDead) return HitOutcome.Ignored;
             if (Invulnerable)
             {
-                Evaded?.Invoke(hit);
+                Evaded?.Invoke(iHit);
                 return HitOutcome.Evaded;
             }
-            if (CounterHandler != null && CounterHandler(hit)) return HitOutcome.Countered;
+            if (CounterHandler != null && CounterHandler(iHit)) return HitOutcome.Countered;
 
-            float damage = hit.damage;
-            var outcome = HitOutcome.Hit;
+            float aDamage = iHit.Damage;
+            var aOutcome = HitOutcome.Hit;
             if (Armor > 0f)
             {
-                Armor -= hit.armorBreak;
-                damage *= armoredDamageMultiplier;
+                Armor -= iHit.ArmorBreak;
+                aDamage *= mArmoredDamageMultiplier;
                 if (Armor <= 0f)
                 {
                     Armor = 0f;
-                    armorBrokenTime = Time.time;
-                    outcome = HitOutcome.ArmorBroken;
+                    mArmorBrokenTime = Time.time;
+                    aOutcome = HitOutcome.ArmorBroken;
                 }
                 else
                 {
-                    outcome = HitOutcome.Armored;
+                    aOutcome = HitOutcome.Armored;
                 }
             }
 
-            LastDamage = damage;
-            Health -= damage;
+            LastDamage = aDamage;
+            Health -= aDamage;
             if (Health <= 0f)
             {
                 Health = 0f;
                 IsDead = true;
-                outcome = HitOutcome.Killed;
+                aOutcome = HitOutcome.Killed;
             }
 
-            Damaged?.Invoke(hit, outcome);
-            if (outcome == HitOutcome.Killed) Died?.Invoke();
-            return outcome;
+            Damaged?.Invoke(iHit, aOutcome);
+            if (aOutcome == HitOutcome.Killed) Died?.Invoke();
+            return aOutcome;
         }
     }
 }

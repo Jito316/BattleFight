@@ -23,7 +23,7 @@ namespace BattleFight
     {
         public const float ShardMultiplier = 3f;
 
-        public static string Label(EliteAffix affix) => affix switch
+        public static string Label(EliteAffix iAffix) => iAffix switch
         {
             EliteAffix.Giant => "巨大",
             EliteAffix.Swift => "俊足",
@@ -33,66 +33,66 @@ namespace BattleFight
         };
 
         /// <summary>ボス以外の敵からランダムに選ぶ(エリートにしないなら None)</summary>
-        public static EliteAffix Roll(EnemyProfile profile, float chance, System.Random random)
+        public static EliteAffix Roll(EnemyProfile iProfile, float iChance, System.Random iRandom)
         {
-            if (profile == null || profile.isBoss || profile.elite != EliteAffix.None || chance <= 0f) return EliteAffix.None;
-            if (random.NextDouble() >= chance) return EliteAffix.None;
-            return (EliteAffix)random.Next(1, 5);
+            if (iProfile == null || iProfile.IsBoss || iProfile.Elite != EliteAffix.None || iChance <= 0f) return EliteAffix.None;
+            if (iRandom.NextDouble() >= iChance) return EliteAffix.None;
+            return (EliteAffix)iRandom.Next(1, 5);
         }
 
         /// <summary>エリートの複製を作る(使い終わったら破棄してよい)</summary>
-        public static EnemyProfile Create(EnemyProfile source, EliteAffix affix)
+        public static EnemyProfile Create(EnemyProfile iSource, EliteAffix iAffix)
         {
-            var elite = Object.Instantiate(source);
-            elite.name = source.name + "_Elite_" + affix;
-            elite.elite = affix;
-            elite.eliteSource = source;
-            elite.shardValue = source.shardValue * ShardMultiplier;
-            elite.color = Color.Lerp(source.color, new Color(1f, 0.82f, 0.3f), 0.35f);
-            switch (affix)
+            var aElite = Object.Instantiate(iSource);
+            aElite.name = iSource.name + "_Elite_" + iAffix;
+            aElite.Elite = iAffix;
+            aElite.EliteSource = iSource;
+            aElite.ShardValue = iSource.ShardValue * ShardMultiplier;
+            aElite.Color = Color.Lerp(iSource.Color, new Color(1f, 0.82f, 0.3f), 0.35f);
+            switch (iAffix)
             {
                 case EliteAffix.Giant:
-                    elite.scale = source.scale * 1.45f;
-                    elite.maxHealth = source.maxHealth * 2.5f;
-                    elite.staggerThreshold = source.staggerThreshold * 2f;
-                    elite.heavy = true;
-                    elite.skillDamageScale = source.skillDamageScale * 1.4f;
-                    foreach (var attack in elite.attacks) attack.damage *= 1.4f;
+                    aElite.Scale = iSource.Scale * 1.45f;
+                    aElite.MaxHealth = iSource.MaxHealth * 2.5f;
+                    aElite.StaggerThreshold = iSource.StaggerThreshold * 2f;
+                    aElite.Heavy = true;
+                    aElite.SkillDamageScale = iSource.SkillDamageScale * 1.4f;
+                    foreach (var aAttack in aElite.Attacks) aAttack.Damage *= 1.4f;
                     break;
                 case EliteAffix.Swift:
-                    elite.moveSpeed = source.moveSpeed * 1.6f;
-                    elite.turnSpeed = source.turnSpeed * 1.5f;
-                    elite.attackCooldown = source.attackCooldown * 0.55f;
-                    elite.skillWindupScale = source.skillWindupScale * 0.85f;
-                    foreach (var attack in elite.attacks) attack.windup *= 0.8f;
+                    aElite.MoveSpeed = iSource.MoveSpeed * 1.6f;
+                    aElite.TurnSpeed = iSource.TurnSpeed * 1.5f;
+                    aElite.AttackCooldown = iSource.AttackCooldown * 0.55f;
+                    aElite.SkillWindupScale = iSource.SkillWindupScale * 0.85f;
+                    foreach (var aAttack in aElite.Attacks) aAttack.Windup *= 0.8f;
                     break;
                 case EliteAffix.Splitter:
-                    elite.maxHealth = source.maxHealth * 1.4f;
+                    aElite.MaxHealth = iSource.MaxHealth * 1.4f;
                     break;
                 case EliteAffix.Barrier:
-                    elite.maxArmor = source.maxArmor + 80f;
-                    elite.armorRegenDelay = 4f;
-                    elite.maxHealth = source.maxHealth * 1.3f;
-                    elite.color = Color.Lerp(source.color, new Color(0.5f, 0.8f, 1f), 0.4f);
+                    aElite.MaxArmor = iSource.MaxArmor + 80f;
+                    aElite.ArmorRegenDelay = 4f;
+                    aElite.MaxHealth = iSource.MaxHealth * 1.3f;
+                    aElite.Color = Color.Lerp(iSource.Color, new Color(0.5f, 0.8f, 1f), 0.4f);
                     break;
             }
-            return elite;
+            return aElite;
         }
 
         /// <summary>分裂したときの小さな分身</summary>
-        public static EnemyProfile CreateSplit(EnemyProfile source)
+        public static EnemyProfile CreateSplit(EnemyProfile iSource)
         {
-            var split = Object.Instantiate(source);
-            split.name = source.name + "_Split";
-            split.displayName = source.displayName + "の分身";
-            split.elite = EliteAffix.None;
-            split.eliteSource = null;
-            split.scale = source.scale * 0.65f;
-            split.maxHealth = Mathf.Max(10f, source.maxHealth * 0.3f);
-            split.maxArmor = 0f;
-            split.moveSpeed = source.moveSpeed * 1.2f;
-            split.shardValue = source.shardValue * 0.3f;
-            return split;
+            var aSplit = Object.Instantiate(iSource);
+            aSplit.name = iSource.name + "_Split";
+            aSplit.DisplayName = iSource.DisplayName + "の分身";
+            aSplit.Elite = EliteAffix.None;
+            aSplit.EliteSource = null;
+            aSplit.Scale = iSource.Scale * 0.65f;
+            aSplit.MaxHealth = Mathf.Max(10f, iSource.MaxHealth * 0.3f);
+            aSplit.MaxArmor = 0f;
+            aSplit.MoveSpeed = iSource.MoveSpeed * 1.2f;
+            aSplit.ShardValue = iSource.ShardValue * 0.3f;
+            return aSplit;
         }
     }
 }

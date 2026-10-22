@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -7,24 +8,24 @@ namespace BattleFight
     [CreateAssetMenu(menuName = "BattleFight/Skill Database", fileName = "SkillDatabase")]
     public class SkillDatabase : ScriptableObject
     {
-        public List<SkillData> skills = new List<SkillData>();
+        [FormerlySerializedAs("skills")] public List<SkillData> Skills = new List<SkillData>();
 
         /// <summary>保存データから引くときの識別子はアセット名</summary>
-        public SkillData Find(string id)
+        public SkillData Find(string iId)
         {
-            if (string.IsNullOrEmpty(id)) return null;
-            foreach (var skill in skills)
+            if (string.IsNullOrEmpty(iId)) return null;
+            foreach (var aSkill in Skills)
             {
-                if (skill != null && skill.name == id) return skill;
+                if (aSkill != null && aSkill.name == iId) return aSkill;
             }
             return null;
         }
 
-        public IEnumerable<SkillData> ForSlot(SlotType slot)
+        public IEnumerable<SkillData> ForSlot(SlotType iSlot)
         {
-            foreach (var skill in skills)
+            foreach (var aSkill in Skills)
             {
-                if (skill != null && skill.slot == slot) yield return skill;
+                if (aSkill != null && aSkill.Slot == iSlot) yield return aSkill;
             }
         }
     }

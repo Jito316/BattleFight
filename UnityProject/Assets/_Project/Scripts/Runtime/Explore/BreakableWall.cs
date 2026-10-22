@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -8,21 +9,21 @@ namespace BattleFight
     /// </summary>
     public class BreakableWall : MonoBehaviour
     {
-        [SerializeField] string id;
-        [SerializeField] WeaponType breaker = WeaponType.Hammer;
+        [SerializeField, FormerlySerializedAs("id")] string mId;
+        [SerializeField, FormerlySerializedAs("breaker")] WeaponType mBreaker = WeaponType.Hammer;
 
-        float lastHintTime = -99f;
+        float mLastHintTime = -99f;
 
-        public string Id => id;
+        public string Id => mId;
 
-        public void Setup(string wallId, WeaponType breakerWeapon)
+        public void Setup(string iWallId, WeaponType iBreakerWeapon)
         {
-            id = wallId;
-            breaker = breakerWeapon;
+            mId = iWallId;
+            mBreaker = iBreakerWeapon;
         }
 
-        public WeaponType Breaker => breaker;
-        public bool Broken => ExplorationSave.HasFlag(id);
+        public WeaponType Breaker => mBreaker;
+        public bool Broken => ExplorationSave.HasFlag(mId);
 
         void OnEnable()
         {
@@ -30,31 +31,31 @@ namespace BattleFight
         }
 
         /// <summary>技が当たった。壊れたら true</summary>
-        public bool TryBreak(SkillData skill)
+        public bool TryBreak(SkillData iSkill)
         {
-            if (skill == null || Broken) return false;
-            var region = ExplorationRegion.Active;
-            if (skill.weapon != breaker)
+            if (iSkill == null || Broken) return false;
+            var aRegion = ExplorationRegion.Active;
+            if (iSkill.Weapon != mBreaker)
             {
-                if (region != null && Time.unscaledTime - lastHintTime > 2f)
+                if (aRegion != null && Time.unscaledTime - mLastHintTime > 2f)
                 {
-                    lastHintTime = Time.unscaledTime;
-                    string weaponName = region.Slots != null && region.Slots.GetWeaponData(breaker) != null
-                        ? region.Slots.GetWeaponData(breaker).displayName
-                        : breaker.ToString();
-                    region.Notify($"びくともしない…\n<size=26>{weaponName}の技なら壊せそうだ</size>", new Color(1f, 0.8f, 0.6f));
+                    mLastHintTime = Time.unscaledTime;
+                    string aWeaponName = aRegion.Slots != null && aRegion.Slots.GetWeaponData(mBreaker) != null
+                        ? aRegion.Slots.GetWeaponData(mBreaker).DisplayName
+                        : mBreaker.ToString();
+                    aRegion.Notify($"びくともしない…\n<size=26>{aWeaponName}の技なら壊せそうだ</size>", new Color(1f, 0.8f, 0.6f));
                 }
                 return false;
             }
 
-            ExplorationSave.SetFlag(id);
+            ExplorationSave.SetFlag(mId);
             if (CombatFeedback.Instance != null)
             {
-                var bounds = GetComponent<Collider>() != null ? GetComponent<Collider>().bounds : new Bounds(transform.position, Vector3.one);
-                CombatFeedback.Instance.SpawnShockwave(new Vector3(bounds.center.x, bounds.min.y + 0.05f, bounds.center.z),
-                    Mathf.Max(bounds.extents.x, bounds.extents.z) + 1f, new Color(0.9f, 0.7f, 0.5f));
+                var aBounds = GetComponent<Collider>() != null ? GetComponent<Collider>().bounds : new Bounds(transform.position, Vector3.one);
+                CombatFeedback.Instance.SpawnShockwave(new Vector3(aBounds.center.x, aBounds.min.y + 0.05f, aBounds.center.z),
+                    Mathf.Max(aBounds.extents.x, aBounds.extents.z) + 1f, new Color(0.9f, 0.7f, 0.5f));
             }
-            if (region != null) region.Notify("壁が崩れた", new Color(1f, 0.85f, 0.6f));
+            if (aRegion != null) aRegion.Notify("壁が崩れた", new Color(1f, 0.85f, 0.6f));
             gameObject.SetActive(false);
             return true;
         }

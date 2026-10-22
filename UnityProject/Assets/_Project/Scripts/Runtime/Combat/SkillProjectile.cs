@@ -6,13 +6,13 @@ namespace BattleFight
     /// <summary>技を撃った瞬間の情報。弾は技が終わったあとに当たることがあるので、発射時に固定しておく。</summary>
     public struct SkillHitContext
     {
-        public SkillData skill;
-        public int stepIndex;
-        public float multiplier;
+        public SkillData Skill;
+        public int StepIndex;
+        public float Multiplier;
         /// <summary>発射時にスワップストライクが有効だったなら、その切り替えの番号。無効なら -1</summary>
-        public int swapStrikeId;
+        public int SwapStrikeId;
 
-        public SkillStep Step => skill.GetStep(stepIndex);
+        public SkillStep Step => Skill.GetStep(StepIndex);
     }
 
     /// <summary>
@@ -21,150 +21,150 @@ namespace BattleFight
     /// </summary>
     public class SkillProjectile : MonoBehaviour
     {
-        static readonly Collider[] OverlapBuffer = new Collider[32];
+        static readonly Collider[] mOverlapBuffer = new Collider[32];
 
-        readonly HashSet<Damageable> alreadyHit = new HashSet<Damageable>();
-        readonly List<Damageable> hits = new List<Damageable>();
+        readonly HashSet<Damageable> mAlreadyHit = new HashSet<Damageable>();
+        readonly List<Damageable> mHits = new List<Damageable>();
 
-        SkillExecutor owner;
-        SkillHitContext context;
-        Transform ownerRoot;
-        Vector3 velocity;
-        EnemyController homingTarget;
-        float homing;
-        float radius;
-        float explosionRadius;
-        float lifetime;
-        float delay;
-        bool pierce;
-        float age;
-        Color color;
-        Transform telegraph;
+        SkillExecutor mOwner;
+        SkillHitContext mContext;
+        Transform mOwnerRoot;
+        Vector3 mVelocity;
+        EnemyController mHomingTarget;
+        float mHoming;
+        float mRadius;
+        float mExplosionRadius;
+        float mLifetime;
+        float mDelay;
+        bool mPierce;
+        float mAge;
+        Color mColor;
+        Transform mTelegraph;
 
-        public static SkillProjectile Spawn(SkillExecutor owner, SkillHitContext context, Vector3 position, Vector3 velocity,
-            EnemyController homingTarget, Color color, float delay = 0f)
+        public static SkillProjectile Spawn(SkillExecutor iOwner, SkillHitContext iContext, Vector3 iPosition, Vector3 iVelocity,
+            EnemyController iHomingTarget, Color iColor, float iDelay = 0f)
         {
-            var skill = context.skill;
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.name = $"Projectile_{skill.name}";
-            DestroyImmediate(go.GetComponent<Collider>());
-            go.transform.position = position;
+            var aSkill = iContext.Skill;
+            var aGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            aGo.name = $"Projectile_{aSkill.name}";
+            DestroyImmediate(aGo.GetComponent<Collider>());
+            aGo.transform.position = iPosition;
 
-            var material = CombatFeedback.Instance != null ? CombatFeedback.Instance.EffectMaterial : null;
-            var renderer = go.GetComponent<Renderer>();
-            if (material != null) renderer.sharedMaterial = material;
-            renderer.material.color = color;
+            var aMaterial = CombatFeedback.Instance != null ? CombatFeedback.Instance.EffectMaterial : null;
+            var aRenderer = aGo.GetComponent<Renderer>();
+            if (aMaterial != null) aRenderer.sharedMaterial = aMaterial;
+            aRenderer.material.color = iColor;
 
-            var projectile = go.AddComponent<SkillProjectile>();
-            projectile.owner = owner;
-            projectile.ownerRoot = owner.transform;
-            projectile.context = context;
-            projectile.velocity = velocity;
-            projectile.homingTarget = homingTarget;
-            projectile.homing = skill.homing;
-            projectile.radius = Mathf.Max(0.05f, skill.projectileRadius);
-            projectile.explosionRadius = skill.explosionRadius;
-            projectile.lifetime = Mathf.Max(delay, skill.projectileLifetime);
-            projectile.delay = delay;
-            projectile.pierce = skill.projectilePierce;
-            projectile.color = color;
+            var aProjectile = aGo.AddComponent<SkillProjectile>();
+            aProjectile.mOwner = iOwner;
+            aProjectile.mOwnerRoot = iOwner.transform;
+            aProjectile.mContext = iContext;
+            aProjectile.mVelocity = iVelocity;
+            aProjectile.mHomingTarget = iHomingTarget;
+            aProjectile.mHoming = aSkill.Homing;
+            aProjectile.mRadius = Mathf.Max(0.05f, aSkill.ProjectileRadius);
+            aProjectile.mExplosionRadius = aSkill.ExplosionRadius;
+            aProjectile.mLifetime = Mathf.Max(iDelay, aSkill.ProjectileLifetime);
+            aProjectile.mDelay = iDelay;
+            aProjectile.mPierce = aSkill.ProjectilePierce;
+            aProjectile.mColor = iColor;
 
-            go.transform.localScale = Vector3.one * (projectile.radius * 2f);
-            if (delay > 0f) projectile.CreateTelegraph(material);
-            return projectile;
+            aGo.transform.localScale = Vector3.one * (aProjectile.mRadius * 2f);
+            if (iDelay > 0f) aProjectile.CreateTelegraph(aMaterial);
+            return aProjectile;
         }
 
-        void CreateTelegraph(Material material)
+        void CreateTelegraph(Material iMaterial)
         {
             // 予告の円。落ちる場所がわかるように地面に置く
-            var disc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            DestroyImmediate(disc.GetComponent<Collider>());
-            disc.name = "Telegraph";
-            var renderer = disc.GetComponent<Renderer>();
-            if (material != null) renderer.sharedMaterial = material;
-            renderer.material.color = color;
-            telegraph = disc.transform;
-            telegraph.position = new Vector3(transform.position.x, transform.position.y + 0.03f, transform.position.z);
-            float diameter = Mathf.Max(radius, explosionRadius) * 2f;
-            telegraph.localScale = new Vector3(diameter, 0.01f, diameter);
+            var aDisc = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            DestroyImmediate(aDisc.GetComponent<Collider>());
+            aDisc.name = "Telegraph";
+            var aRenderer = aDisc.GetComponent<Renderer>();
+            if (iMaterial != null) aRenderer.sharedMaterial = iMaterial;
+            aRenderer.material.color = mColor;
+            mTelegraph = aDisc.transform;
+            mTelegraph.position = new Vector3(transform.position.x, transform.position.y + 0.03f, transform.position.z);
+            float aDiameter = Mathf.Max(mRadius, mExplosionRadius) * 2f;
+            mTelegraph.localScale = new Vector3(aDiameter, 0.01f, aDiameter);
             GetComponent<Renderer>().enabled = false;
         }
 
         void Update()
         {
-            float dt = Time.deltaTime;
-            age += dt;
+            float aDt = Time.deltaTime;
+            mAge += aDt;
 
-            if (age < delay)
+            if (mAge < mDelay)
             {
-                if (telegraph != null)
+                if (mTelegraph != null)
                 {
-                    float blink = Mathf.PingPong(age * 10f, 1f);
-                    float diameter = Mathf.Max(radius, explosionRadius) * 2f * (0.85f + 0.15f * blink);
-                    telegraph.localScale = new Vector3(diameter, 0.01f, diameter);
+                    float aBlink = Mathf.PingPong(mAge * 10f, 1f);
+                    float aDiameter = Mathf.Max(mRadius, mExplosionRadius) * 2f * (0.85f + 0.15f * aBlink);
+                    mTelegraph.localScale = new Vector3(aDiameter, 0.01f, aDiameter);
                 }
                 return;
             }
 
-            if (delay > 0f)
+            if (mDelay > 0f)
             {
                 // 遅延型: その場で爆発して終わり
                 Explode(transform.position);
                 return;
             }
 
-            if (homing > 0f && homingTarget != null && !homingTarget.IsDead && velocity.sqrMagnitude > 0.01f)
+            if (mHoming > 0f && mHomingTarget != null && !mHomingTarget.IsDead && mVelocity.sqrMagnitude > 0.01f)
             {
-                Vector3 desired = (homingTarget.CenterPoint - transform.position).normalized * velocity.magnitude;
-                velocity = Vector3.RotateTowards(velocity, desired, homing * Mathf.Deg2Rad * dt, 0f);
+                Vector3 aDesired = (mHomingTarget.CenterPoint - transform.position).normalized * mVelocity.magnitude;
+                mVelocity = Vector3.RotateTowards(mVelocity, aDesired, mHoming * Mathf.Deg2Rad * aDt, 0f);
             }
 
-            Vector3 start = transform.position;
-            Vector3 step = velocity * dt;
+            Vector3 aStart = transform.position;
+            Vector3 aStep = mVelocity * aDt;
 
             // 壁や床に当たったら止まる(爆発する弾は爆発)
-            if (step.sqrMagnitude > 0f
-                && Physics.SphereCast(start, radius * 0.5f, step.normalized, out var wall, step.magnitude, ~0, QueryTriggerInteraction.Ignore)
-                && wall.collider.GetComponentInParent<Damageable>() == null)
+            if (aStep.sqrMagnitude > 0f
+                && Physics.SphereCast(aStart, mRadius * 0.5f, aStep.normalized, out var aWall, aStep.magnitude, ~0, QueryTriggerInteraction.Ignore)
+                && aWall.collider.GetComponentInParent<Damageable>() == null)
             {
-                transform.position = start + step.normalized * wall.distance;
-                if (explosionRadius > 0f) Explode(transform.position);
+                transform.position = aStart + aStep.normalized * aWall.distance;
+                if (mExplosionRadius > 0f) Explode(transform.position);
                 else Destroy(gameObject);
                 return;
             }
 
-            transform.position = start + step;
+            transform.position = aStart + aStep;
             if (TryHitEnemies()) return;
 
-            if (age >= lifetime)
+            if (mAge >= mLifetime)
             {
-                if (explosionRadius > 0f) Explode(transform.position);
+                if (mExplosionRadius > 0f) Explode(transform.position);
                 else Destroy(gameObject);
             }
         }
 
         bool TryHitEnemies()
         {
-            hits.Clear();
-            int count = Physics.OverlapSphereNonAlloc(transform.position, radius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < count; i++)
+            mHits.Clear();
+            int aCount = Physics.OverlapSphereNonAlloc(transform.position, mRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            for (int aI = 0; aI < aCount; aI++)
             {
-                var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
-                if (target == null || target.IsDead || target.Team == Team.Player || alreadyHit.Contains(target)) continue;
-                if (ownerRoot != null && target.transform.IsChildOf(ownerRoot)) continue;
-                hits.Add(target);
+                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                if (aTarget == null || aTarget.IsDead || aTarget.Team == Team.Player || mAlreadyHit.Contains(aTarget)) continue;
+                if (mOwnerRoot != null && aTarget.transform.IsChildOf(mOwnerRoot)) continue;
+                mHits.Add(aTarget);
             }
-            if (hits.Count == 0) return false;
+            if (mHits.Count == 0) return false;
 
-            if (explosionRadius > 0f)
+            if (mExplosionRadius > 0f)
             {
                 Explode(transform.position);
                 return true;
             }
 
-            foreach (var target in hits) alreadyHit.Add(target);
-            if (owner != null) owner.ResolveHits(context, hits, transform.position - velocity.normalized);
-            if (!pierce)
+            foreach (var aTarget in mHits) mAlreadyHit.Add(aTarget);
+            if (mOwner != null) mOwner.ResolveHits(mContext, mHits, transform.position - mVelocity.normalized);
+            if (!mPierce)
             {
                 Destroy(gameObject);
                 return true;
@@ -172,29 +172,29 @@ namespace BattleFight
             return false;
         }
 
-        void Explode(Vector3 position)
+        void Explode(Vector3 iPosition)
         {
-            hits.Clear();
-            int count = Physics.OverlapSphereNonAlloc(position, explosionRadius, OverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < count; i++)
+            mHits.Clear();
+            int aCount = Physics.OverlapSphereNonAlloc(iPosition, mExplosionRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            for (int aI = 0; aI < aCount; aI++)
             {
-                var target = OverlapBuffer[i].GetComponentInParent<Damageable>();
-                if (target == null || target.IsDead || target.Team == Team.Player || hits.Contains(target)) continue;
-                hits.Add(target);
+                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                if (aTarget == null || aTarget.IsDead || aTarget.Team == Team.Player || mHits.Contains(aTarget)) continue;
+                mHits.Add(aTarget);
             }
 
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(position, explosionRadius, color);
+                CombatFeedback.Instance.SpawnShockwave(iPosition, mExplosionRadius, mColor);
                 CombatFeedback.Instance.Shake(0.1f);
             }
-            if (owner != null && hits.Count > 0) owner.ResolveHits(context, hits, position);
+            if (mOwner != null && mHits.Count > 0) mOwner.ResolveHits(mContext, mHits, iPosition);
             Destroy(gameObject);
         }
 
         void OnDestroy()
         {
-            if (telegraph != null) Destroy(telegraph.gameObject);
+            if (mTelegraph != null) Destroy(mTelegraph.gameObject);
         }
     }
 }

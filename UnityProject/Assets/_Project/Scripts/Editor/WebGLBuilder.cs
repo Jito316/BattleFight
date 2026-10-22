@@ -15,7 +15,7 @@ namespace BattleFight.EditorTools
     /// </summary>
     public static class WebGLBuilder
     {
-        const string OutputPath = "Builds/WebGL";
+        const string mOutputPath = "Builds/WebGL";
 
         [MenuItem("BattleFight/Build WebGL")]
         public static void BuildFromMenu() => Build();
@@ -26,9 +26,9 @@ namespace BattleFight.EditorTools
             {
                 EditorApplication.Exit(Build() ? 0 : 1);
             }
-            catch (Exception e)
+            catch (Exception aE)
             {
-                Debug.LogException(e);
+                Debug.LogException(aE);
                 EditorApplication.Exit(1);
             }
         }
@@ -44,8 +44,8 @@ namespace BattleFight.EditorTools
             // 関数名は普段は入れない(wasm に埋め込むと約15MB増える)。クラッシュを調べるときだけ
             // BATTLEFIGHT_WEBGL_SYMBOLS=1 を付けてビルドする。
             // ※ External(別ファイル)は Unity 6000.3 のローダーで SYMBOLS_FILENAME エラーになり使えない
-            bool withSymbols = Environment.GetEnvironmentVariable("BATTLEFIGHT_WEBGL_SYMBOLS") == "1";
-            PlayerSettings.WebGL.debugSymbolMode = withSymbols ? WebGLDebugSymbolMode.Embedded : WebGLDebugSymbolMode.Off;
+            bool aWithSymbols = Environment.GetEnvironmentVariable("BATTLEFIGHT_WEBGL_SYMBOLS") == "1";
+            PlayerSettings.WebGL.debugSymbolMode = aWithSymbols ? WebGLDebugSymbolMode.Embedded : WebGLDebugSymbolMode.Off;
             PlayerSettings.productName = "BattleFight";
             // ウィンドウいっぱいに表示する専用テンプレート(Assets/WebGLTemplates/BattleFight)
             PlayerSettings.WebGL.template = "PROJECT:BattleFight";
@@ -59,19 +59,19 @@ namespace BattleFight.EditorTools
             OptimizeCodeForSize();
 
             // ファイル名が毎回変わるので、前回の出力を消してから作る(古いファイルをデプロイしない)
-            if (System.IO.Directory.Exists(OutputPath)) System.IO.Directory.Delete(OutputPath, true);
+            if (System.IO.Directory.Exists(mOutputPath)) System.IO.Directory.Delete(mOutputPath, true);
 
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            var aReport = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = new[] { PrototypeSceneBuilder.ScenePath },
-                locationPathName = OutputPath,
+                locationPathName = mOutputPath,
                 target = BuildTarget.WebGL,
                 options = BuildOptions.None,
             });
 
-            var summary = report.summary;
-            Debug.Log($"[BattleFight] WebGL ビルド: {summary.result} / {summary.totalSize / (1024f * 1024f):0.0} MB / {summary.totalTime}");
-            return summary.result == BuildResult.Succeeded;
+            var aSummary = aReport.summary;
+            Debug.Log($"[BattleFight] WebGL ビルド: {aSummary.result} / {aSummary.totalSize / (1024f * 1024f):0.0} MB / {aSummary.totalTime}");
+            return aSummary.result == BuildResult.Succeeded;
         }
 
         /// <summary>
@@ -83,27 +83,27 @@ namespace BattleFight.EditorTools
         /// </summary>
         static void OptimizeCodeForSize()
         {
-            var target = NamedBuildTarget.WebGL;
-            PlayerSettings.SetManagedStrippingLevel(target, ManagedStrippingLevel.High);
-            PlayerSettings.SetIl2CppCodeGeneration(target, Il2CppCodeGeneration.OptimizeSize);
+            var aTarget = NamedBuildTarget.WebGL;
+            PlayerSettings.SetManagedStrippingLevel(aTarget, ManagedStrippingLevel.High);
+            PlayerSettings.SetIl2CppCodeGeneration(aTarget, Il2CppCodeGeneration.OptimizeSize);
             PlayerSettings.stripEngineCode = true;
 
             // WebGL モジュールの設定は、モジュールが入っていないとコンパイルできないのでリフレクションで触る
-            var settings = Type.GetType("UnityEditor.WebGL.UserBuildSettings, UnityEditor.WebGL.Extensions");
-            var property = settings?.GetProperty("codeOptimization", BindingFlags.Public | BindingFlags.Static);
-            if (property == null)
+            var aSettings = Type.GetType("UnityEditor.WebGL.UserBuildSettings, UnityEditor.WebGL.Extensions");
+            var aProperty = aSettings?.GetProperty("codeOptimization", BindingFlags.Public | BindingFlags.Static);
+            if (aProperty == null)
             {
                 Debug.LogWarning("[BattleFight] WebGL のコード最適化の設定が見つかりません(既定のまま)");
                 return;
             }
-            property.SetValue(null, Enum.Parse(property.PropertyType, "DiskSizeLTO"));
+            aProperty.SetValue(null, Enum.Parse(aProperty.PropertyType, "DiskSizeLTO"));
         }
 
-        const string SourceRenderPipeline = "Assets/Settings/PC_RPAsset.asset";
-        const string SourceRenderer = "Assets/Settings/PC_Renderer.asset";
-        const string WebGLRenderPipeline = "Assets/Settings/WebGL_RPAsset.asset";
-        const string WebGLRenderer = "Assets/Settings/WebGL_Renderer.asset";
-        const string WebGLQualityName = "WebGL";
+        const string mSourceRenderPipeline = "Assets/Settings/PC_RPAsset.asset";
+        const string mSourceRenderer = "Assets/Settings/PC_Renderer.asset";
+        const string mWebGLRenderPipeline = "Assets/Settings/WebGL_RPAsset.asset";
+        const string mWebGLRenderer = "Assets/Settings/WebGL_Renderer.asset";
+        const string mWebGLQualityName = "WebGL";
 
         /// <summary>
         /// WebGL 専用の軽い画質を用意して、WebGL の既定にする。
@@ -113,141 +113,141 @@ namespace BattleFight.EditorTools
         /// </summary>
         static void UseLightweightQualityForWebGL()
         {
-            var renderer = CreateLightweightRenderer();
-            var pipeline = CreateLightweightPipeline(renderer);
-            if (pipeline == null) return;
+            var aRenderer = CreateLightweightRenderer();
+            var aPipeline = CreateLightweightPipeline(aRenderer);
+            if (aPipeline == null) return;
 
-            var qualityAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset");
-            if (qualityAsset == null || qualityAsset.Length == 0) return;
-            var so = new SerializedObject(qualityAsset[0]);
-            var levels = so.FindProperty("m_QualitySettings");
+            var aQualityAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset");
+            if (aQualityAsset == null || aQualityAsset.Length == 0) return;
+            var aSo = new SerializedObject(aQualityAsset[0]);
+            var aLevels = aSo.FindProperty("m_QualitySettings");
 
-            int pcIndex = -1;
-            int webglIndex = -1;
-            for (int i = 0; i < levels.arraySize; i++)
+            int aPcIndex = -1;
+            int aWebglIndex = -1;
+            for (int aI = 0; aI < aLevels.arraySize; aI++)
             {
-                string name = levels.GetArrayElementAtIndex(i).FindPropertyRelative("name").stringValue;
-                if (name == "PC") pcIndex = i;
-                if (name == WebGLQualityName) webglIndex = i;
+                string aName = aLevels.GetArrayElementAtIndex(aI).FindPropertyRelative("name").stringValue;
+                if (aName == "PC") aPcIndex = aI;
+                if (aName == mWebGLQualityName) aWebglIndex = aI;
             }
-            if (pcIndex < 0) return;
+            if (aPcIndex < 0) return;
 
-            if (webglIndex < 0)
+            if (aWebglIndex < 0)
             {
                 // PC の設定を末尾に複製して WebGL 用にする(既存の番号がずれないように末尾へ)
-                levels.InsertArrayElementAtIndex(pcIndex);
-                levels.MoveArrayElement(pcIndex + 1, levels.arraySize - 1);
-                webglIndex = levels.arraySize - 1;
-                levels.GetArrayElementAtIndex(webglIndex).FindPropertyRelative("name").stringValue = WebGLQualityName;
+                aLevels.InsertArrayElementAtIndex(aPcIndex);
+                aLevels.MoveArrayElement(aPcIndex + 1, aLevels.arraySize - 1);
+                aWebglIndex = aLevels.arraySize - 1;
+                aLevels.GetArrayElementAtIndex(aWebglIndex).FindPropertyRelative("name").stringValue = mWebGLQualityName;
             }
 
-            var level = levels.GetArrayElementAtIndex(webglIndex);
-            level.FindPropertyRelative("customRenderPipeline").objectReferenceValue = pipeline;
+            var aLevel = aLevels.GetArrayElementAtIndex(aWebglIndex);
+            aLevel.FindPropertyRelative("customRenderPipeline").objectReferenceValue = aPipeline;
 
             // WebGL ビルドには WebGL 用の画質だけを入れる(PC / Mobile の URP 設定や SSAO のシェーダーを含めない)
-            for (int i = 0; i < levels.arraySize; i++)
+            for (int aI = 0; aI < aLevels.arraySize; aI++)
             {
-                var excluded = levels.GetArrayElementAtIndex(i).FindPropertyRelative("excludedTargetPlatforms");
-                if (excluded == null) continue;
-                SetPlatformExcluded(excluded, "WebGL", i != webglIndex);
+                var aExcluded = aLevels.GetArrayElementAtIndex(aI).FindPropertyRelative("excludedTargetPlatforms");
+                if (aExcluded == null) continue;
+                SetPlatformExcluded(aExcluded, "WebGL", aI != aWebglIndex);
             }
 
-            var defaults = so.FindProperty("m_PerPlatformDefaultQuality");
-            for (int i = 0; i < defaults.arraySize; i++)
+            var aDefaults = aSo.FindProperty("m_PerPlatformDefaultQuality");
+            for (int aI = 0; aI < aDefaults.arraySize; aI++)
             {
-                var pair = defaults.GetArrayElementAtIndex(i);
-                if (pair.FindPropertyRelative("first").stringValue == "WebGL") pair.FindPropertyRelative("second").intValue = webglIndex;
+                var aPair = aDefaults.GetArrayElementAtIndex(aI);
+                if (aPair.FindPropertyRelative("first").stringValue == "WebGL") aPair.FindPropertyRelative("second").intValue = aWebglIndex;
             }
-            so.ApplyModifiedPropertiesWithoutUndo();
+            aSo.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
         }
 
         static Object CreateLightweightRenderer()
         {
-            if (AssetDatabase.LoadMainAssetAtPath(WebGLRenderer) == null) AssetDatabase.CopyAsset(SourceRenderer, WebGLRenderer);
-            var renderer = AssetDatabase.LoadMainAssetAtPath(WebGLRenderer);
-            if (renderer == null) return null;
+            if (AssetDatabase.LoadMainAssetAtPath(mWebGLRenderer) == null) AssetDatabase.CopyAsset(mSourceRenderer, mWebGLRenderer);
+            var aRenderer = AssetDatabase.LoadMainAssetAtPath(mWebGLRenderer);
+            if (aRenderer == null) return null;
 
             // レンダラー機能(PC 用の SSAO)を外す。WebGL では重いわりに、仮モデルでは効果が小さい
-            var so = new SerializedObject(renderer);
-            so.FindProperty("m_RendererFeatures").ClearArray();
-            so.FindProperty("m_RendererFeatureMap").ClearArray();
+            var aSo = new SerializedObject(aRenderer);
+            aSo.FindProperty("m_RendererFeatures").ClearArray();
+            aSo.FindProperty("m_RendererFeatureMap").ClearArray();
             // ポストエフェクトは使わないので、フィルムグレインや SMAA のテクスチャ(約3MB)を含めない
-            var postProcess = so.FindProperty("postProcessData");
-            if (postProcess != null) postProcess.objectReferenceValue = null;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            foreach (var sub in AssetDatabase.LoadAllAssetsAtPath(WebGLRenderer))
+            var aPostProcess = aSo.FindProperty("postProcessData");
+            if (aPostProcess != null) aPostProcess.objectReferenceValue = null;
+            aSo.ApplyModifiedPropertiesWithoutUndo();
+            foreach (var aSub in AssetDatabase.LoadAllAssetsAtPath(mWebGLRenderer))
             {
-                if (sub == null || sub == renderer) continue;
-                AssetDatabase.RemoveObjectFromAsset(sub);
-                Object.DestroyImmediate(sub, true);
+                if (aSub == null || aSub == aRenderer) continue;
+                AssetDatabase.RemoveObjectFromAsset(aSub);
+                Object.DestroyImmediate(aSub, true);
             }
-            EditorUtility.SetDirty(renderer);
-            return renderer;
+            EditorUtility.SetDirty(aRenderer);
+            return aRenderer;
         }
 
-        static Object CreateLightweightPipeline(Object renderer)
+        static Object CreateLightweightPipeline(Object iRenderer)
         {
-            if (renderer == null) return null;
-            if (AssetDatabase.LoadMainAssetAtPath(WebGLRenderPipeline) == null) AssetDatabase.CopyAsset(SourceRenderPipeline, WebGLRenderPipeline);
-            var pipeline = AssetDatabase.LoadMainAssetAtPath(WebGLRenderPipeline);
-            if (pipeline == null) return null;
+            if (iRenderer == null) return null;
+            if (AssetDatabase.LoadMainAssetAtPath(mWebGLRenderPipeline) == null) AssetDatabase.CopyAsset(mSourceRenderPipeline, mWebGLRenderPipeline);
+            var aPipeline = AssetDatabase.LoadMainAssetAtPath(mWebGLRenderPipeline);
+            if (aPipeline == null) return null;
 
-            var so = new SerializedObject(pipeline);
-            var renderers = so.FindProperty("m_RendererDataList");
-            renderers.arraySize = 1;
-            renderers.GetArrayElementAtIndex(0).objectReferenceValue = renderer;
-            SetInt(so, "m_DefaultRendererIndex", 0);
-            SetFloat(so, "m_RenderScale", 1f);
-            SetInt(so, "m_MSAA", 2);
-            SetBool(so, "m_SupportsHDR", false);
-            SetInt(so, "m_MainLightShadowmapResolution", 1024);
-            SetBool(so, "m_AdditionalLightShadowsSupported", false);
-            SetFloat(so, "m_ShadowDistance", 35f);
-            SetInt(so, "m_ShadowCascadeCount", 1);
-            SetBool(so, "m_SoftShadowsSupported", false);
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(pipeline);
-            return pipeline;
+            var aSo = new SerializedObject(aPipeline);
+            var aRenderers = aSo.FindProperty("m_RendererDataList");
+            aRenderers.arraySize = 1;
+            aRenderers.GetArrayElementAtIndex(0).objectReferenceValue = iRenderer;
+            SetInt(aSo, "m_DefaultRendererIndex", 0);
+            SetFloat(aSo, "m_RenderScale", 1f);
+            SetInt(aSo, "m_MSAA", 2);
+            SetBool(aSo, "m_SupportsHDR", false);
+            SetInt(aSo, "m_MainLightShadowmapResolution", 1024);
+            SetBool(aSo, "m_AdditionalLightShadowsSupported", false);
+            SetFloat(aSo, "m_ShadowDistance", 35f);
+            SetInt(aSo, "m_ShadowCascadeCount", 1);
+            SetBool(aSo, "m_SoftShadowsSupported", false);
+            aSo.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(aPipeline);
+            return aPipeline;
         }
 
-        static void SetPlatformExcluded(SerializedProperty excluded, string platform, bool exclude)
+        static void SetPlatformExcluded(SerializedProperty iExcluded, string iPlatform, bool iExclude)
         {
-            int found = -1;
-            for (int i = 0; i < excluded.arraySize; i++)
+            int aFound = -1;
+            for (int aI = 0; aI < iExcluded.arraySize; aI++)
             {
-                if (excluded.GetArrayElementAtIndex(i).stringValue == platform) found = i;
+                if (iExcluded.GetArrayElementAtIndex(aI).stringValue == iPlatform) aFound = aI;
             }
-            if (exclude && found < 0)
+            if (iExclude && aFound < 0)
             {
-                excluded.arraySize++;
-                excluded.GetArrayElementAtIndex(excluded.arraySize - 1).stringValue = platform;
+                iExcluded.arraySize++;
+                iExcluded.GetArrayElementAtIndex(iExcluded.arraySize - 1).stringValue = iPlatform;
             }
-            else if (!exclude && found >= 0)
+            else if (!iExclude && aFound >= 0)
             {
-                excluded.DeleteArrayElementAtIndex(found);
+                iExcluded.DeleteArrayElementAtIndex(aFound);
             }
         }
 
-        static void SetInt(SerializedObject so, string name, int value)
+        static void SetInt(SerializedObject iSo, string iName, int iValue)
         {
-            var property = so.FindProperty(name);
-            if (property != null) property.intValue = value;
-            else Debug.LogWarning($"[BattleFight] URP の設定 {name} が見つかりません");
+            var aProperty = iSo.FindProperty(iName);
+            if (aProperty != null) aProperty.intValue = iValue;
+            else Debug.LogWarning($"[BattleFight] URP の設定 {iName} が見つかりません");
         }
 
-        static void SetFloat(SerializedObject so, string name, float value)
+        static void SetFloat(SerializedObject iSo, string iName, float iValue)
         {
-            var property = so.FindProperty(name);
-            if (property != null) property.floatValue = value;
-            else Debug.LogWarning($"[BattleFight] URP の設定 {name} が見つかりません");
+            var aProperty = iSo.FindProperty(iName);
+            if (aProperty != null) aProperty.floatValue = iValue;
+            else Debug.LogWarning($"[BattleFight] URP の設定 {iName} が見つかりません");
         }
 
-        static void SetBool(SerializedObject so, string name, bool value)
+        static void SetBool(SerializedObject iSo, string iName, bool iValue)
         {
-            var property = so.FindProperty(name);
-            if (property != null) property.boolValue = value;
-            else Debug.LogWarning($"[BattleFight] URP の設定 {name} が見つかりません");
+            var aProperty = iSo.FindProperty(iName);
+            if (aProperty != null) aProperty.boolValue = iValue;
+            else Debug.LogWarning($"[BattleFight] URP の設定 {iName} が見つかりません");
         }
     }
 }

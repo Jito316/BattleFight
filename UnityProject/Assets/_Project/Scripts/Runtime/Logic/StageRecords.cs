@@ -5,50 +5,50 @@ namespace BattleFight
     /// <summary>ステージごとのベスト記録(PlayerPrefs)。ステージはアセット名で区別する。</summary>
     public static class StageRecords
     {
-        static string Key(string stageId, string field) => $"BattleFight.Stage.{stageId}.{field}";
+        static string Key(string iStageId, string iField) => $"BattleFight.Stage.{iStageId}.{iField}";
 
-        public static bool IsCleared(string stageId) => PlayerPrefs.GetInt(Key(stageId, "cleared"), 0) == 1;
+        public static bool IsCleared(string iStageId) => PlayerPrefs.GetInt(Key(iStageId, "cleared"), 0) == 1;
 
         /// <summary>記録がなければ 0</summary>
-        public static float BestTime(string stageId) => PlayerPrefs.GetFloat(Key(stageId, "time"), 0f);
+        public static float BestTime(string iStageId) => PlayerPrefs.GetFloat(Key(iStageId, "time"), 0f);
 
         /// <summary>記録がなければ -1</summary>
-        public static int BestRank(string stageId) => PlayerPrefs.GetInt(Key(stageId, "rank"), -1);
+        public static int BestRank(string iStageId) => PlayerPrefs.GetInt(Key(iStageId, "rank"), -1);
 
-        public static int BestWave(string stageId) => PlayerPrefs.GetInt(Key(stageId, "wave"), 0);
+        public static int BestWave(string iStageId) => PlayerPrefs.GetInt(Key(iStageId, "wave"), 0);
 
         /// <summary>クリアを記録する。タイムは短いほう、ランクは高いほうを残す。記録を更新したら true。</summary>
-        public static bool RecordClear(string stageId, float time, int rank)
+        public static bool RecordClear(string iStageId, float iTime, int iRank)
         {
-            bool improved = !IsCleared(stageId);
-            PlayerPrefs.SetInt(Key(stageId, "cleared"), 1);
+            bool aImproved = !IsCleared(iStageId);
+            PlayerPrefs.SetInt(Key(iStageId, "cleared"), 1);
 
-            float best = BestTime(stageId);
-            if (best <= 0f || time < best)
+            float aBest = BestTime(iStageId);
+            if (aBest <= 0f || iTime < aBest)
             {
-                PlayerPrefs.SetFloat(Key(stageId, "time"), time);
-                improved = true;
+                PlayerPrefs.SetFloat(Key(iStageId, "time"), iTime);
+                aImproved = true;
             }
-            if (rank > BestRank(stageId))
+            if (iRank > BestRank(iStageId))
             {
-                PlayerPrefs.SetInt(Key(stageId, "rank"), rank);
-                improved = true;
+                PlayerPrefs.SetInt(Key(iStageId, "rank"), iRank);
+                aImproved = true;
             }
             PlayerPrefs.Save();
-            return improved;
+            return aImproved;
         }
 
-        public static bool RecordWave(string stageId, int wave)
+        public static bool RecordWave(string iStageId, int iWave)
         {
-            if (wave <= BestWave(stageId)) return false;
-            PlayerPrefs.SetInt(Key(stageId, "wave"), wave);
+            if (iWave <= BestWave(iStageId)) return false;
+            PlayerPrefs.SetInt(Key(iStageId, "wave"), iWave);
             PlayerPrefs.Save();
             return true;
         }
 
-        public static void Clear(string stageId)
+        public static void Clear(string iStageId)
         {
-            foreach (var field in new[] { "cleared", "time", "rank", "wave" }) PlayerPrefs.DeleteKey(Key(stageId, field));
+            foreach (var aField in new[] { "cleared", "time", "rank", "wave" }) PlayerPrefs.DeleteKey(Key(iStageId, aField));
             PlayerPrefs.Save();
         }
     }

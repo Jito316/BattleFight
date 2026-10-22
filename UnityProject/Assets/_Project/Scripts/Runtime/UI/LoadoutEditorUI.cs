@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace BattleFight
@@ -14,9 +15,9 @@ namespace BattleFight
     [RequireComponent(typeof(UIDocument))]
     public class LoadoutEditorUI : MonoBehaviour
     {
-        static readonly string[] SlotLabels = { "攻撃A", "攻撃B", "移動" };
-        static readonly string[] ListNames = { "list-a", "list-b", "list-m" };
-        static readonly Dictionary<SkillBehavior, string> BehaviorLabels = new Dictionary<SkillBehavior, string>
+        static readonly string[] mSlotLabels = { "攻撃A", "攻撃B", "移動" };
+        static readonly string[] mListNames = { "list-a", "list-b", "list-m" };
+        static readonly Dictionary<SkillBehavior, string> mBehaviorLabels = new Dictionary<SkillBehavior, string>
         {
             { SkillBehavior.Standard, "近接" },
             { SkillBehavior.DashStrike, "突進" },
@@ -31,74 +32,88 @@ namespace BattleFight
             { SkillBehavior.Boost, "ブースト" },
         };
 
-        [SerializeField] SkillSlotController slots;
-        [SerializeField] PlayerInputReader input;
+        [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
+        [SerializeField, FormerlySerializedAs("input")] PlayerInputReader mInput;
 
         public static bool IsOpen { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() => IsOpen = false;
 
-        VisualElement root, editor, mode, detailStats;
-        Label collectInfo, notice, nameCaption, detailEmpty, detailName, detailMeta, detailDesc, detailBonus, footer;
-        Button modeRack, modePreset, close, reset;
-        TextField presetName;
-        readonly ScrollView[] lists = new ScrollView[3];
-        readonly List<(VisualElement card, Label number, Label title, Label inUse, Label[] skills, Label bonus)> presetCards =
+        VisualElement mRoot;
+        VisualElement mEditor;
+        VisualElement mMode;
+        VisualElement mDetailStats;
+        Label mCollectInfo;
+        Label mNotice;
+        Label mNameCaption;
+        Label mDetailEmpty;
+        Label mDetailName;
+        Label mDetailMeta;
+        Label mDetailDesc;
+        Label mDetailBonus;
+        Label mFooter;
+        Button mModeRack;
+        Button mModePreset;
+        Button mClose;
+        Button mReset;
+        TextField mPresetName;
+        readonly ScrollView[] mLists = new ScrollView[3];
+        readonly List<(VisualElement card, Label number, Label title, Label inUse, Label[] skills, Label bonus)> mPresetCards =
             new List<(VisualElement, Label, Label, Label, Label[], Label)>();
-        readonly List<(VisualElement row, SkillData skill, SlotType slot)> skillRows = new List<(VisualElement, SkillData, SlotType)>();
+        readonly List<(VisualElement row, SkillData skill, SlotType slot)> mSkillRows = new List<(VisualElement, SkillData, SlotType)>();
 
-        int editIndex;
-        SkillData detailSkill;
-        bool listsDirty = true;
+        int mEditIndex;
+        SkillData mDetailSkill;
+        bool mListsDirty = true;
 
         void OnEnable()
         {
-            root = GetComponent<UIDocument>().rootVisualElement;
-            editor = root.Q("editor");
-            mode = root.Q("mode");
-            collectInfo = root.Q<Label>("collect-info");
-            notice = root.Q<Label>("notice");
-            nameCaption = root.Q<Label>("name-caption");
-            presetName = root.Q<TextField>("preset-name");
-            detailEmpty = root.Q<Label>("detail-empty");
-            detailName = root.Q<Label>("detail-name");
-            detailMeta = root.Q<Label>("detail-meta");
-            detailDesc = root.Q<Label>("detail-desc");
-            detailStats = root.Q("detail-stats");
-            detailBonus = root.Q<Label>("detail-bonus");
-            footer = root.Q<Label>("footer");
-            modeRack = root.Q<Button>("mode-rack");
-            modePreset = root.Q<Button>("mode-preset");
-            close = root.Q<Button>("close");
-            reset = root.Q<Button>("reset");
-            for (int i = 0; i < 3; i++) lists[i] = root.Q<ScrollView>(ListNames[i]);
+            mRoot = GetComponent<UIDocument>().rootVisualElement;
+            mEditor = mRoot.Q("editor");
+            mMode = mRoot.Q("mode");
+            mCollectInfo = mRoot.Q<Label>("collect-info");
+            mNotice = mRoot.Q<Label>("notice");
+            mNameCaption = mRoot.Q<Label>("name-caption");
+            mPresetName = mRoot.Q<TextField>("preset-name");
+            mDetailEmpty = mRoot.Q<Label>("detail-empty");
+            mDetailName = mRoot.Q<Label>("detail-name");
+            mDetailMeta = mRoot.Q<Label>("detail-meta");
+            mDetailDesc = mRoot.Q<Label>("detail-desc");
+            mDetailStats = mRoot.Q("detail-stats");
+            mDetailBonus = mRoot.Q<Label>("detail-bonus");
+            mFooter = mRoot.Q<Label>("footer");
+            mModeRack = mRoot.Q<Button>("mode-rack");
+            mModePreset = mRoot.Q<Button>("mode-preset");
+            mClose = mRoot.Q<Button>("close");
+            mReset = mRoot.Q<Button>("reset");
+            for (int aI = 0; aI < 3; aI++) mLists[aI] = mRoot.Q<ScrollView>(mListNames[aI]);
 
-            presetCards.Clear();
-            for (int i = 0; i < SkillSlotController.PresetCount; i++)
+            mPresetCards.Clear();
+            for (int aI = 0; aI < SkillSlotController.PresetCount; aI++)
             {
-                var instance = root.Q($"preset-card-{i + 1}");
-                var card = instance.Q("card");
-                int index = i;
-                card.RegisterCallback<ClickEvent>(_ => SelectPreset(index));
-                presetCards.Add((card, instance.Q<Label>("number"), instance.Q<Label>("title"), instance.Q<Label>("in-use"),
-                    new[] { instance.Q<Label>("a"), instance.Q<Label>("b"), instance.Q<Label>("m") }, instance.Q<Label>("bonus")));
+                var aInstance = mRoot.Q($"preset-card-{aI + 1}");
+                var aCard = aInstance.Q("card");
+                int aIndex = aI;
+                aCard.RegisterCallback<ClickEvent>(_ => SelectPreset(aIndex));
+                mPresetCards.Add((aCard, aInstance.Q<Label>("number"), aInstance.Q<Label>("title"), aInstance.Q<Label>("in-use"),
+                    new[] { aInstance.Q<Label>("a"), aInstance.Q<Label>("b"), aInstance.Q<Label>("m") }, aInstance.Q<Label>("bonus")));
             }
 
-            modeRack.clicked += () => { slots.SetMode(SwapMode.Rack); Refresh(); };
-            modePreset.clicked += () => { slots.SetMode(SwapMode.Preset); Refresh(); };
-            close.clicked += Close;
-            reset.clicked += () => { slots.RestoreDefaultPresets(); Refresh(); };
-            presetName.RegisterValueChangedCallback(e =>
+            mModeRack.clicked += () => { mSlots.SetMode(SwapMode.Rack); Refresh(); };
+            mModePreset.clicked += () => { mSlots.SetMode(SwapMode.Preset); Refresh(); };
+            mClose.clicked += Close;
+            mReset.clicked += () => { mSlots.RestoreDefaultPresets(); Refresh(); };
+            mPresetName.RegisterValueChangedCallback(iE =>
             {
-                if (IsOpen && e.newValue != slots.Presets[editIndex].name)
+                if (IsOpen && iE.newValue != mSlots.Presets[mEditIndex].Name)
                 {
-                    slots.RenamePreset(editIndex, e.newValue);
+                    mSlots.RenamePreset(mEditIndex, iE.newValue);
                     RefreshPresets();
                 }
             });
 
-            editor.style.display = IsOpen ? DisplayStyle.Flex : DisplayStyle.None;
+            mEditor.style.display = IsOpen ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         void OnDisable()
@@ -109,15 +124,15 @@ namespace BattleFight
         void Update()
         {
             // 名前を入力している間は、P や Esc を文字として扱う(閉じない)
-            bool typing = IsOpen && root.focusController?.focusedElement is TextField;
-            bool toggle = input.Consume(PlayerAction.OpenLoadout) && !typing;
-            bool escape = IsOpen && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
-            if (escape && typing)
+            bool aTyping = IsOpen && mRoot.focusController?.focusedElement is TextField;
+            bool aToggle = mInput.Consume(PlayerAction.OpenLoadout) && !aTyping;
+            bool aEscape = IsOpen && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+            if (aEscape && aTyping)
             {
-                presetName.Blur();
+                mPresetName.Blur();
                 return;
             }
-            if (toggle || escape)
+            if (aToggle || aEscape)
             {
                 if (IsOpen) Close();
                 else Open();
@@ -127,10 +142,10 @@ namespace BattleFight
         public void Open()
         {
             IsOpen = true;
-            editIndex = slots.PresetIndex;
-            detailSkill = null;
-            listsDirty = true;
-            editor.style.display = DisplayStyle.Flex;
+            mEditIndex = mSlots.PresetIndex;
+            mDetailSkill = null;
+            mListsDirty = true;
+            mEditor.style.display = DisplayStyle.Flex;
             Refresh();
             GamePause.Set(true);
             ThirdPersonCamera.SetCursorLocked(false);
@@ -139,20 +154,20 @@ namespace BattleFight
         public void Close()
         {
             IsOpen = false;
-            if (editor != null) editor.style.display = DisplayStyle.None;
-            presetName?.Blur();
-            slots.SaveLoadout();
+            if (mEditor != null) mEditor.style.display = DisplayStyle.None;
+            mPresetName?.Blur();
+            mSlots.SaveLoadout();
             GamePause.Set(false);
-            input.ClearBuffer();
+            mInput.ClearBuffer();
 #if !UNITY_WEBGL || UNITY_EDITOR
             ThirdPersonCamera.SetCursorLocked(true);
 #endif
         }
 
-        void SelectPreset(int index)
+        void SelectPreset(int iIndex)
         {
-            editIndex = index;
-            presetName.Blur();
+            mEditIndex = iIndex;
+            mPresetName.Blur();
             Refresh();
         }
 
@@ -162,103 +177,103 @@ namespace BattleFight
         {
             RefreshHeader();
             RefreshPresets();
-            if (listsDirty) BuildLists();
+            if (mListsDirty) BuildLists();
             RefreshLists();
             RefreshDetail();
         }
 
         void RefreshHeader()
         {
-            bool collecting = slots.IsCollecting;
-            mode.style.display = collecting ? DisplayStyle.None : DisplayStyle.Flex;
-            collectInfo.style.display = collecting ? DisplayStyle.Flex : DisplayStyle.None;
-            if (collecting)
+            bool aCollecting = mSlots.IsCollecting;
+            mMode.style.display = aCollecting ? DisplayStyle.None : DisplayStyle.Flex;
+            mCollectInfo.style.display = aCollecting ? DisplayStyle.Flex : DisplayStyle.None;
+            if (aCollecting)
             {
                 // 探索: 切り替え方式はプリセットだけ。代わりに集めたスキルの数を出す
-                int total = ExplorationRegion.Active != null ? ExplorationRegion.Active.TotalSkills : ExplorationSave.TotalSkills;
-                collectInfo.text = $"探索中: 集めたスキルだけで組めます   <color=#FFE08A>{ExplorationSave.UnlockedCount} / {total}</color>";
+                int aTotal = ExplorationRegion.Active != null ? ExplorationRegion.Active.TotalSkills : ExplorationSave.TotalSkills;
+                mCollectInfo.text = $"探索中: 集めたスキルだけで組めます   <color=#FFE08A>{ExplorationSave.UnlockedCount} / {aTotal}</color>";
             }
-            bool preset = slots.Mode == SwapMode.Preset;
-            modePreset.EnableInClassList("bf-button--selected", preset);
-            modeRack.EnableInClassList("bf-button--selected", !preset);
-            notice.style.display = !preset && !collecting ? DisplayStyle.Flex : DisplayStyle.None;
-            close.text = "閉じる [P]";
-            footer.text = "クリックでスキルを入れる  /  戦闘中は 1〜4キー(十字キー)でプリセットを一括切り替え  /  閉じると自動で保存";
+            bool aPreset = mSlots.Mode == SwapMode.Preset;
+            mModePreset.EnableInClassList("bf-button--selected", aPreset);
+            mModeRack.EnableInClassList("bf-button--selected", !aPreset);
+            mNotice.style.display = !aPreset && !aCollecting ? DisplayStyle.Flex : DisplayStyle.None;
+            mClose.text = "閉じる [P]";
+            mFooter.text = "クリックでスキルを入れる  /  戦闘中は 1〜4キー(十字キー)でプリセットを一括切り替え  /  閉じると自動で保存";
         }
 
         void RefreshPresets()
         {
-            for (int i = 0; i < presetCards.Count && i < slots.Presets.Count; i++)
+            for (int aI = 0; aI < mPresetCards.Count && aI < mSlots.Presets.Count; aI++)
             {
-                var (card, number, title, inUse, skills, bonus) = presetCards[i];
-                var preset = slots.Presets[i];
-                card.EnableInClassList("preset-card--editing", i == editIndex);
-                inUse.style.display = slots.Mode == SwapMode.Preset && i == slots.PresetIndex ? DisplayStyle.Flex : DisplayStyle.None;
-                number.text = (i + 1).ToString();
-                title.text = preset.name;
-                var a = preset.attackA;
-                card.style.borderLeftColor = a != null ? WeaponColor(a) : new Color(1f, 1f, 1f, 0.2f);
-                for (int s = 0; s < 3; s++)
+                var (aCard, aNumber, aTitle, aInUse, aSkills, aBonus) = mPresetCards[aI];
+                var aPreset = mSlots.Presets[aI];
+                aCard.EnableInClassList("preset-card--editing", aI == mEditIndex);
+                aInUse.style.display = mSlots.Mode == SwapMode.Preset && aI == mSlots.PresetIndex ? DisplayStyle.Flex : DisplayStyle.None;
+                aNumber.text = (aI + 1).ToString();
+                aTitle.text = aPreset.Name;
+                var aA = aPreset.AttackA;
+                aCard.style.borderLeftColor = aA != null ? WeaponColor(aA) : new Color(1f, 1f, 1f, 0.2f);
+                for (int aS = 0; aS < 3; aS++)
                 {
-                    var skill = preset.Get((SlotType)s);
-                    string name = skill != null ? $"<color=#{Hex(WeaponColor(skill))}>{skill.displayName}</color>" : "<color=#666666>(なし)</color>";
-                    skills[s].text = $"<color=#8A93A3>{SlotLabels[s]}</color>  {name}";
+                    var aSkill = aPreset.Get((SlotType)aS);
+                    string aName = aSkill != null ? $"<color=#{Hex(WeaponColor(aSkill))}>{aSkill.DisplayName}</color>" : "<color=#666666>(なし)</color>";
+                    aSkills[aS].text = $"<color=#8A93A3>{mSlotLabels[aS]}</color>  {aName}";
                 }
-                bonus.text = BonusText(preset.Bonus);
+                aBonus.text = BonusText(aPreset.Bonus);
             }
-            nameCaption.text = $"プリセット{editIndex + 1} の名前";
-            presetName.SetValueWithoutNotify(slots.Presets[editIndex].name);
+            mNameCaption.text = $"プリセット{mEditIndex + 1} の名前";
+            mPresetName.SetValueWithoutNotify(mSlots.Presets[mEditIndex].Name);
         }
 
         /// <summary>スキルの一覧を作る(武器種ごとにまとめる)。手に入れていないスキルは「？？？」</summary>
         void BuildLists()
         {
-            listsDirty = false;
-            skillRows.Clear();
-            for (int s = 0; s < 3; s++)
+            mListsDirty = false;
+            mSkillRows.Clear();
+            for (int aS = 0; aS < 3; aS++)
             {
-                var slot = (SlotType)s;
-                var list = lists[s];
-                list.Clear();
-                foreach (var weapon in slots.Weapons)
+                var aSlot = (SlotType)aS;
+                var aList = mLists[aS];
+                aList.Clear();
+                foreach (var aWeapon in mSlots.Weapons)
                 {
-                    if (weapon == null) continue;
-                    var skills = new List<SkillData>();
-                    foreach (var skill in slots.Database.ForSlot(slot))
+                    if (aWeapon == null) continue;
+                    var aSkills = new List<SkillData>();
+                    foreach (var aSkill in mSlots.Database.ForSlot(aSlot))
                     {
-                        if (skill.weapon == weapon.weapon) skills.Add(skill);
+                        if (aSkill.Weapon == aWeapon.Weapon) aSkills.Add(aSkill);
                     }
-                    if (skills.Count == 0) continue;
+                    if (aSkills.Count == 0) continue;
 
-                    var group = Classed(new VisualElement(), "skill-group");
-                    var dot = Classed(new VisualElement(), "skill-group__dot");
-                    dot.style.backgroundColor = weapon.color;
-                    group.Add(dot);
-                    var groupName = Classed(new Label(weapon.displayName), "skill-group__name");
-                    groupName.style.color = weapon.color;
-                    group.Add(groupName);
-                    list.Add(group);
+                    var aGroup = Classed(new VisualElement(), "skill-group");
+                    var aDot = Classed(new VisualElement(), "skill-group__dot");
+                    aDot.style.backgroundColor = aWeapon.Color;
+                    aGroup.Add(aDot);
+                    var aGroupName = Classed(new Label(aWeapon.DisplayName), "skill-group__name");
+                    aGroupName.style.color = aWeapon.Color;
+                    aGroup.Add(aGroupName);
+                    aList.Add(aGroup);
 
-                    foreach (var skill in skills)
+                    foreach (var aSkill in aSkills)
                     {
-                        var row = Classed(new VisualElement(), "skill-row");
-                        bool available = slots.IsAvailable(skill);
-                        row.EnableInClassList("skill-row--locked", !available);
-                        row.Add(Classed(new Label(available ? skill.displayName : "？？？"), "skill-row__name"));
-                        row.Add(Classed(new Label("使用中"), "skill-row__check"));
-                        if (available)
+                        var aRow = Classed(new VisualElement(), "skill-row");
+                        bool aAvailable = mSlots.IsAvailable(aSkill);
+                        aRow.EnableInClassList("skill-row--locked", !aAvailable);
+                        aRow.Add(Classed(new Label(aAvailable ? aSkill.DisplayName : "？？？"), "skill-row__name"));
+                        aRow.Add(Classed(new Label("使用中"), "skill-row__check"));
+                        if (aAvailable)
                         {
-                            var captured = skill;
-                            row.RegisterCallback<PointerEnterEvent>(_ => { detailSkill = captured; RefreshDetail(); });
-                            row.RegisterCallback<ClickEvent>(_ =>
+                            var aCaptured = aSkill;
+                            aRow.RegisterCallback<PointerEnterEvent>(_ => { mDetailSkill = aCaptured; RefreshDetail(); });
+                            aRow.RegisterCallback<ClickEvent>(_ =>
                             {
-                                slots.AssignPresetSkill(editIndex, slot, captured);
-                                detailSkill = captured;
+                                mSlots.AssignPresetSkill(mEditIndex, aSlot, aCaptured);
+                                mDetailSkill = aCaptured;
                                 Refresh();
                             });
                         }
-                        list.Add(row);
-                        skillRows.Add((row, skill, slot));
+                        aList.Add(aRow);
+                        mSkillRows.Add((aRow, aSkill, aSlot));
                     }
                 }
             }
@@ -266,68 +281,68 @@ namespace BattleFight
 
         void RefreshLists()
         {
-            var preset = slots.Presets[editIndex];
-            foreach (var (row, skill, slot) in skillRows)
+            var aPreset = mSlots.Presets[mEditIndex];
+            foreach (var (aRow, aSkill, aSlot) in mSkillRows)
             {
-                bool selected = preset.Get(slot) == skill;
-                row.EnableInClassList("skill-row--selected", selected);
-                row.Q<Label>(className: "skill-row__check").style.display = selected ? DisplayStyle.Flex : DisplayStyle.None;
-                if (selected) row.style.borderLeftColor = WeaponColor(skill);
+                bool aSelected = aPreset.Get(aSlot) == aSkill;
+                aRow.EnableInClassList("skill-row--selected", aSelected);
+                aRow.Q<Label>(className: "skill-row__check").style.display = aSelected ? DisplayStyle.Flex : DisplayStyle.None;
+                if (aSelected) aRow.style.borderLeftColor = WeaponColor(aSkill);
             }
         }
 
         void RefreshDetail()
         {
-            var preset = slots.Presets[editIndex];
-            detailBonus.text = BonusText(preset.Bonus);
+            var aPreset = mSlots.Presets[mEditIndex];
+            mDetailBonus.text = BonusText(aPreset.Bonus);
 
-            var skill = detailSkill;
-            bool has = skill != null;
-            detailEmpty.style.display = has ? DisplayStyle.None : DisplayStyle.Flex;
-            detailName.style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
-            detailMeta.style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
-            detailDesc.style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
-            detailStats.Clear();
-            if (!has) return;
+            var aSkill = mDetailSkill;
+            bool aHas = aSkill != null;
+            mDetailEmpty.style.display = aHas ? DisplayStyle.None : DisplayStyle.Flex;
+            mDetailName.style.display = aHas ? DisplayStyle.Flex : DisplayStyle.None;
+            mDetailMeta.style.display = aHas ? DisplayStyle.Flex : DisplayStyle.None;
+            mDetailDesc.style.display = aHas ? DisplayStyle.Flex : DisplayStyle.None;
+            mDetailStats.Clear();
+            if (!aHas) return;
 
-            var weaponData = slots.GetWeaponData(skill.weapon);
-            detailName.text = skill.displayName;
-            detailName.style.color = weaponData != null ? weaponData.color : Color.white;
-            string behavior = BehaviorLabels.TryGetValue(skill.behavior, out var b) ? b : skill.behavior.ToString();
-            detailMeta.text = $"{(weaponData != null ? weaponData.displayName : "")}  /  {SlotLabels[(int)skill.slot]}  /  {behavior}";
-            detailDesc.text = skill.description;
-            foreach (var line in StatLines(skill)) detailStats.Add(Classed(new Label(line), "detail__stat"));
+            var aWeaponData = mSlots.GetWeaponData(aSkill.Weapon);
+            mDetailName.text = aSkill.DisplayName;
+            mDetailName.style.color = aWeaponData != null ? aWeaponData.Color : Color.white;
+            string aBehavior = mBehaviorLabels.TryGetValue(aSkill.Behavior, out var aB) ? aB : aSkill.Behavior.ToString();
+            mDetailMeta.text = $"{(aWeaponData != null ? aWeaponData.DisplayName : "")}  /  {mSlotLabels[(int)aSkill.Slot]}  /  {aBehavior}";
+            mDetailDesc.text = aSkill.Description;
+            foreach (var aLine in StatLines(aSkill)) mDetailStats.Add(Classed(new Label(aLine), "detail__stat"));
         }
 
-        static IEnumerable<string> StatLines(SkillData skill)
+        static IEnumerable<string> StatLines(SkillData iSkill)
         {
-            var first = skill.GetStep(0);
-            int totalFrames = 0;
-            float totalDamage = 0f;
-            foreach (var step in skill.steps)
+            var aFirst = iSkill.GetStep(0);
+            int aTotalFrames = 0;
+            float aTotalDamage = 0f;
+            foreach (var aStep in iSkill.Steps)
             {
-                totalFrames += step.startupFrames + step.activeFrames + step.recoveryFrames;
-                totalDamage += step.damage * (skill.behavior == SkillBehavior.Projectile ? Mathf.Max(1, skill.projectileCount) : 1);
+                aTotalFrames += aStep.StartupFrames + aStep.ActiveFrames + aStep.RecoveryFrames;
+                aTotalDamage += aStep.Damage * (iSkill.Behavior == SkillBehavior.Projectile ? Mathf.Max(1, iSkill.ProjectileCount) : 1);
             }
-            yield return $"段数 {skill.StepCount}   発生 {first.startupFrames}F   全体 {totalFrames}F";
-            yield return $"威力(合計) {totalDamage:0}   ひるみ {first.stagger:0}   アーマー削り {first.armorBreak:0}";
-            if (skill.invulnerableFrames > 0) yield return $"無敵 {skill.invulnerableFrames}F";
-            if (!skill.usableInAir) yield return "地上でのみ使える";
-            if (skill.behavior == SkillBehavior.ChargeCounter) yield return "長押しで溜め。溜め中に攻撃を受けるとカウンター";
-            if (skill.explosionRadius > 0f) yield return $"爆発半径 {skill.explosionRadius:0.#}m";
-            if (skill.projectileCount > 1 && skill.behavior == SkillBehavior.Projectile) yield return $"弾数 {skill.projectileCount}";
+            yield return $"段数 {iSkill.StepCount}   発生 {aFirst.StartupFrames}F   全体 {aTotalFrames}F";
+            yield return $"威力(合計) {aTotalDamage:0}   ひるみ {aFirst.Stagger:0}   アーマー削り {aFirst.ArmorBreak:0}";
+            if (iSkill.InvulnerableFrames > 0) yield return $"無敵 {iSkill.InvulnerableFrames}F";
+            if (!iSkill.UsableInAir) yield return "地上でのみ使える";
+            if (iSkill.Behavior == SkillBehavior.ChargeCounter) yield return "長押しで溜め。溜め中に攻撃を受けるとカウンター";
+            if (iSkill.ExplosionRadius > 0f) yield return $"爆発半径 {iSkill.ExplosionRadius:0.#}m";
+            if (iSkill.ProjectileCount > 1 && iSkill.Behavior == SkillBehavior.Projectile) yield return $"弾数 {iSkill.ProjectileCount}";
         }
 
-        string BonusText(WeaponBonus bonus)
+        string BonusText(WeaponBonus iBonus)
         {
-            var data = slots.GetWeaponData(bonus.Weapon);
-            string weaponName = data != null ? data.displayName : bonus.Weapon.ToString();
-            switch (bonus.Kind)
+            var aData = mSlots.GetWeaponData(iBonus.Weapon);
+            string aWeaponName = aData != null ? aData.DisplayName : iBonus.Weapon.ToString();
+            switch (iBonus.Kind)
             {
                 case WeaponBonusKind.Mastery:
-                    return $"マスタリー({weaponName})  フィニッシャー「{(data != null && data.masteryFinisher != null ? data.masteryFinisher.displayName : "-")}」";
+                    return $"マスタリー({aWeaponName})  フィニッシャー「{(aData != null && aData.MasteryFinisher != null ? aData.MasteryFinisher.DisplayName : "-")}」";
                 case WeaponBonusKind.Synergy:
-                    return $"シナジー({weaponName})  ひるみ +{Mathf.RoundToInt((data != null ? data.synergyStaggerBonus : 0f) * 100f)}%";
+                    return $"シナジー({aWeaponName})  ひるみ +{Mathf.RoundToInt((aData != null ? aData.SynergyStaggerBonus : 0f) * 100f)}%";
                 case WeaponBonusKind.Arsenal:
                     return "アーセナル  スタイル獲得アップ";
                 default:
@@ -335,18 +350,18 @@ namespace BattleFight
             }
         }
 
-        Color WeaponColor(SkillData skill)
+        Color WeaponColor(SkillData iSkill)
         {
-            var data = slots.GetWeaponData(skill.weapon);
-            return data != null ? data.color : Color.white;
+            var aData = mSlots.GetWeaponData(iSkill.Weapon);
+            return aData != null ? aData.Color : Color.white;
         }
 
-        static string Hex(Color color) => ColorUtility.ToHtmlStringRGB(color);
+        static string Hex(Color iColor) => ColorUtility.ToHtmlStringRGB(iColor);
 
-        static T Classed<T>(T element, string className) where T : VisualElement
+        static T Classed<T>(T iElement, string iClassName) where T : VisualElement
         {
-            element.AddToClassList(className);
-            return element;
+            iElement.AddToClassList(iClassName);
+            return iElement;
         }
     }
 }

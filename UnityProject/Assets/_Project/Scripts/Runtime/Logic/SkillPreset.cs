@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -6,49 +7,49 @@ namespace BattleFight
     [Serializable]
     public class SkillPreset
     {
-        public string name = "プリセット";
-        public SkillData attackA;
-        public SkillData attackB;
-        public SkillData movement;
+        [FormerlySerializedAs("name")] public string Name = "プリセット";
+        [FormerlySerializedAs("attackA")] public SkillData AttackA;
+        [FormerlySerializedAs("attackB")] public SkillData AttackB;
+        [FormerlySerializedAs("movement")] public SkillData Movement;
 
         public SkillPreset() { }
 
-        public SkillPreset(string name, SkillData attackA, SkillData attackB, SkillData movement)
+        public SkillPreset(string iName, SkillData iAttackA, SkillData iAttackB, SkillData iMovement)
         {
-            this.name = name;
-            this.attackA = attackA;
-            this.attackB = attackB;
-            this.movement = movement;
+            Name = iName;
+            AttackA = iAttackA;
+            AttackB = iAttackB;
+            Movement = iMovement;
         }
 
-        public SkillData Get(SlotType slot) => slot switch
+        public SkillData Get(SlotType iSlot) => iSlot switch
         {
-            SlotType.AttackA => attackA,
-            SlotType.AttackB => attackB,
-            _ => movement,
+            SlotType.AttackA => AttackA,
+            SlotType.AttackB => AttackB,
+            _ => Movement,
         };
 
         /// <summary>スロットの種類が合わないスキルは入れない</summary>
-        public bool Set(SlotType slot, SkillData skill)
+        public bool Set(SlotType iSlot, SkillData iSkill)
         {
-            if (skill != null && skill.slot != slot) return false;
-            switch (slot)
+            if (iSkill != null && iSkill.Slot != iSlot) return false;
+            switch (iSlot)
             {
-                case SlotType.AttackA: attackA = skill; break;
-                case SlotType.AttackB: attackB = skill; break;
-                default: movement = skill; break;
+                case SlotType.AttackA: AttackA = iSkill; break;
+                case SlotType.AttackB: AttackB = iSkill; break;
+                default: Movement = iSkill; break;
             }
             return true;
         }
 
         public WeaponBonus Bonus =>
-            attackA != null && attackB != null && movement != null
-                ? WeaponBonusResolver.Resolve(attackA.weapon, attackB.weapon, movement.weapon)
+            AttackA != null && AttackB != null && Movement != null
+                ? WeaponBonusResolver.Resolve(AttackA.Weapon, AttackB.Weapon, Movement.Weapon)
                 : WeaponBonus.None;
 
         /// <summary>3スロットとも空(探索でまだスキルが足りないプリセット)</summary>
-        public bool IsEmpty => attackA == null && attackB == null && movement == null;
+        public bool IsEmpty => AttackA == null && AttackB == null && Movement == null;
 
-        public SkillPreset Clone() => new SkillPreset(name, attackA, attackB, movement);
+        public SkillPreset Clone() => new SkillPreset(Name, AttackA, AttackB, Movement);
     }
 }

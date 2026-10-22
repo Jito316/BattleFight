@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -9,43 +10,43 @@ namespace BattleFight
     [RequireComponent(typeof(SafePoint))]
     public class Checkpoint : MonoBehaviour
     {
-        [SerializeField] string id;
-        [SerializeField] float radius = 2.5f;
-        [SerializeField, Tooltip("光る部分(触れたら色を変える)")] Renderer crystal;
+        [SerializeField, FormerlySerializedAs("id")] string mId;
+        [SerializeField, FormerlySerializedAs("radius")] float mRadius = 2.5f;
+        [SerializeField, Tooltip("光る部分(触れたら色を変える)"), FormerlySerializedAs("crystal")] Renderer mCrystal;
 
-        bool touching;
+        bool mTouching;
 
-        public string Id => id;
+        public string Id => mId;
 
-        public void Setup(string checkpointId, Renderer crystalRenderer)
+        public void Setup(string iCheckpointId, Renderer iCrystalRenderer)
         {
-            id = checkpointId;
-            crystal = crystalRenderer;
+            mId = iCheckpointId;
+            mCrystal = iCrystalRenderer;
         }
 
         public Vector3 RespawnPosition => transform.position + transform.forward * 2f;
 
         void Update()
         {
-            var region = ExplorationRegion.Active;
-            if (region == null || region.Player == null) return;
+            var aRegion = ExplorationRegion.Active;
+            if (aRegion == null || aRegion.Player == null) return;
 
-            bool near = (region.Player.position - transform.position).sqrMagnitude <= radius * radius;
-            if (near && !touching)
+            bool aNear = (aRegion.Player.position - transform.position).sqrMagnitude <= mRadius * mRadius;
+            if (aNear && !mTouching)
             {
-                region.RestorePlayer();
-                if (ExplorationSave.Checkpoint != id)
+                aRegion.RestorePlayer();
+                if (ExplorationSave.Checkpoint != mId)
                 {
-                    ExplorationSave.Checkpoint = id;
-                    region.Notify("祭壇に触れた\n<size=26>体力が回復した。倒れたらここから再開する</size>", new Color(0.6f, 0.9f, 1f));
+                    ExplorationSave.Checkpoint = mId;
+                    aRegion.Notify("祭壇に触れた\n<size=26>体力が回復した。倒れたらここから再開する</size>", new Color(0.6f, 0.9f, 1f));
                 }
             }
-            touching = near;
+            mTouching = aNear;
 
-            if (crystal != null)
+            if (mCrystal != null)
             {
-                bool current = ExplorationSave.Checkpoint == id;
-                crystal.transform.Rotate(0f, (current ? 90f : 30f) * Time.deltaTime, 0f, Space.World);
+                bool aCurrent = ExplorationSave.Checkpoint == mId;
+                mCrystal.transform.Rotate(0f, (aCurrent ? 90f : 30f) * Time.deltaTime, 0f, Space.World);
             }
         }
     }

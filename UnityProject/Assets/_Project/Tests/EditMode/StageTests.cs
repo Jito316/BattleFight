@@ -6,104 +6,104 @@ namespace BattleFight.Tests
 {
     public class StageTests
     {
-        readonly List<Object> created = new List<Object>();
+        readonly List<Object> mCreated = new List<Object>();
 
-        EnemyProfile Profile(string name)
+        EnemyProfile Profile(string iName)
         {
-            var profile = ScriptableObject.CreateInstance<EnemyProfile>();
-            profile.name = name;
-            created.Add(profile);
-            return profile;
+            var aProfile = ScriptableObject.CreateInstance<EnemyProfile>();
+            aProfile.name = iName;
+            mCreated.Add(aProfile);
+            return aProfile;
         }
 
         [TearDown]
         public void TearDown()
         {
-            foreach (var o in created) Object.DestroyImmediate(o);
-            created.Clear();
+            foreach (var aO in mCreated) Object.DestroyImmediate(aO);
+            mCreated.Clear();
         }
 
         [Test]
         public void Endless_EarlyWavesOnlyUseUnlockedEnemies()
         {
-            var weak = Profile("weak");
-            var strong = Profile("strong");
-            var pool = new List<EndlessEntry>
+            var aWeak = Profile("weak");
+            var aStrong = Profile("strong");
+            var aPool = new List<EndlessEntry>
             {
-                new EndlessEntry { profile = weak, cost = 1f, minWave = 1 },
-                new EndlessEntry { profile = strong, cost = 3f, minWave = 4 },
+                new EndlessEntry { Profile = aWeak, Cost = 1f, MinWave = 1 },
+                new EndlessEntry { Profile = aStrong, Cost = 3f, MinWave = 4 },
             };
 
-            var wave1 = EndlessWaveGenerator.Generate(1, pool, null, 5, new System.Random(1));
-            CollectionAssert.IsNotEmpty(wave1);
-            CollectionAssert.DoesNotContain(wave1, strong);
+            var aWave1 = EndlessWaveGenerator.Generate(1, aPool, null, 5, new System.Random(1));
+            CollectionAssert.IsNotEmpty(aWave1);
+            CollectionAssert.DoesNotContain(aWave1, aStrong);
         }
 
         [Test]
         public void Endless_StaysWithinBudgetAndCap()
         {
-            var weak = Profile("weak");
-            var pool = new List<EndlessEntry> { new EndlessEntry { profile = weak, cost = 1f, minWave = 1 } };
+            var aWeak = Profile("weak");
+            var aPool = new List<EndlessEntry> { new EndlessEntry { Profile = aWeak, Cost = 1f, MinWave = 1 } };
 
-            for (int wave = 1; wave <= 30; wave++)
+            for (int aWave = 1; aWave <= 30; aWave++)
             {
-                var enemies = EndlessWaveGenerator.Generate(wave, pool, null, 0, new System.Random(wave));
-                Assert.LessOrEqual(enemies.Count, EndlessWaveGenerator.MaxEnemiesPerWave);
-                Assert.LessOrEqual(enemies.Count, Mathf.FloorToInt(EndlessWaveGenerator.BudgetFor(wave)));
+                var aEnemies = EndlessWaveGenerator.Generate(aWave, aPool, null, 0, new System.Random(aWave));
+                Assert.LessOrEqual(aEnemies.Count, EndlessWaveGenerator.MaxEnemiesPerWave);
+                Assert.LessOrEqual(aEnemies.Count, Mathf.FloorToInt(EndlessWaveGenerator.BudgetFor(aWave)));
             }
         }
 
         [Test]
         public void Endless_LaterWavesAreBigger()
         {
-            var weak = Profile("weak");
-            var pool = new List<EndlessEntry> { new EndlessEntry { profile = weak, cost = 1f, minWave = 1 } };
+            var aWeak = Profile("weak");
+            var aPool = new List<EndlessEntry> { new EndlessEntry { Profile = aWeak, Cost = 1f, MinWave = 1 } };
 
-            int early = EndlessWaveGenerator.Generate(1, pool, null, 0, new System.Random(3)).Count;
-            int late = EndlessWaveGenerator.Generate(6, pool, null, 0, new System.Random(3)).Count;
-            Assert.Greater(late, early);
+            int aEarly = EndlessWaveGenerator.Generate(1, aPool, null, 0, new System.Random(3)).Count;
+            int aLate = EndlessWaveGenerator.Generate(6, aPool, null, 0, new System.Random(3)).Count;
+            Assert.Greater(aLate, aEarly);
         }
 
         [Test]
         public void Endless_BossWaves_AlternateBosses()
         {
-            var weak = Profile("weak");
-            var bossA = Profile("bossA");
-            var bossB = Profile("bossB");
-            var pool = new List<EndlessEntry> { new EndlessEntry { profile = weak, cost = 1f, minWave = 1 } };
-            var bosses = new[] { bossA, bossB };
+            var aWeak = Profile("weak");
+            var aBossA = Profile("bossA");
+            var aBossB = Profile("bossB");
+            var aPool = new List<EndlessEntry> { new EndlessEntry { Profile = aWeak, Cost = 1f, MinWave = 1 } };
+            var aBosses = new[] { aBossA, aBossB };
 
             Assert.IsFalse(EndlessWaveGenerator.IsBossWave(4, 5));
             Assert.IsTrue(EndlessWaveGenerator.IsBossWave(5, 5));
-            Assert.AreSame(bossA, EndlessWaveGenerator.Generate(5, pool, bosses, 5, new System.Random(0))[0]);
-            Assert.AreSame(bossB, EndlessWaveGenerator.Generate(10, pool, bosses, 5, new System.Random(0))[0]);
-            Assert.AreSame(bossA, EndlessWaveGenerator.Generate(15, pool, bosses, 5, new System.Random(0))[0]);
+            Assert.AreSame(aBossA, EndlessWaveGenerator.Generate(5, aPool, aBosses, 5, new System.Random(0))[0]);
+            Assert.AreSame(aBossB, EndlessWaveGenerator.Generate(10, aPool, aBosses, 5, new System.Random(0))[0]);
+            Assert.AreSame(aBossA, EndlessWaveGenerator.Generate(15, aPool, aBosses, 5, new System.Random(0))[0]);
         }
 
         [Test]
         public void Records_KeepBestTimeAndRank()
         {
-            const string id = "Test_Stage_Records";
-            StageRecords.Clear(id);
+            const string aId = "Test_Stage_Records";
+            StageRecords.Clear(aId);
             try
             {
-                Assert.IsFalse(StageRecords.IsCleared(id));
-                Assert.IsTrue(StageRecords.RecordClear(id, 90f, 2));
-                Assert.IsTrue(StageRecords.RecordClear(id, 80f, 1), "タイム更新");
-                Assert.IsFalse(StageRecords.RecordClear(id, 85f, 2), "どちらも更新していない");
-                Assert.IsTrue(StageRecords.RecordClear(id, 95f, 4), "ランク更新");
+                Assert.IsFalse(StageRecords.IsCleared(aId));
+                Assert.IsTrue(StageRecords.RecordClear(aId, 90f, 2));
+                Assert.IsTrue(StageRecords.RecordClear(aId, 80f, 1), "タイム更新");
+                Assert.IsFalse(StageRecords.RecordClear(aId, 85f, 2), "どちらも更新していない");
+                Assert.IsTrue(StageRecords.RecordClear(aId, 95f, 4), "ランク更新");
 
-                Assert.IsTrue(StageRecords.IsCleared(id));
-                Assert.AreEqual(80f, StageRecords.BestTime(id), 1e-4f);
-                Assert.AreEqual(4, StageRecords.BestRank(id));
+                Assert.IsTrue(StageRecords.IsCleared(aId));
+                Assert.AreEqual(80f, StageRecords.BestTime(aId), 1e-4f);
+                Assert.AreEqual(4, StageRecords.BestRank(aId));
 
-                Assert.IsTrue(StageRecords.RecordWave(id, 7));
-                Assert.IsFalse(StageRecords.RecordWave(id, 5));
-                Assert.AreEqual(7, StageRecords.BestWave(id));
+                Assert.IsTrue(StageRecords.RecordWave(aId, 7));
+                Assert.IsFalse(StageRecords.RecordWave(aId, 5));
+                Assert.AreEqual(7, StageRecords.BestWave(aId));
             }
             finally
             {
-                StageRecords.Clear(id);
+                StageRecords.Clear(aId);
             }
         }
     }

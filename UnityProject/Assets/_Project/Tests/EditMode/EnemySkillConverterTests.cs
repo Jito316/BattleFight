@@ -7,76 +7,76 @@ namespace BattleFight.Tests
     /// <summary>プレイヤーのスキルを敵の攻撃に置き換えるときの形と強さ</summary>
     public class EnemySkillConverterTests
     {
-        readonly List<Object> created = new List<Object>();
+        readonly List<Object> mCreated = new List<Object>();
 
         [TearDown]
         public void TearDown()
         {
-            foreach (var o in created) Object.DestroyImmediate(o);
-            created.Clear();
+            foreach (var aO in mCreated) Object.DestroyImmediate(aO);
+            mCreated.Clear();
         }
 
-        SkillData Skill(SkillBehavior behavior, SlotType slot = SlotType.AttackA, int steps = 1, int startup = 8, float damage = 20f)
+        SkillData Skill(SkillBehavior iBehavior, SlotType iSlot = SlotType.AttackA, int iSteps = 1, int iStartup = 8, float iDamage = 20f)
         {
-            var skill = ScriptableObject.CreateInstance<SkillData>();
-            created.Add(skill);
-            skill.displayName = behavior.ToString();
-            skill.behavior = behavior;
-            skill.slot = slot;
-            skill.steps = new List<SkillStep>();
-            for (int i = 0; i < steps; i++) skill.steps.Add(new SkillStep { startupFrames = startup, damage = damage, hitboxRadius = 1.2f });
-            return skill;
+            var aSkill = ScriptableObject.CreateInstance<SkillData>();
+            mCreated.Add(aSkill);
+            aSkill.DisplayName = iBehavior.ToString();
+            aSkill.Behavior = iBehavior;
+            aSkill.Slot = iSlot;
+            aSkill.Steps = new List<SkillStep>();
+            for (int aI = 0; aI < iSteps; aI++) aSkill.Steps.Add(new SkillStep { StartupFrames = iStartup, Damage = iDamage, HitboxRadius = 1.2f });
+            return aSkill;
         }
 
         [Test]
         public void Melee_IsSlowerAndWeakerThanThePlayersVersion()
         {
-            var attack = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, startup: 6, damage: 20f), 0.5f, 2.2f);
-            Assert.GreaterOrEqual(attack.windup, EnemySkillConverter.MinWindup, "予備動作が短すぎて見えない");
-            Assert.Greater(attack.windup, FrameTime.ToSeconds(6));
-            Assert.AreEqual(10f, attack.damage, 1e-4f);
-            Assert.IsFalse(attack.ranged);
-            Assert.NotNull(attack.sourceSkill);
-            Assert.AreEqual("Standard", attack.name);
+            var aAttack = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, iStartup: 6, iDamage: 20f), 0.5f, 2.2f);
+            Assert.GreaterOrEqual(aAttack.Windup, EnemySkillConverter.MinWindup, "予備動作が短すぎて見えない");
+            Assert.Greater(aAttack.Windup, FrameTime.ToSeconds(6));
+            Assert.AreEqual(10f, aAttack.Damage, 1e-4f);
+            Assert.IsFalse(aAttack.Ranged);
+            Assert.NotNull(aAttack.SourceSkill);
+            Assert.AreEqual("Standard", aAttack.Name);
         }
 
         [Test]
         public void MultiStepSkill_RepeatsUpToTheLimit()
         {
-            var four = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, steps: 4), 0.5f, 2.2f);
-            Assert.AreEqual(EnemySkillConverter.MaxRepeat, four.repeat);
-            var two = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, steps: 2), 0.5f, 2.2f);
-            Assert.AreEqual(1, two.repeat);
+            var aFour = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, iSteps: 4), 0.5f, 2.2f);
+            Assert.AreEqual(EnemySkillConverter.MaxRepeat, aFour.Repeat);
+            var aTwo = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, iSteps: 2), 0.5f, 2.2f);
+            Assert.AreEqual(1, aTwo.Repeat);
         }
 
         [Test]
         public void Projectile_BecomesARangedAttackWithSlowerShots()
         {
-            var skill = Skill(SkillBehavior.Projectile);
-            skill.projectileCount = 3;
-            skill.projectileSpeed = 30f;
-            var attack = EnemySkillConverter.ToAttack(skill, 0.5f, 2.2f);
-            Assert.IsTrue(attack.ranged);
-            Assert.AreEqual(3, attack.projectileCount);
-            Assert.Less(attack.projectileSpeed, 30f, "弾がプレイヤーの弾と同じ速さのまま");
-            Assert.GreaterOrEqual(attack.range, 8f);
+            var aSkill = Skill(SkillBehavior.Projectile);
+            aSkill.ProjectileCount = 3;
+            aSkill.ProjectileSpeed = 30f;
+            var aAttack = EnemySkillConverter.ToAttack(aSkill, 0.5f, 2.2f);
+            Assert.IsTrue(aAttack.Ranged);
+            Assert.AreEqual(3, aAttack.ProjectileCount);
+            Assert.Less(aAttack.ProjectileSpeed, 30f, "弾がプレイヤーの弾と同じ速さのまま");
+            Assert.GreaterOrEqual(aAttack.Range, 8f);
         }
 
         [Test]
         public void SpecialBehaviors_KeepTheirShape()
         {
-            Assert.IsTrue(EnemySkillConverter.ToAttack(Skill(SkillBehavior.TargetedStrike, SlotType.AttackB), 0.5f, 2.2f).targetedStrike);
-            Assert.IsTrue(EnemySkillConverter.ToAttack(Skill(SkillBehavior.HammerJump, SlotType.Movement), 0.5f, 2.2f).jumpSlam);
-            Assert.IsTrue(EnemySkillConverter.ToAttack(Skill(SkillBehavior.Blink, SlotType.Movement), 0.5f, 2.2f).teleportBehind);
-            Assert.GreaterOrEqual(EnemySkillConverter.ToAttack(Skill(SkillBehavior.DashStrike, SlotType.Movement), 0.5f, 2.2f).lunge, 4f);
+            Assert.IsTrue(EnemySkillConverter.ToAttack(Skill(SkillBehavior.TargetedStrike, SlotType.AttackB), 0.5f, 2.2f).TargetedStrike);
+            Assert.IsTrue(EnemySkillConverter.ToAttack(Skill(SkillBehavior.HammerJump, SlotType.Movement), 0.5f, 2.2f).JumpSlam);
+            Assert.IsTrue(EnemySkillConverter.ToAttack(Skill(SkillBehavior.Blink, SlotType.Movement), 0.5f, 2.2f).TeleportBehind);
+            Assert.GreaterOrEqual(EnemySkillConverter.ToAttack(Skill(SkillBehavior.DashStrike, SlotType.Movement), 0.5f, 2.2f).Lunge, 4f);
         }
 
         [Test]
         public void MovementSkills_AreUsedLessOftenThanAttacks()
         {
-            var a = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, SlotType.AttackA), 0.5f, 2.2f);
-            var m = EnemySkillConverter.ToAttack(Skill(SkillBehavior.DashStrike, SlotType.Movement), 0.5f, 2.2f);
-            Assert.Greater(a.weight, m.weight);
+            var aA = EnemySkillConverter.ToAttack(Skill(SkillBehavior.Standard, SlotType.AttackA), 0.5f, 2.2f);
+            var aM = EnemySkillConverter.ToAttack(Skill(SkillBehavior.DashStrike, SlotType.Movement), 0.5f, 2.2f);
+            Assert.Greater(aA.Weight, aM.Weight);
         }
     }
 }

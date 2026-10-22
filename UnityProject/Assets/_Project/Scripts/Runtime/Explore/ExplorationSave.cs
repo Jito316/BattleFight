@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -15,14 +16,14 @@ namespace BattleFight
         [Serializable]
         class SavedData
         {
-            public int version = 1;
-            public List<string> skills = new List<string>();
-            public List<string> flags = new List<string>();
-            public string checkpoint;
-            public int totalSkills;
+            [FormerlySerializedAs("version")] public int Version = 1;
+            [FormerlySerializedAs("skills")] public List<string> Skills = new List<string>();
+            [FormerlySerializedAs("flags")] public List<string> Flags = new List<string>();
+            [FormerlySerializedAs("checkpoint")] public string Checkpoint;
+            [FormerlySerializedAs("totalSkills")] public int TotalSkills;
         }
 
-        static SavedData data;
+        static SavedData mCache;
 
         /// <summary>新しくスキルを手に入れた</summary>
         public static event Action<SkillData> SkillUnlocked;
@@ -30,29 +31,29 @@ namespace BattleFight
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
-            data = null;
+            mCache = null;
             SkillUnlocked = null;
         }
 
-        static SavedData Data
+        static SavedData mData
         {
             get
             {
-                if (data == null) data = Deserialize(PlayerPrefs.GetString(PrefsKey, null)) ?? new SavedData();
-                return data;
+                if (mCache == null) mCache = Deserialize(PlayerPrefs.GetString(PrefsKey, null)) ?? new SavedData();
+                return mCache;
             }
         }
 
-        public static int UnlockedCount => Data.skills.Count;
+        public static int UnlockedCount => mData.Skills.Count;
 
         /// <summary>このマップで集められるスキルの総数(ステージ選択の表示用に、探索を始めたときに記録する)</summary>
         public static int TotalSkills
         {
-            get => Data.totalSkills;
+            get => mData.TotalSkills;
             set
             {
-                if (Data.totalSkills == value) return;
-                Data.totalSkills = value;
+                if (mData.TotalSkills == value) return;
+                mData.TotalSkills = value;
                 Save();
             }
         }
@@ -60,42 +61,42 @@ namespace BattleFight
         /// <summary>最後に触れた祭壇の ID。まだなければ null</summary>
         public static string Checkpoint
         {
-            get => string.IsNullOrEmpty(Data.checkpoint) ? null : Data.checkpoint;
+            get => string.IsNullOrEmpty(mData.Checkpoint) ? null : mData.Checkpoint;
             set
             {
-                if (Data.checkpoint == value) return;
-                Data.checkpoint = value;
+                if (mData.Checkpoint == value) return;
+                mData.Checkpoint = value;
                 Save();
             }
         }
 
-        public static bool HasStarted => Data.skills.Count > 0;
+        public static bool HasStarted => mData.Skills.Count > 0;
 
-        public static bool IsUnlocked(SkillData skill) => skill != null && Data.skills.Contains(skill.name);
+        public static bool IsUnlocked(SkillData iSkill) => iSkill != null && mData.Skills.Contains(iSkill.name);
 
         /// <summary>スキルを手に入れる。新しく手に入れたときだけ true</summary>
-        public static bool Unlock(SkillData skill)
+        public static bool Unlock(SkillData iSkill)
         {
-            if (skill == null || Data.skills.Contains(skill.name)) return false;
-            Data.skills.Add(skill.name);
+            if (iSkill == null || mData.Skills.Contains(iSkill.name)) return false;
+            mData.Skills.Add(iSkill.name);
             Save();
-            SkillUnlocked?.Invoke(skill);
+            SkillUnlocked?.Invoke(iSkill);
             return true;
         }
 
-        public static bool HasFlag(string id) => !string.IsNullOrEmpty(id) && Data.flags.Contains(id);
+        public static bool HasFlag(string iId) => !string.IsNullOrEmpty(iId) && mData.Flags.Contains(iId);
 
-        public static void SetFlag(string id)
+        public static void SetFlag(string iId)
         {
-            if (string.IsNullOrEmpty(id) || Data.flags.Contains(id)) return;
-            Data.flags.Add(id);
+            if (string.IsNullOrEmpty(iId) || mData.Flags.Contains(iId)) return;
+            mData.Flags.Add(iId);
             Save();
         }
 
         /// <summary>探索をはじめからにする(スキル・フラグ・祭壇をすべて消す)</summary>
         public static void Reset()
         {
-            data = new SavedData();
+            mCache = new SavedData();
             PlayerPrefs.DeleteKey(PrefsKey);
             PlayerPrefs.Save();
         }
@@ -106,19 +107,19 @@ namespace BattleFight
             PlayerPrefs.Save();
         }
 
-        public static string Serialize() => JsonUtility.ToJson(Data);
+        public static string Serialize() => JsonUtility.ToJson(mData);
 
         /// <summary>壊れたデータや空のときは null</summary>
-        static SavedData Deserialize(string json)
+        static SavedData Deserialize(string iJson)
         {
-            if (string.IsNullOrEmpty(json)) return null;
+            if (string.IsNullOrEmpty(iJson)) return null;
             try
             {
-                var saved = JsonUtility.FromJson<SavedData>(json);
-                if (saved == null) return null;
-                saved.skills ??= new List<string>();
-                saved.flags ??= new List<string>();
-                return saved;
+                var aSaved = JsonUtility.FromJson<SavedData>(iJson);
+                if (aSaved == null) return null;
+                aSaved.Skills ??= new List<string>();
+                aSaved.Flags ??= new List<string>();
+                return aSaved;
             }
             catch (ArgumentException)
             {
@@ -127,6 +128,6 @@ namespace BattleFight
         }
 
         /// <summary>テスト用: 保存された文字列から読み直す</summary>
-        public static void LoadFrom(string json) => data = Deserialize(json) ?? new SavedData();
+        public static void LoadFrom(string iJson) => mCache = Deserialize(iJson) ?? new SavedData();
     }
 }

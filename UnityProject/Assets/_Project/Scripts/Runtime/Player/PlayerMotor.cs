@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -9,83 +10,83 @@ namespace BattleFight
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMotor : MonoBehaviour
     {
-        [SerializeField] float moveSpeed = 7.5f;
-        [SerializeField] float acceleration = 60f;
-        [SerializeField] float airAcceleration = 25f;
-        [SerializeField] float jumpVelocity = 10f;
-        [SerializeField] float gravity = -30f;
-        [SerializeField] float maxFallSpeed = -40f;
-        [SerializeField] float turnSpeed = 1080f;
-        [SerializeField] float impulseDamping = 8f;
+        [SerializeField, FormerlySerializedAs("moveSpeed")] float mMoveSpeed = 7.5f;
+        [SerializeField, FormerlySerializedAs("acceleration")] float mAcceleration = 60f;
+        [SerializeField, FormerlySerializedAs("airAcceleration")] float mAirAcceleration = 25f;
+        [SerializeField, FormerlySerializedAs("jumpVelocity")] float mJumpVelocity = 10f;
+        [SerializeField, FormerlySerializedAs("gravity")] float mGravity = -30f;
+        [SerializeField, FormerlySerializedAs("maxFallSpeed")] float mMaxFallSpeed = -40f;
+        [SerializeField, FormerlySerializedAs("turnSpeed")] float mTurnSpeed = 1080f;
+        [SerializeField, FormerlySerializedAs("impulseDamping")] float mImpulseDamping = 8f;
 
-        CharacterController controller;
-        Vector3 planarVelocity;
-        Vector3 impulseVelocity;
-        Vector3 pendingDisplacement;
-        float verticalVelocity;
+        CharacterController mController;
+        Vector3 mPlanarVelocity;
+        Vector3 mImpulseVelocity;
+        Vector3 mPendingDisplacement;
+        float mVerticalVelocity;
 
         /// <summary>カメラ基準の入力方向(長さ0〜1)</summary>
         public Vector3 DesiredDirection { get; set; }
         public bool LocomotionEnabled { get; set; } = true;
         public float GravityScale { get; set; } = 1f;
         public bool IsGrounded { get; private set; }
-        public float VerticalVelocity => verticalVelocity;
+        public float VerticalVelocity => mVerticalVelocity;
 
         void Awake()
         {
-            controller = GetComponent<CharacterController>();
+            mController = GetComponent<CharacterController>();
         }
 
         public bool TryJump()
         {
             if (!IsGrounded) return false;
-            verticalVelocity = jumpVelocity;
+            mVerticalVelocity = mJumpVelocity;
             IsGrounded = false;
             return true;
         }
 
-        public void SetVerticalVelocity(float velocity) => verticalVelocity = velocity;
+        public void SetVerticalVelocity(float iVelocity) => mVerticalVelocity = iVelocity;
 
-        public void Displace(Vector3 delta) => pendingDisplacement += delta;
+        public void Displace(Vector3 iDelta) => mPendingDisplacement += iDelta;
 
-        public void AddImpulse(Vector3 velocity) => impulseVelocity += velocity;
+        public void AddImpulse(Vector3 iVelocity) => mImpulseVelocity += iVelocity;
 
         /// <summary>その場で移動する(ブリンク用)。壁などの当たり判定は効く。</summary>
-        public void Teleport(Vector3 delta) => controller.Move(delta);
+        public void Teleport(Vector3 iDelta) => mController.Move(iDelta);
 
-        public void FaceDirection(Vector3 direction)
+        public void FaceDirection(Vector3 iDirection)
         {
-            direction.y = 0f;
-            if (direction.sqrMagnitude < 1e-4f) return;
-            transform.rotation = Quaternion.LookRotation(direction);
+            iDirection.y = 0f;
+            if (iDirection.sqrMagnitude < 1e-4f) return;
+            transform.rotation = Quaternion.LookRotation(iDirection);
         }
 
         void Update()
         {
-            float dt = Time.deltaTime;
+            float aDt = Time.deltaTime;
 
-            Vector3 desired = DesiredDirection;
-            desired.y = 0f;
-            Vector3 targetVelocity = LocomotionEnabled ? Vector3.ClampMagnitude(desired, 1f) * moveSpeed : Vector3.zero;
-            float accel = !LocomotionEnabled ? acceleration * 2f : IsGrounded ? acceleration : airAcceleration;
-            planarVelocity = Vector3.MoveTowards(planarVelocity, targetVelocity, accel * dt);
+            Vector3 aDesired = DesiredDirection;
+            aDesired.y = 0f;
+            Vector3 aTargetVelocity = LocomotionEnabled ? Vector3.ClampMagnitude(aDesired, 1f) * mMoveSpeed : Vector3.zero;
+            float aAccel = !LocomotionEnabled ? mAcceleration * 2f : IsGrounded ? mAcceleration : mAirAcceleration;
+            mPlanarVelocity = Vector3.MoveTowards(mPlanarVelocity, aTargetVelocity, aAccel * aDt);
 
-            if (LocomotionEnabled && desired.sqrMagnitude > 0.01f)
+            if (LocomotionEnabled && aDesired.sqrMagnitude > 0.01f)
             {
-                var targetRotation = Quaternion.LookRotation(desired);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * dt);
+                var aTargetRotation = Quaternion.LookRotation(aDesired);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, aTargetRotation, mTurnSpeed * aDt);
             }
 
-            verticalVelocity = Mathf.Max(verticalVelocity + gravity * GravityScale * dt, maxFallSpeed);
-            impulseVelocity = Vector3.Lerp(impulseVelocity, Vector3.zero, 1f - Mathf.Exp(-impulseDamping * dt));
+            mVerticalVelocity = Mathf.Max(mVerticalVelocity + mGravity * GravityScale * aDt, mMaxFallSpeed);
+            mImpulseVelocity = Vector3.Lerp(mImpulseVelocity, Vector3.zero, 1f - Mathf.Exp(-mImpulseDamping * aDt));
 
-            Vector3 motion = (planarVelocity + impulseVelocity + Vector3.up * verticalVelocity) * dt + pendingDisplacement;
-            pendingDisplacement = Vector3.zero;
+            Vector3 aMotion = (mPlanarVelocity + mImpulseVelocity + Vector3.up * mVerticalVelocity) * aDt + mPendingDisplacement;
+            mPendingDisplacement = Vector3.zero;
 
-            var flags = controller.Move(motion);
-            IsGrounded = (flags & CollisionFlags.Below) != 0;
-            if (IsGrounded && verticalVelocity < 0f) verticalVelocity = -2f;
-            if ((flags & CollisionFlags.Above) != 0 && verticalVelocity > 0f) verticalVelocity = 0f;
+            var aFlags = mController.Move(aMotion);
+            IsGrounded = (aFlags & CollisionFlags.Below) != 0;
+            if (IsGrounded && mVerticalVelocity < 0f) mVerticalVelocity = -2f;
+            if ((aFlags & CollisionFlags.Above) != 0 && mVerticalVelocity > 0f) mVerticalVelocity = 0f;
         }
     }
 }

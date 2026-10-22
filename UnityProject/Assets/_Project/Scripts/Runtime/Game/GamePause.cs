@@ -16,11 +16,11 @@ namespace BattleFight
             Changed = null;
         }
 
-        public static void Set(bool paused)
+        public static void Set(bool iPaused)
         {
-            IsPaused = paused;
-            Time.timeScale = paused ? 0f : 1f;
-            Changed?.Invoke(paused);
+            IsPaused = iPaused;
+            Time.timeScale = iPaused ? 0f : 1f;
+            Changed?.Invoke(iPaused);
         }
     }
 }

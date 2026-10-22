@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace BattleFight
 {
@@ -32,36 +33,36 @@ namespace BattleFight
     /// </summary>
     public class PlayerInputReader : MonoBehaviour
     {
-        static readonly int ActionCount = Enum.GetValues(typeof(PlayerAction)).Length;
+        static readonly int mActionCount = Enum.GetValues(typeof(PlayerAction)).Length;
 
-        [SerializeField, Tooltip("先行入力を受け付ける秒数")] float bufferTime = 0.15f;
+        [SerializeField, Tooltip("先行入力を受け付ける秒数"), FormerlySerializedAs("bufferTime")] float mBufferTime = 0.15f;
 
-        InputAction move;
-        InputAction stickLook;
-        InputAction mouseLook;
-        InputAction[] buttons;
-        float[] pressedAt;
+        InputAction mMove;
+        InputAction mStickLook;
+        InputAction mMouseLook;
+        InputAction[] mButtons;
+        float[] mPressedAt;
 
-        public Vector2 Move => move.ReadValue<Vector2>();
-        public Vector2 StickLook => stickLook.ReadValue<Vector2>();
-        public Vector2 MouseDelta => mouseLook.ReadValue<Vector2>();
+        public Vector2 Move => mMove.ReadValue<Vector2>();
+        public Vector2 StickLook => mStickLook.ReadValue<Vector2>();
+        public Vector2 MouseDelta => mMouseLook.ReadValue<Vector2>();
 
         void Awake()
         {
-            move = new InputAction("Move", InputActionType.Value);
-            move.AddCompositeBinding("2DVector")
+            mMove = new InputAction("Move", InputActionType.Value);
+            mMove.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/w")
                 .With("Down", "<Keyboard>/s")
                 .With("Left", "<Keyboard>/a")
                 .With("Right", "<Keyboard>/d");
-            move.AddBinding("<Gamepad>/leftStick");
+            mMove.AddBinding("<Gamepad>/leftStick");
 
-            stickLook = new InputAction("StickLook", InputActionType.Value, "<Gamepad>/rightStick");
-            mouseLook = new InputAction("MouseLook", InputActionType.Value, "<Mouse>/delta");
+            mStickLook = new InputAction("StickLook", InputActionType.Value, "<Gamepad>/rightStick");
+            mMouseLook = new InputAction("MouseLook", InputActionType.Value, "<Mouse>/delta");
 
-            buttons = new InputAction[ActionCount];
-            pressedAt = new float[ActionCount];
-            for (int i = 0; i < ActionCount; i++) pressedAt[i] = float.NegativeInfinity;
+            mButtons = new InputAction[mActionCount];
+            mPressedAt = new float[mActionCount];
+            for (int aI = 0; aI < mActionCount; aI++) mPressedAt[aI] = float.NegativeInfinity;
 
             Bind(PlayerAction.AttackA, "<Gamepad>/buttonWest", "<Mouse>/leftButton", "<Keyboard>/j");
             Bind(PlayerAction.AttackB, "<Gamepad>/buttonNorth", "<Mouse>/rightButton", "<Keyboard>/k");
@@ -78,67 +79,67 @@ namespace BattleFight
             Bind(PlayerAction.Drive, "<Gamepad>/leftTrigger", "<Keyboard>/v");
         }
 
-        void Bind(PlayerAction action, params string[] paths)
+        void Bind(PlayerAction iAction, params string[] iPaths)
         {
-            int index = (int)action;
-            var inputAction = new InputAction(action.ToString(), InputActionType.Button);
-            foreach (var path in paths) inputAction.AddBinding(path);
-            inputAction.performed += _ => pressedAt[index] = Time.unscaledTime;
-            buttons[index] = inputAction;
+            int aIndex = (int)iAction;
+            var aInputAction = new InputAction(iAction.ToString(), InputActionType.Button);
+            foreach (var aPath in iPaths) aInputAction.AddBinding(aPath);
+            aInputAction.performed += _ => mPressedAt[aIndex] = Time.unscaledTime;
+            mButtons[aIndex] = aInputAction;
         }
 
         void OnEnable()
         {
-            move.Enable();
-            stickLook.Enable();
-            mouseLook.Enable();
-            foreach (var button in buttons) button.Enable();
+            mMove.Enable();
+            mStickLook.Enable();
+            mMouseLook.Enable();
+            foreach (var aButton in mButtons) aButton.Enable();
         }
 
         void OnDisable()
         {
-            move.Disable();
-            stickLook.Disable();
-            mouseLook.Disable();
-            foreach (var button in buttons) button.Disable();
+            mMove.Disable();
+            mStickLook.Disable();
+            mMouseLook.Disable();
+            foreach (var aButton in mButtons) aButton.Disable();
         }
 
         void OnDestroy()
         {
-            move.Dispose();
-            stickLook.Dispose();
-            mouseLook.Dispose();
-            foreach (var button in buttons) button.Dispose();
+            mMove.Dispose();
+            mStickLook.Dispose();
+            mMouseLook.Dispose();
+            foreach (var aButton in mButtons) aButton.Dispose();
         }
 
         /// <summary>バッファ内に押下があるか(消費しない)</summary>
-        public bool Peek(PlayerAction action) => Time.unscaledTime - pressedAt[(int)action] <= bufferTime;
+        public bool Peek(PlayerAction iAction) => Time.unscaledTime - mPressedAt[(int)iAction] <= mBufferTime;
 
         /// <summary>バッファ内の押下を消費する</summary>
-        public bool Consume(PlayerAction action)
+        public bool Consume(PlayerAction iAction)
         {
-            if (!Peek(action)) return false;
-            pressedAt[(int)action] = float.NegativeInfinity;
+            if (!Peek(iAction)) return false;
+            mPressedAt[(int)iAction] = float.NegativeInfinity;
             return true;
         }
 
-        public bool IsHeld(PlayerAction action) => buttons[(int)action].IsPressed();
+        public bool IsHeld(PlayerAction iAction) => mButtons[(int)iAction].IsPressed();
 
         /// <summary>
         /// フォーカスが外れると、押していたキーを離したことが届かず移動しっぱなしになるので、
         /// 入力をすべて離した状態に戻す。
         /// </summary>
-        void OnApplicationFocus(bool hasFocus)
+        void OnApplicationFocus(bool iHasFocus)
         {
-            if (!hasFocus) ReleaseAll();
+            if (!iHasFocus) ReleaseAll();
         }
 
         /// <summary>キーボード・マウス・ゲームパッドをすべて離した状態に戻し、先行入力も捨てる</summary>
         public void ReleaseAll()
         {
-            foreach (var device in InputSystem.devices)
+            foreach (var aDevice in InputSystem.devices)
             {
-                if (device is Keyboard || device is Mouse || device is Gamepad) InputSystem.ResetDevice(device);
+                if (aDevice is Keyboard || aDevice is Mouse || aDevice is Gamepad) InputSystem.ResetDevice(aDevice);
             }
             ClearBuffer();
         }
@@ -146,10 +147,10 @@ namespace BattleFight
         /// <summary>先行入力をすべて捨てる(編成画面を閉じたときのクリックなどが技として出ないように)</summary>
         public void ClearBuffer()
         {
-            for (int i = 0; i < pressedAt.Length; i++) pressedAt[i] = float.NegativeInfinity;
+            for (int aI = 0; aI < mPressedAt.Length; aI++) mPressedAt[aI] = float.NegativeInfinity;
         }
 
-        public static PlayerAction SwapAction(int index) => index switch
+        public static PlayerAction SwapAction(int iIndex) => iIndex switch
         {
             0 => PlayerAction.Swap1,
             1 => PlayerAction.Swap2,
@@ -157,7 +158,7 @@ namespace BattleFight
             _ => PlayerAction.Swap4,
         };
 
-        public static PlayerAction ActionFor(SlotType slot) => slot switch
+        public static PlayerAction ActionFor(SlotType iSlot) => iSlot switch
         {
             SlotType.AttackA => PlayerAction.AttackA,
             SlotType.AttackB => PlayerAction.AttackB,

@@ -8,12 +8,12 @@ namespace BattleFight
     {
         public const float DefaultWindow = 2.5f;
 
-        readonly float window;
-        float lastHitTime = float.NegativeInfinity;
+        readonly float mWindow;
+        float mLastHitTime = float.NegativeInfinity;
 
-        public ComboCounter(float window = DefaultWindow)
+        public ComboCounter(float iWindow = DefaultWindow)
         {
-            this.window = window;
+            mWindow = iWindow;
         }
 
         public int Count { get; private set; }
@@ -24,42 +24,42 @@ namespace BattleFight
         public float LastFinishedTime { get; private set; } = float.NegativeInfinity;
 
         /// <summary>残り時間の割合(1 = 当てた直後、0 = 途切れる)</summary>
-        public float Remaining(float time) => Count > 0 ? UnityEngine.Mathf.Clamp01(1f - (time - lastHitTime) / window) : 0f;
+        public float Remaining(float iTime) => Count > 0 ? UnityEngine.Mathf.Clamp01(1f - (iTime - mLastHitTime) / mWindow) : 0f;
 
-        public void AddHit(float time, int hits = 1)
+        public void AddHit(float iTime, int iHits = 1)
         {
-            Tick(time);
-            Count += hits;
-            lastHitTime = time;
+            Tick(iTime);
+            Count += iHits;
+            mLastHitTime = iTime;
             if (Count > Best) Best = Count;
         }
 
         /// <summary>時間切れで途切れたら、その数を返す(途切れていなければ 0)</summary>
-        public int Tick(float time)
+        public int Tick(float iTime)
         {
-            if (Count > 0 && time - lastHitTime > window) return Finish(time);
+            if (Count > 0 && iTime - mLastHitTime > mWindow) return Finish(iTime);
             return 0;
         }
 
         /// <summary>被弾などで今すぐ途切れさせる。途切れた数を返す</summary>
-        public int Break(float time) => Count > 0 ? Finish(time) : 0;
+        public int Break(float iTime) => Count > 0 ? Finish(iTime) : 0;
 
-        int Finish(float time)
+        int Finish(float iTime)
         {
-            int finished = Count;
-            LastFinished = finished;
-            LastFinishedTime = time;
+            int aFinished = Count;
+            LastFinished = aFinished;
+            LastFinishedTime = iTime;
             Count = 0;
-            return finished;
+            return aFinished;
         }
 
         /// <summary>コンボの数に応じた評価(HUD 用)。少ないときは空</summary>
-        public static string Rating(int count)
+        public static string Rating(int iCount)
         {
-            if (count >= 100) return "UNREAL";
-            if (count >= 50) return "AMAZING";
-            if (count >= 25) return "GREAT";
-            if (count >= 10) return "NICE";
+            if (iCount >= 100) return "UNREAL";
+            if (iCount >= 50) return "AMAZING";
+            if (iCount >= 25) return "GREAT";
+            if (iCount >= 10) return "NICE";
             return "";
         }
     }

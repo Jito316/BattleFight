@@ -17,15 +17,15 @@ namespace BattleFight
         public float Value { get; private set; }
         public bool IsFull => Value >= 1f;
 
-        public void Add(float amount) => Value = Mathf.Clamp01(Value + Mathf.Max(0f, amount));
+        public void Add(float iAmount) => Value = Mathf.Clamp01(Value + Mathf.Max(0f, iAmount));
 
         /// <summary>1回の攻撃で当たったぶんを足す</summary>
-        public void AddFromAttack(int hits, int weakHits, bool swapStrike)
+        public void AddFromAttack(int iHits, int iWeakHits, bool iSwapStrike)
         {
-            if (hits <= 0) return;
-            float amount = hits * PerHit + weakHits * PerWeakHit;
-            if (swapStrike) amount += PerSwapStrike;
-            Add(Mathf.Min(amount, MaxPerAttack + (swapStrike ? PerSwapStrike : 0f)));
+            if (iHits <= 0) return;
+            float aAmount = iHits * PerHit + iWeakHits * PerWeakHit;
+            if (iSwapStrike) aAmount += PerSwapStrike;
+            Add(Mathf.Min(aAmount, MaxPerAttack + (iSwapStrike ? PerSwapStrike : 0f)));
         }
 
         /// <summary>満タンなら使って空にする</summary>
