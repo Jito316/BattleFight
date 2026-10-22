@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -125,6 +126,12 @@ namespace BattleFight.EditorTools
             AssetDatabase.DeleteAsset(mPlayerControllerPath);
             var aController = AnimatorController.CreateAnimatorControllerAtPath(mPlayerControllerPath);
             aController.AddParameter(CharacterAnimator.SpeedParameter, AnimatorControllerParameterType.Float);
+            aController.AddParameter(new AnimatorControllerParameter
+            {
+                name = CharacterAnimator.MotionSpeedParameter,
+                type = AnimatorControllerParameterType.Float,
+                defaultFloat = 1f,
+            });
             var aMachine = aController.layers[0].stateMachine;
 
             var aTree = new BlendTree
@@ -144,11 +151,14 @@ namespace BattleFight.EditorTools
             aLocomotion.motion = aTree;
             aMachine.defaultState = aLocomotion;
 
-            AddState(aMachine, aClips, CharacterAnimator.AirState, "Jump_Loop", 1f);
-            foreach (var aName in CharacterAnimator.ActionStates)
+            AddState(aMachine, aClips, CharacterAnimator.AirState, "Jump_Loop", false);
+            AddState(aMachine, aClips, CharacterAnimator.HitState, CharacterAnimator.HitState, false);
+            AddState(aMachine, aClips, CharacterAnimator.DeathState, CharacterAnimator.DeathState, false);
+            // 技のモーションは、段の長さに合わせて速さを変える(MotionSpeed)
+            var aAdded = new HashSet<string> { CharacterAnimator.AirState, CharacterAnimator.HitState, CharacterAnimator.DeathState };
+            foreach (var aName in CharacterAnimator.ActionStates.Concat(SkillMotionNames()))
             {
-                bool aAttack = aName != CharacterAnimator.HitState && aName != CharacterAnimator.DeathState;
-                AddState(aMachine, aClips, aName, aName, aAttack ? 1.3f : 1f);
+                if (aAdded.Add(aName)) AddState(aMachine, aClips, aName, aName, true);
             }
 
             EditorUtility.SetDirty(aController);
@@ -162,7 +172,7 @@ namespace BattleFight.EditorTools
             else Debug.LogWarning($"アニメーションが見つかりません: {iClip}");
         }
 
-        static void AddState(AnimatorStateMachine iMachine, Dictionary<string, AnimationClip> iClips, string iState, string iClip, float iSpeed)
+        static void AddState(AnimatorStateMachine iMachine, Dictionary<string, AnimationClip> iClips, string iState, string iClip, bool iFitToSkill)
         {
             if (!iClips.TryGetValue(iClip, out var aClip))
             {
@@ -171,7 +181,11 @@ namespace BattleFight.EditorTools
             }
             var aState = iMachine.AddState(iState);
             aState.motion = aClip;
-            aState.speed = iSpeed;
+            if (iFitToSkill)
+            {
+                aState.speedParameter = CharacterAnimator.MotionSpeedParameter;
+                aState.speedParameterActive = true;
+            }
         }
     }
 }

@@ -12,94 +12,113 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Sword_Finisher
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u5343\u5203"
-  description: "\u5263\u30DE\u30B9\u30BF\u30EA\u30FC\u306E\u30D5\u30A3\u30CB\u30C3\u30B7\u30E3\u30FC\u3002\u5468\u56F2\u3092\u65AC\u308A\u523B\u3080\u3002"
-  slot: 0
-  weapon: 0
-  behavior: 0
-  usableInAir: 1
-  autoChain: 1
-  swapCancelFrame: 0
-  invulnerableFrames: 60
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  steps:
-  - startupFrames: 8
-    activeFrames: 3
-    recoveryFrames: 2
-    chainFrame: 0
-    cancelFrame: 1
-    damage: 10
-    stagger: 20
-    armorBreak: 8
-    stylePoints: 20
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 0.5}
-    hitboxRadius: 2.8
-    forwardMove: 0
-  - startupFrames: 0
-    activeFrames: 3
-    recoveryFrames: 2
-    chainFrame: 0
-    cancelFrame: 1
-    damage: 10
-    stagger: 20
-    armorBreak: 8
-    stylePoints: 20
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 0.5}
-    hitboxRadius: 2.8
-    forwardMove: 0
-  - startupFrames: 0
-    activeFrames: 3
-    recoveryFrames: 2
-    chainFrame: 0
-    cancelFrame: 1
-    damage: 10
-    stagger: 20
-    armorBreak: 8
-    stylePoints: 20
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 0.5}
-    hitboxRadius: 2.8
-    forwardMove: 0
-  - startupFrames: 0
-    activeFrames: 3
-    recoveryFrames: 2
-    chainFrame: 0
-    cancelFrame: 1
-    damage: 10
-    stagger: 20
-    armorBreak: 8
-    stylePoints: 20
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 0.5}
-    hitboxRadius: 2.8
-    forwardMove: 0
-  - startupFrames: 6
-    activeFrames: 6
-    recoveryFrames: 30
-    chainFrame: 0
-    cancelFrame: 18
-    damage: 35
-    stagger: 80
-    armorBreak: 40
-    stylePoints: 60
-    knockback: 8
-    launch: 0
-    hitstop: 0.12
-    hitboxOffset: {x: 0, y: 1, z: 0.8}
-    hitboxRadius: 3.2
-    forwardMove: 0
+  DisplayName: "\u5343\u5203"
+  Description: "\u5263\u30DE\u30B9\u30BF\u30EA\u30FC\u306E\u30D5\u30A3\u30CB\u30C3\u30B7\u30E3\u30FC\u3002\u5468\u56F2\u3092\u65AC\u308A\u523B\u3080\u3002"
+  Slot: 0
+  Weapon: 0
+  Behavior: 0
+  UsableInAir: 1
+  AutoChain: 1
+  SwapCancelFrame: 0
+  InvulnerableFrames: 60
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 8
+    ActiveFrames: 3
+    RecoveryFrames: 2
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 10
+    Stagger: 20
+    ArmorBreak: 8
+    StylePoints: 20
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 0.5}
+    HitboxRadius: 2.8
+    ForwardMove: 0
+  - StartupFrames: 0
+    ActiveFrames: 3
+    RecoveryFrames: 2
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 10
+    Stagger: 20
+    ArmorBreak: 8
+    StylePoints: 20
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 0.5}
+    HitboxRadius: 2.8
+    ForwardMove: 0
+  - StartupFrames: 0
+    ActiveFrames: 3
+    RecoveryFrames: 2
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 10
+    Stagger: 20
+    ArmorBreak: 8
+    StylePoints: 20
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 0.5}
+    HitboxRadius: 2.8
+    ForwardMove: 0
+  - StartupFrames: 0
+    ActiveFrames: 3
+    RecoveryFrames: 2
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 10
+    Stagger: 20
+    ArmorBreak: 8
+    StylePoints: 20
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 0.5}
+    HitboxRadius: 2.8
+    ForwardMove: 0
+  - StartupFrames: 6
+    ActiveFrames: 6
+    RecoveryFrames: 30
+    ChainFrame: 0
+    CancelFrame: 18
+    Damage: 35
+    Stagger: 80
+    ArmorBreak: 40
+    StylePoints: 60
+    Knockback: 8
+    Launch: 0
+    Hitstop: 0.12
+    HitboxOffset: {x: 0, y: 1, z: 0.8}
+    HitboxRadius: 3.2
+    ForwardMove: 0
+  ChargeMotion: 
+  Motions:
+  - Sword_Regular_A
+  - Sword_Regular_B
+  - Sword_Regular_C
+  - Sword_Regular_B
+  - Sword_Attack

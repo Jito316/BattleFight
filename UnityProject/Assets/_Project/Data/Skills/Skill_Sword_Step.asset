@@ -12,34 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Sword_Step
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u30B9\u30C6\u30C3\u30D7\u65AC\u308A"
-  description: "\u5165\u529B\u65B9\u5411\u3078\u306E\u77ED\u8DDD\u96E2\u30C0\u30C3\u30B7\u30E5\u3002\u7121\u6575\u304C\u3042\u308A\u3001\u901A\u904E\u3057\u305F\u6575\u3092\u65AC\u308B\u3002"
-  slot: 2
-  weapon: 0
-  behavior: 1
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 12
-  airGravityScale: 0
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  steps:
-  - startupFrames: 2
-    activeFrames: 12
-    recoveryFrames: 10
-    chainFrame: 0
-    cancelFrame: 4
-    damage: 5
-    stagger: 8
-    armorBreak: 2
-    stylePoints: 12
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 0.5}
-    hitboxRadius: 1.1
-    forwardMove: 5.5
+  DisplayName: "\u30B9\u30C6\u30C3\u30D7\u65AC\u308A"
+  Description: "\u5165\u529B\u65B9\u5411\u3078\u306E\u77ED\u8DDD\u96E2\u30C0\u30C3\u30B7\u30E5\u3002\u7121\u6575\u304C\u3042\u308A\u3001\u901A\u904E\u3057\u305F\u6575\u3092\u65AC\u308B\u3002"
+  Slot: 2
+  Weapon: 0
+  Behavior: 1
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 12
+  AirGravityScale: 0
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 2
+    ActiveFrames: 12
+    RecoveryFrames: 10
+    ChainFrame: 0
+    CancelFrame: 4
+    Damage: 5
+    Stagger: 8
+    ArmorBreak: 2
+    StylePoints: 12
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 0.5}
+    HitboxRadius: 1.1
+    ForwardMove: 5.5
+  ChargeMotion: 
+  Motions:
+  - Sword_Dash

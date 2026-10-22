@@ -12,76 +12,81 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Staff_Bolt
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u9B54\u5F3E"
-  description: "\u30ED\u30C3\u30AF\u30AA\u30F3\u5BFE\u8C61\u3092\u8FFD\u3046\u9B54\u529B\u306E\u5F3E\u30923\u9023\u5C04\u3059\u308B\u3002"
-  slot: 0
-  weapon: 3
-  behavior: 6
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 32
-  projectileLifetime: 1
-  projectileRadius: 0.3
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 200
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 6
-    activeFrames: 2
-    recoveryFrames: 10
-    chainFrame: 0
-    cancelFrame: 6
-    damage: 7
-    stagger: 10
-    armorBreak: 2
-    stylePoints: 16
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 0, z: 0}
-    hitboxRadius: 0
-    forwardMove: 0
-  - startupFrames: 6
-    activeFrames: 2
-    recoveryFrames: 10
-    chainFrame: 0
-    cancelFrame: 6
-    damage: 7
-    stagger: 10
-    armorBreak: 2
-    stylePoints: 16
-    knockback: 1
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 0, z: 0}
-    hitboxRadius: 0
-    forwardMove: 0
-  - startupFrames: 8
-    activeFrames: 2
-    recoveryFrames: 20
-    chainFrame: 0
-    cancelFrame: 12
-    damage: 12
-    stagger: 20
-    armorBreak: 4
-    stylePoints: 22
-    knockback: 3
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 0, z: 0}
-    hitboxRadius: 0
-    forwardMove: 0
+  DisplayName: "\u9B54\u5F3E"
+  Description: "\u30ED\u30C3\u30AF\u30AA\u30F3\u5BFE\u8C61\u3092\u8FFD\u3046\u9B54\u529B\u306E\u5F3E\u30923\u9023\u5C04\u3059\u308B\u3002"
+  Slot: 0
+  Weapon: 3
+  Behavior: 6
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 32
+  ProjectileLifetime: 1
+  ProjectileRadius: 0.3
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 200
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 6
+    ActiveFrames: 2
+    RecoveryFrames: 10
+    ChainFrame: 0
+    CancelFrame: 6
+    Damage: 7
+    Stagger: 10
+    ArmorBreak: 2
+    StylePoints: 16
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  - StartupFrames: 6
+    ActiveFrames: 2
+    RecoveryFrames: 10
+    ChainFrame: 0
+    CancelFrame: 6
+    Damage: 7
+    Stagger: 10
+    ArmorBreak: 2
+    StylePoints: 16
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  - StartupFrames: 8
+    ActiveFrames: 2
+    RecoveryFrames: 20
+    ChainFrame: 0
+    CancelFrame: 12
+    Damage: 12
+    Stagger: 20
+    ArmorBreak: 4
+    StylePoints: 22
+    Knockback: 3
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  ChargeMotion: 
+  Motions:
+  - Spell_Simple_Shoot
+  - Spell_Simple_Shoot
+  - Spell_Simple_Shoot

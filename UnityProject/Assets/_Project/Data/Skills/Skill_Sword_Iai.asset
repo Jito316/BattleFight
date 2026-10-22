@@ -12,34 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Sword_Iai
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u5C45\u5408"
-  description: "\u9577\u62BC\u3057\u3067\u6E9C\u3081\u3001\u96E2\u3059\u3068\u7A81\u9032\u65AC\u308A\u3002\u6E9C\u3081\u4E2D\u306B\u653B\u6483\u3092\u53D7\u3051\u308B\u3068\u30AB\u30A6\u30F3\u30BF\u30FC\u3002"
-  slot: 1
-  weapon: 0
-  behavior: 2
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 45
-  moveSpeed: 0
-  steps:
-  - startupFrames: 4
-    activeFrames: 6
-    recoveryFrames: 24
-    chainFrame: 0
-    cancelFrame: 16
-    damage: 22
-    stagger: 45
-    armorBreak: 10
-    stylePoints: 45
-    knockback: 6
-    launch: 0
-    hitstop: 0.09
-    hitboxOffset: {x: 0, y: 1, z: 1.8}
-    hitboxRadius: 1.8
-    forwardMove: 4
+  DisplayName: "\u5C45\u5408"
+  Description: "\u9577\u62BC\u3057\u3067\u6E9C\u3081\u3001\u96E2\u3059\u3068\u7A81\u9032\u65AC\u308A\u3002\u6E9C\u3081\u4E2D\u306B\u653B\u6483\u3092\u53D7\u3051\u308B\u3068\u30AB\u30A6\u30F3\u30BF\u30FC\u3002"
+  Slot: 1
+  Weapon: 0
+  Behavior: 2
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 45
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 4
+    ActiveFrames: 6
+    RecoveryFrames: 24
+    ChainFrame: 0
+    CancelFrame: 16
+    Damage: 22
+    Stagger: 45
+    ArmorBreak: 10
+    StylePoints: 45
+    Knockback: 6
+    Launch: 0
+    Hitstop: 0.09
+    HitboxOffset: {x: 0, y: 1, z: 1.8}
+    HitboxRadius: 1.8
+    ForwardMove: 4
+  ChargeMotion: Sword_Block
+  Motions:
+  - Sword_Dash

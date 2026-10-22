@@ -12,46 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Gauntlet_Uppercut
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u6607\u9F8D\u62F3"
-  description: "\u98DB\u3073\u4E0A\u304C\u308A\u306A\u304C\u3089\u306E\u30A2\u30C3\u30D1\u30FC\u3002\u6575\u3068\u4E00\u7DD2\u306B\u7A7A\u4E2D\u3078\u4E0A\u304C\u308A\u3001\u7A7A\u4E2D\u30B3\u30F3\u30DC\u306B\u3064\u306A\u3052\u308B\u3002"
-  slot: 1
-  weapon: 5
-  behavior: 10
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.3
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 12
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 25
-  projectileLifetime: 1.2
-  projectileRadius: 0.35
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 0
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 8
-    activeFrames: 6
-    recoveryFrames: 26
-    chainFrame: 0
-    cancelFrame: 16
-    damage: 20
-    stagger: 50
-    armorBreak: 20
-    stylePoints: 36
-    knockback: 1
-    launch: 14
-    hitstop: 0.09
-    hitboxOffset: {x: 0, y: 1.2, z: 1.1}
-    hitboxRadius: 1.3
-    forwardMove: 0.8
+  DisplayName: "\u6607\u9F8D\u62F3"
+  Description: "\u98DB\u3073\u4E0A\u304C\u308A\u306A\u304C\u3089\u306E\u30A2\u30C3\u30D1\u30FC\u3002\u6575\u3068\u4E00\u7DD2\u306B\u7A7A\u4E2D\u3078\u4E0A\u304C\u308A\u3001\u7A7A\u4E2D\u30B3\u30F3\u30DC\u306B\u3064\u306A\u3052\u308B\u3002"
+  Slot: 1
+  Weapon: 5
+  Behavior: 10
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.3
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 12
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 8
+    ActiveFrames: 6
+    RecoveryFrames: 26
+    ChainFrame: 0
+    CancelFrame: 16
+    Damage: 20
+    Stagger: 50
+    ArmorBreak: 20
+    StylePoints: 36
+    Knockback: 1
+    Launch: 14
+    Hitstop: 0.09
+    HitboxOffset: {x: 0, y: 1.2, z: 1.1}
+    HitboxRadius: 1.3
+    ForwardMove: 0.8
+  ChargeMotion: Melee_Hook
+  Motions:
+  - NinjaJump_Start

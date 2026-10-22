@@ -12,76 +12,81 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Staff_Melee
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u6756\u8853"
-  description: "\u6756\u3067\u6253\u30643\u6BB5\u306E\u8FD1\u63A5\u653B\u6483\u3002\u6700\u5F8C\u306E\u4E00\u6483\u3067\u6253\u3061\u4E0A\u3052\u308B\u3002"
-  slot: 0
-  weapon: 3
-  behavior: 0
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 25
-  projectileLifetime: 1.2
-  projectileRadius: 0.35
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 0
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 7
-    activeFrames: 4
-    recoveryFrames: 14
-    chainFrame: 0
-    cancelFrame: 8
-    damage: 8
-    stagger: 12
-    armorBreak: 5
-    stylePoints: 18
-    knockback: 2
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 1.5}
-    hitboxRadius: 1.4
-    forwardMove: 0.5
-  - startupFrames: 7
-    activeFrames: 4
-    recoveryFrames: 14
-    chainFrame: 0
-    cancelFrame: 8
-    damage: 8
-    stagger: 12
-    armorBreak: 5
-    stylePoints: 18
-    knockback: 2
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 1.5}
-    hitboxRadius: 1.4
-    forwardMove: 0.5
-  - startupFrames: 10
-    activeFrames: 6
-    recoveryFrames: 22
-    chainFrame: 0
-    cancelFrame: 13
-    damage: 14
-    stagger: 28
-    armorBreak: 8
-    stylePoints: 26
-    knockback: 2
-    launch: 9
-    hitstop: 0.06
-    hitboxOffset: {x: 0, y: 1, z: 1.5}
-    hitboxRadius: 1.5
-    forwardMove: 0.6
+  DisplayName: "\u6756\u8853"
+  Description: "\u6756\u3067\u6253\u30643\u6BB5\u306E\u8FD1\u63A5\u653B\u6483\u3002\u6700\u5F8C\u306E\u4E00\u6483\u3067\u6253\u3061\u4E0A\u3052\u308B\u3002"
+  Slot: 0
+  Weapon: 3
+  Behavior: 0
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 7
+    ActiveFrames: 4
+    RecoveryFrames: 14
+    ChainFrame: 0
+    CancelFrame: 8
+    Damage: 8
+    Stagger: 12
+    ArmorBreak: 5
+    StylePoints: 18
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 1.5}
+    HitboxRadius: 1.4
+    ForwardMove: 0.5
+  - StartupFrames: 7
+    ActiveFrames: 4
+    RecoveryFrames: 14
+    ChainFrame: 0
+    CancelFrame: 8
+    Damage: 8
+    Stagger: 12
+    ArmorBreak: 5
+    StylePoints: 18
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 1.5}
+    HitboxRadius: 1.4
+    ForwardMove: 0.5
+  - StartupFrames: 10
+    ActiveFrames: 6
+    RecoveryFrames: 22
+    ChainFrame: 0
+    CancelFrame: 13
+    Damage: 14
+    Stagger: 28
+    ArmorBreak: 8
+    StylePoints: 26
+    Knockback: 2
+    Launch: 9
+    Hitstop: 0.06
+    HitboxOffset: {x: 0, y: 1, z: 1.5}
+    HitboxRadius: 1.5
+    ForwardMove: 0.6
+  ChargeMotion: 
+  Motions:
+  - Sword_Regular_A
+  - Sword_Regular_B
+  - Sword_Regular_C

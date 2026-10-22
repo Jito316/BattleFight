@@ -12,61 +12,65 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Sword_Thrust
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u75BE\u98A8\u7A81\u304D"
-  description: "\u8E0F\u307F\u8FBC\u307F\u306A\u304C\u3089\u306E2\u6BB5\u7A81\u304D\u3002\u30EA\u30FC\u30C1\u304C\u9577\u304F\u3001\u96E2\u308C\u305F\u6575\u306B\u3082\u5C4A\u304F\u3002"
-  slot: 0
-  weapon: 0
-  behavior: 0
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 25
-  projectileLifetime: 1.2
-  projectileRadius: 0.35
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 0
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 8
-    activeFrames: 4
-    recoveryFrames: 16
-    chainFrame: 0
-    cancelFrame: 10
-    damage: 12
-    stagger: 18
-    armorBreak: 6
-    stylePoints: 22
-    knockback: 3
-    launch: 0
-    hitstop: 0.04
-    hitboxOffset: {x: 0, y: 1, z: 1.8}
-    hitboxRadius: 1.1
-    forwardMove: 1.6
-  - startupFrames: 10
-    activeFrames: 5
-    recoveryFrames: 22
-    chainFrame: 0
-    cancelFrame: 13
-    damage: 18
-    stagger: 30
-    armorBreak: 10
-    stylePoints: 30
-    knockback: 6
-    launch: 0
-    hitstop: 0.06
-    hitboxOffset: {x: 0, y: 1, z: 2}
-    hitboxRadius: 1.2
-    forwardMove: 2
+  DisplayName: "\u75BE\u98A8\u7A81\u304D"
+  Description: "\u8E0F\u307F\u8FBC\u307F\u306A\u304C\u3089\u306E2\u6BB5\u7A81\u304D\u3002\u30EA\u30FC\u30C1\u304C\u9577\u304F\u3001\u96E2\u308C\u305F\u6575\u306B\u3082\u5C4A\u304F\u3002"
+  Slot: 0
+  Weapon: 0
+  Behavior: 0
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 8
+    ActiveFrames: 4
+    RecoveryFrames: 16
+    ChainFrame: 0
+    CancelFrame: 10
+    Damage: 12
+    Stagger: 18
+    ArmorBreak: 6
+    StylePoints: 22
+    Knockback: 3
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 1.8}
+    HitboxRadius: 1.1
+    ForwardMove: 1.6
+  - StartupFrames: 10
+    ActiveFrames: 5
+    RecoveryFrames: 22
+    ChainFrame: 0
+    CancelFrame: 13
+    Damage: 18
+    Stagger: 30
+    ArmorBreak: 10
+    StylePoints: 30
+    Knockback: 6
+    Launch: 0
+    Hitstop: 0.06
+    HitboxOffset: {x: 0, y: 1, z: 2}
+    HitboxRadius: 1.2
+    ForwardMove: 2
+  ChargeMotion: 
+  Motions:
+  - Sword_Dash
+  - Sword_Dash

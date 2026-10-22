@@ -12,46 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
   m_Name: Skill_Staff_Frost
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
-  displayName: "\u6C37\u7D50\u9663"
-  description: "\u8DB3\u5143\u304B\u3089\u51B7\u6C17\u3092\u5E83\u3052\u308B\u3002\u5A01\u529B\u306F\u63A7\u3048\u3081\u3060\u304C\u3001\u5468\u308A\u306E\u6575\u3092\u9577\u304F\u3072\u308B\u307E\u305B\u308B\u3002"
-  slot: 1
-  weapon: 3
-  behavior: 0
-  usableInAir: 1
-  autoChain: 0
-  swapCancelFrame: 0
-  invulnerableFrames: 0
-  airGravityScale: 0.15
-  range: 0
-  dashDistance: 0
-  jumpVelocity: 0
-  chargeFrames: 0
-  moveSpeed: 0
-  projectileCount: 1
-  projectileSpread: 0
-  projectileSpeed: 25
-  projectileLifetime: 1.2
-  projectileRadius: 0.35
-  projectilePierce: 0
-  explosionRadius: 0
-  homing: 0
-  strikeDelay: 0.35
-  strikeDistance: 8
-  beamLength: 14
-  beamRadius: 0.5
-  steps:
-  - startupFrames: 20
-    activeFrames: 6
-    recoveryFrames: 28
-    chainFrame: 0
-    cancelFrame: 17
-    damage: 18
-    stagger: 90
-    armorBreak: 15
-    stylePoints: 40
-    knockback: 1
-    launch: 0
-    hitstop: 0.08
-    hitboxOffset: {x: 0, y: 0.5, z: 0}
-    hitboxRadius: 4.5
-    forwardMove: 0
+  DisplayName: "\u6C37\u7D50\u9663"
+  Description: "\u8DB3\u5143\u304B\u3089\u51B7\u6C17\u3092\u5E83\u3052\u308B\u3002\u5A01\u529B\u306F\u63A7\u3048\u3081\u3060\u304C\u3001\u5468\u308A\u306E\u6575\u3092\u9577\u304F\u3072\u308B\u307E\u305B\u308B\u3002"
+  Slot: 1
+  Weapon: 3
+  Behavior: 0
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 20
+    ActiveFrames: 6
+    RecoveryFrames: 28
+    ChainFrame: 0
+    CancelFrame: 17
+    Damage: 18
+    Stagger: 90
+    ArmorBreak: 15
+    StylePoints: 40
+    Knockback: 1
+    Launch: 0
+    Hitstop: 0.08
+    HitboxOffset: {x: 0, y: 0.5, z: 0}
+    HitboxRadius: 4.5
+    ForwardMove: 0
+  ChargeMotion: Spell_Simple_Enter
+  Motions:
+  - Spell_Simple_Shoot
