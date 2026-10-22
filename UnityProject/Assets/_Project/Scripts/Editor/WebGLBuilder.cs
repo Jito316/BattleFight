@@ -26,9 +26,9 @@ namespace BattleFight.EditorTools
             {
                 EditorApplication.Exit(Build() ? 0 : 1);
             }
-            catch (Exception aE)
+            catch (Exception aException)
             {
-                Debug.LogException(aE);
+                Debug.LogException(aException);
                 EditorApplication.Exit(1);
             }
         }
@@ -119,16 +119,16 @@ namespace BattleFight.EditorTools
 
             var aQualityAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/QualitySettings.asset");
             if (aQualityAsset == null || aQualityAsset.Length == 0) return;
-            var aSo = new SerializedObject(aQualityAsset[0]);
-            var aLevels = aSo.FindProperty("m_QualitySettings");
+            var aSerialized = new SerializedObject(aQualityAsset[0]);
+            var aLevels = aSerialized.FindProperty("m_QualitySettings");
 
             int aPcIndex = -1;
             int aWebglIndex = -1;
-            for (int aI = 0; aI < aLevels.arraySize; aI++)
+            for (int aIndex = 0; aIndex < aLevels.arraySize; aIndex++)
             {
-                string aName = aLevels.GetArrayElementAtIndex(aI).FindPropertyRelative("name").stringValue;
-                if (aName == "PC") aPcIndex = aI;
-                if (aName == mWebGLQualityName) aWebglIndex = aI;
+                string aName = aLevels.GetArrayElementAtIndex(aIndex).FindPropertyRelative("name").stringValue;
+                if (aName == "PC") aPcIndex = aIndex;
+                if (aName == mWebGLQualityName) aWebglIndex = aIndex;
             }
             if (aPcIndex < 0) return;
 
@@ -145,20 +145,20 @@ namespace BattleFight.EditorTools
             aLevel.FindPropertyRelative("customRenderPipeline").objectReferenceValue = aPipeline;
 
             // WebGL ビルドには WebGL 用の画質だけを入れる(PC / Mobile の URP 設定や SSAO のシェーダーを含めない)
-            for (int aI = 0; aI < aLevels.arraySize; aI++)
+            for (int aIndex = 0; aIndex < aLevels.arraySize; aIndex++)
             {
-                var aExcluded = aLevels.GetArrayElementAtIndex(aI).FindPropertyRelative("excludedTargetPlatforms");
+                var aExcluded = aLevels.GetArrayElementAtIndex(aIndex).FindPropertyRelative("excludedTargetPlatforms");
                 if (aExcluded == null) continue;
-                SetPlatformExcluded(aExcluded, "WebGL", aI != aWebglIndex);
+                SetPlatformExcluded(aExcluded, "WebGL", aIndex != aWebglIndex);
             }
 
-            var aDefaults = aSo.FindProperty("m_PerPlatformDefaultQuality");
-            for (int aI = 0; aI < aDefaults.arraySize; aI++)
+            var aDefaults = aSerialized.FindProperty("m_PerPlatformDefaultQuality");
+            for (int aIndex = 0; aIndex < aDefaults.arraySize; aIndex++)
             {
-                var aPair = aDefaults.GetArrayElementAtIndex(aI);
+                var aPair = aDefaults.GetArrayElementAtIndex(aIndex);
                 if (aPair.FindPropertyRelative("first").stringValue == "WebGL") aPair.FindPropertyRelative("second").intValue = aWebglIndex;
             }
-            aSo.ApplyModifiedPropertiesWithoutUndo();
+            aSerialized.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
         }
 
@@ -169,13 +169,13 @@ namespace BattleFight.EditorTools
             if (aRenderer == null) return null;
 
             // レンダラー機能(PC 用の SSAO)を外す。WebGL では重いわりに、仮モデルでは効果が小さい
-            var aSo = new SerializedObject(aRenderer);
-            aSo.FindProperty("m_RendererFeatures").ClearArray();
-            aSo.FindProperty("m_RendererFeatureMap").ClearArray();
+            var aSerialized = new SerializedObject(aRenderer);
+            aSerialized.FindProperty("m_RendererFeatures").ClearArray();
+            aSerialized.FindProperty("m_RendererFeatureMap").ClearArray();
             // ポストエフェクトは使わないので、フィルムグレインや SMAA のテクスチャ(約3MB)を含めない
-            var aPostProcess = aSo.FindProperty("postProcessData");
+            var aPostProcess = aSerialized.FindProperty("postProcessData");
             if (aPostProcess != null) aPostProcess.objectReferenceValue = null;
-            aSo.ApplyModifiedPropertiesWithoutUndo();
+            aSerialized.ApplyModifiedPropertiesWithoutUndo();
             foreach (var aSub in AssetDatabase.LoadAllAssetsAtPath(mWebGLRenderer))
             {
                 if (aSub == null || aSub == aRenderer) continue;
@@ -193,20 +193,20 @@ namespace BattleFight.EditorTools
             var aPipeline = AssetDatabase.LoadMainAssetAtPath(mWebGLRenderPipeline);
             if (aPipeline == null) return null;
 
-            var aSo = new SerializedObject(aPipeline);
-            var aRenderers = aSo.FindProperty("m_RendererDataList");
+            var aSerialized = new SerializedObject(aPipeline);
+            var aRenderers = aSerialized.FindProperty("m_RendererDataList");
             aRenderers.arraySize = 1;
             aRenderers.GetArrayElementAtIndex(0).objectReferenceValue = iRenderer;
-            SetInt(aSo, "m_DefaultRendererIndex", 0);
-            SetFloat(aSo, "m_RenderScale", 1f);
-            SetInt(aSo, "m_MSAA", 2);
-            SetBool(aSo, "m_SupportsHDR", false);
-            SetInt(aSo, "m_MainLightShadowmapResolution", 1024);
-            SetBool(aSo, "m_AdditionalLightShadowsSupported", false);
-            SetFloat(aSo, "m_ShadowDistance", 35f);
-            SetInt(aSo, "m_ShadowCascadeCount", 1);
-            SetBool(aSo, "m_SoftShadowsSupported", false);
-            aSo.ApplyModifiedPropertiesWithoutUndo();
+            SetInt(aSerialized, "m_DefaultRendererIndex", 0);
+            SetFloat(aSerialized, "m_RenderScale", 1f);
+            SetInt(aSerialized, "m_MSAA", 2);
+            SetBool(aSerialized, "m_SupportsHDR", false);
+            SetInt(aSerialized, "m_MainLightShadowmapResolution", 1024);
+            SetBool(aSerialized, "m_AdditionalLightShadowsSupported", false);
+            SetFloat(aSerialized, "m_ShadowDistance", 35f);
+            SetInt(aSerialized, "m_ShadowCascadeCount", 1);
+            SetBool(aSerialized, "m_SoftShadowsSupported", false);
+            aSerialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(aPipeline);
             return aPipeline;
         }
@@ -214,9 +214,9 @@ namespace BattleFight.EditorTools
         static void SetPlatformExcluded(SerializedProperty iExcluded, string iPlatform, bool iExclude)
         {
             int aFound = -1;
-            for (int aI = 0; aI < iExcluded.arraySize; aI++)
+            for (int aIndex = 0; aIndex < iExcluded.arraySize; aIndex++)
             {
-                if (iExcluded.GetArrayElementAtIndex(aI).stringValue == iPlatform) aFound = aI;
+                if (iExcluded.GetArrayElementAtIndex(aIndex).stringValue == iPlatform) aFound = aIndex;
             }
             if (iExclude && aFound < 0)
             {
@@ -229,23 +229,23 @@ namespace BattleFight.EditorTools
             }
         }
 
-        static void SetInt(SerializedObject iSo, string iName, int iValue)
+        static void SetInt(SerializedObject iSerialized, string iName, int iValue)
         {
-            var aProperty = iSo.FindProperty(iName);
+            var aProperty = iSerialized.FindProperty(iName);
             if (aProperty != null) aProperty.intValue = iValue;
             else Debug.LogWarning($"[BattleFight] URP の設定 {iName} が見つかりません");
         }
 
-        static void SetFloat(SerializedObject iSo, string iName, float iValue)
+        static void SetFloat(SerializedObject iSerialized, string iName, float iValue)
         {
-            var aProperty = iSo.FindProperty(iName);
+            var aProperty = iSerialized.FindProperty(iName);
             if (aProperty != null) aProperty.floatValue = iValue;
             else Debug.LogWarning($"[BattleFight] URP の設定 {iName} が見つかりません");
         }
 
-        static void SetBool(SerializedObject iSo, string iName, bool iValue)
+        static void SetBool(SerializedObject iSerialized, string iName, bool iValue)
         {
-            var aProperty = iSo.FindProperty(iName);
+            var aProperty = iSerialized.FindProperty(iName);
             if (aProperty != null) aProperty.boolValue = iValue;
             else Debug.LogWarning($"[BattleFight] URP の設定 {iName} が見つかりません");
         }

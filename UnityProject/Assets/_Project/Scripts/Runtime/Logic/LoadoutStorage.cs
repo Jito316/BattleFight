@@ -7,11 +7,11 @@ namespace BattleFight
 {
     /// <summary>
     /// 切り替え方式とプリセットの保存。スキルはアセット名で保存する。
-    /// WebGL では PlayerPrefs がブラウザ(IndexedDB)に保存される。
+    /// 今のセーブスロット(SaveProfiles)に保存する。WebGL ではブラウザ(IndexedDB)に残る。
     /// </summary>
     public static class LoadoutStorage
     {
-        public const string PrefsKey = "BattleFight.Loadout.v1";
+        public const string SaveName = "Loadout.v1";
 
         [Serializable]
         class SavedPreset
@@ -46,10 +46,10 @@ namespace BattleFight
                 PresetIndex = iPresetIndex,
                 Presets = new SavedPreset[iPresets.Count],
             };
-            for (int aI = 0; aI < iPresets.Count; aI++)
+            for (int aPresetIndex = 0; aPresetIndex < iPresets.Count; aPresetIndex++)
             {
-                var aPreset = iPresets[aI];
-                aSaved.Presets[aI] = new SavedPreset
+                var aPreset = iPresets[aPresetIndex];
+                aSaved.Presets[aPresetIndex] = new SavedPreset
                 {
                     Name = aPreset.Name,
                     AttackA = aPreset.AttackA != null ? aPreset.AttackA.name : null,
@@ -78,12 +78,12 @@ namespace BattleFight
             if (aSaved == null || aSaved.Presets == null) return false;
 
             var aPresets = new List<SkillPreset>(aSaved.Presets.Length);
-            foreach (var aP in aSaved.Presets)
+            foreach (var aSavedPreset in aSaved.Presets)
             {
-                var aPreset = new SkillPreset { Name = aP.Name };
-                aPreset.Set(SlotType.AttackA, iDatabase.Find(aP.AttackA));
-                aPreset.Set(SlotType.AttackB, iDatabase.Find(aP.AttackB));
-                aPreset.Set(SlotType.Movement, iDatabase.Find(aP.Movement));
+                var aPreset = new SkillPreset { Name = aSavedPreset.Name };
+                aPreset.Set(SlotType.AttackA, iDatabase.Find(aSavedPreset.AttackA));
+                aPreset.Set(SlotType.AttackB, iDatabase.Find(aSavedPreset.AttackB));
+                aPreset.Set(SlotType.Movement, iDatabase.Find(aSavedPreset.Movement));
                 aPresets.Add(aPreset);
             }
 
@@ -97,28 +97,35 @@ namespace BattleFight
         }
 
         /// <summary>探索モードの編成(集めたスキルだけで組む)。アリーナの編成とは別に保存する</summary>
-        public const string ExplorationPrefsKey = "BattleFight.Loadout.Explore.v1";
+        public const string ExplorationSaveName = "Loadout.Explore.v1";
 
         public static void Save(SwapMode iMode, int iPresetIndex, IReadOnlyList<SkillPreset> iPresets) =>
-            Save(PrefsKey, iMode, iPresetIndex, iPresets);
+            Save(SaveName, iMode, iPresetIndex, iPresets);
 
-        public static void Save(string iKey, SwapMode iMode, int iPresetIndex, IReadOnlyList<SkillPreset> iPresets)
+        public static void Save(string iName, SwapMode iMode, int iPresetIndex, IReadOnlyList<SkillPreset> iPresets)
         {
-            PlayerPrefs.SetString(iKey, Serialize(iMode, iPresetIndex, iPresets));
-            PlayerPrefs.Save();
+            SaveProfiles.SetString(iName, Serialize(iMode, iPresetIndex, iPresets));
+            SaveProfiles.Save();
         }
 
-        public static bool TryLoad(SkillDatabase iDatabase, out Loadout oLoadout) => TryLoad(PrefsKey, iDatabase, out oLoadout);
+        public static bool TryLoad(SkillDatabase iDatabase, out Loadout oLoadout) => TryLoad(SaveName, iDatabase, out oLoadout);
 
-        public static bool TryLoad(string iKey, SkillDatabase iDatabase, out Loadout oLoadout) =>
-            TryDeserialize(PlayerPrefs.GetString(iKey, null), iDatabase, out oLoadout);
+        public static bool TryLoad(string iName, SkillDatabase iDatabase, out Loadout oLoadout) =>
+            TryDeserialize(SaveProfiles.GetString(iName), iDatabase, out oLoadout);
 
         /// <summary>アリーナと探索の両方の編成を消す</summary>
         public static void Clear()
         {
-            PlayerPrefs.DeleteKey(PrefsKey);
-            PlayerPrefs.DeleteKey(ExplorationPrefsKey);
-            PlayerPrefs.Save();
+            SaveProfiles.DeleteKey(SaveName);
+            SaveProfiles.DeleteKey(ExplorationSaveName);
+            SaveProfiles.Save();
+        }
+
+        /// <summary>探索の編成だけを消す</summary>
+        public static void ClearExploration()
+        {
+            SaveProfiles.DeleteKey(ExplorationSaveName);
+            SaveProfiles.Save();
         }
     }
 }

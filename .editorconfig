@@ -4,6 +4,17 @@ root = true
 charset = utf-8
 indent_style = space
 indent_size = 4
+max_line_length = 140
+
+# ---- フォーマット(Docs/CodingRules.md 6章) ----
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+dotnet_sort_system_directives_first = true
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_elsewhere = false:silent
 
 # ---- 名前のルール(Docs/CodingRules.md) ----
 

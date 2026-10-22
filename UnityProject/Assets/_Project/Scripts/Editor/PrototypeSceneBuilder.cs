@@ -42,9 +42,9 @@ namespace BattleFight.EditorTools
             {
                 Build(iResetData: false);
             }
-            catch (Exception aE)
+            catch (Exception aException)
             {
-                Debug.LogException(aE);
+                Debug.LogException(aException);
                 EditorApplication.Exit(1);
             }
         }
@@ -113,16 +113,16 @@ namespace BattleFight.EditorTools
             var aGauntletDash = Asset<SkillData>("Skills/Skill_Gauntlet_Dash", iResetData, PrototypeDefaults.GauntletDash);
             var aGauntletFinisher = Asset<SkillData>("Skills/Skill_Gauntlet_Finisher", iResetData, PrototypeDefaults.GauntletFinisher);
 
-            var aSword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", iResetData, iW => PrototypeDefaults.Sword(iW, aSwordFinisher));
-            var aHammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", iResetData, iW => PrototypeDefaults.Hammer(iW, aHammerFinisher));
-            var aChain = Asset<WeaponTypeData>("Weapons/Weapon_Chain", iResetData, iW => PrototypeDefaults.Chain(iW, aChainFinisher));
-            var aStaff = Asset<WeaponTypeData>("Weapons/Weapon_Staff", iResetData, iW => PrototypeDefaults.Staff(iW, aStaffFinisher));
-            var aGun = Asset<WeaponTypeData>("Weapons/Weapon_Gun", iResetData, iW => PrototypeDefaults.Gun(iW, aGunFinisher));
-            var aGauntlet = Asset<WeaponTypeData>("Weapons/Weapon_Gauntlet", iResetData, iW => PrototypeDefaults.Gauntlet(iW, aGauntletFinisher));
+            var aSword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", iResetData, iWeapon => PrototypeDefaults.Sword(iWeapon, aSwordFinisher));
+            var aHammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", iResetData, iWeapon => PrototypeDefaults.Hammer(iWeapon, aHammerFinisher));
+            var aChain = Asset<WeaponTypeData>("Weapons/Weapon_Chain", iResetData, iWeapon => PrototypeDefaults.Chain(iWeapon, aChainFinisher));
+            var aStaff = Asset<WeaponTypeData>("Weapons/Weapon_Staff", iResetData, iWeapon => PrototypeDefaults.Staff(iWeapon, aStaffFinisher));
+            var aGun = Asset<WeaponTypeData>("Weapons/Weapon_Gun", iResetData, iWeapon => PrototypeDefaults.Gun(iWeapon, aGunFinisher));
+            var aGauntlet = Asset<WeaponTypeData>("Weapons/Weapon_Gauntlet", iResetData, iWeapon => PrototypeDefaults.Gauntlet(iWeapon, aGauntletFinisher));
             var aWeapons = new Object[] { aSword, aHammer, aChain, aStaff, aGun, aGauntlet };
 
             // 編成画面で選べるスキル(フィニッシャーは除く)。常に最新の一覧で作り直す
-            var aDatabase = Asset<SkillDatabase>("SkillDatabase", true, iDb => iDb.Skills = new System.Collections.Generic.List<SkillData>
+            var aDatabase = Asset<SkillDatabase>("SkillDatabase", true, iDatabase => iDatabase.Skills = new System.Collections.Generic.List<SkillData>
             {
                 aSwordCombo, aSwordThrust, aSwordIai, aSwordWave, aSwordStep, aSwordPhantom,
                 aHammerCombo, aHammerSpin, aHammerQuake, aHammerMeteor, aHammerJump, aHammerCharge,
@@ -144,7 +144,7 @@ namespace BattleFight.EditorTools
             var aDummy = Asset<EnemyProfile>("Enemies/Enemy_Dummy", iResetData, PrototypeDefaults.Dummy);
             var aArmoredDummy = Asset<EnemyProfile>("Enemies/Enemy_ArmoredDummy", iResetData, PrototypeDefaults.ArmoredDummy);
             var aFlyingDummy = Asset<EnemyProfile>("Enemies/Enemy_FlyingDummy", iResetData, PrototypeDefaults.FlyingDummy);
-            var aMagus = Asset<EnemyProfile>("Enemies/Enemy_Magus", iResetData, iP => PrototypeDefaults.Magus(iP, aFlyer));
+            var aMagus = Asset<EnemyProfile>("Enemies/Enemy_Magus", iResetData, iProfile => PrototypeDefaults.Magus(iProfile, aFlyer));
             var aShadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", iResetData, PrototypeDefaults.Shadow);
 
             // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
@@ -162,13 +162,13 @@ namespace BattleFight.EditorTools
             EnsureWeaknesses(aFlyingDummy, WeaponType.Gun);
 
             // プレイヤーと同じスキルを使う敵「写し身」。型(武器種ごとのスキルの組)を切り替え、そのたびに弱点が変わる
-            var aMirrorBlade = Asset<EnemyProfile>("Enemies/Enemy_MirrorBlade", iResetData, iP => PrototypeDefaults.MirrorBlade(iP,
+            var aMirrorBlade = Asset<EnemyProfile>("Enemies/Enemy_MirrorBlade", iResetData, iProfile => PrototypeDefaults.MirrorBlade(iProfile,
                 SkillSet("剣の型", aSword, new[] { WeaponType.Hammer, WeaponType.Gauntlet }, aSwordCombo, aSwordIai, aSwordStep),
                 SkillSet("大槌の型", aHammer, new[] { WeaponType.Sword, WeaponType.Gun }, aHammerCombo, aHammerQuake, aHammerJump)));
-            var aMirrorCaster = Asset<EnemyProfile>("Enemies/Enemy_MirrorCaster", iResetData, iP => PrototypeDefaults.MirrorCaster(iP,
+            var aMirrorCaster = Asset<EnemyProfile>("Enemies/Enemy_MirrorCaster", iResetData, iProfile => PrototypeDefaults.MirrorCaster(iProfile,
                 SkillSet("杖の型", aStaff, new[] { WeaponType.Sword, WeaponType.Gauntlet }, aStaffBolt, aStaffThunder, aStaffBlink),
                 SkillSet("銃の型", aGun, new[] { WeaponType.Chain, WeaponType.Staff }, aGunRapid, aGunGrenade, aGunSlide)));
-            var aMirrorBrawler = Asset<EnemyProfile>("Enemies/Enemy_MirrorBrawler", iResetData, iP => PrototypeDefaults.MirrorBrawler(iP,
+            var aMirrorBrawler = Asset<EnemyProfile>("Enemies/Enemy_MirrorBrawler", iResetData, iProfile => PrototypeDefaults.MirrorBrawler(iProfile,
                 SkillSet("拳の型", aGauntlet, new[] { WeaponType.Hammer, WeaponType.Staff }, aGauntletRush, aGauntletUppercut, aGauntletDash),
                 SkillSet("鎖の型", aChain, new[] { WeaponType.Gauntlet, WeaponType.Gun }, aChainCombo, aChainBind, aChainWire)));
 
@@ -182,17 +182,17 @@ namespace BattleFight.EditorTools
             EnsureFolder(mDataRoot, "Stages");
             var aStages = new Object[]
             {
-                Asset<StageData>("Stages/Stage_0_Training", iResetData, iS => PrototypeDefaults.TrainingStage(iS, aDummy, aArmoredDummy, aFlyingDummy)),
-                Asset<StageData>("Stages/Stage_1_Beast", iResetData, iS => PrototypeDefaults.Act1(iS, aGrunt, aArmored, aBoss)),
-                Asset<StageData>("Stages/Stage_2_Skyfire", iResetData, iS => PrototypeDefaults.Act2(iS, aGrunt, aShooter, aDasher, aFlyer, aArmored, aMagus)),
+                Asset<StageData>("Stages/Stage_0_Training", iResetData, iStage => PrototypeDefaults.TrainingStage(iStage, aDummy, aArmoredDummy, aFlyingDummy)),
+                Asset<StageData>("Stages/Stage_1_Beast", iResetData, iStage => PrototypeDefaults.Act1(iStage, aGrunt, aArmored, aBoss)),
+                Asset<StageData>("Stages/Stage_2_Skyfire", iResetData, iStage => PrototypeDefaults.Act2(iStage, aGrunt, aShooter, aDasher, aFlyer, aArmored, aMagus)),
                 Asset<StageData>("Stages/Stage_3_Inferno", iResetData,
-                    iS => PrototypeDefaults.Act3(iS, aBomber, aDasher, aShooter, aArmored, aFlyer, aBoss, aMagus)),
+                    iStage => PrototypeDefaults.Act3(iStage, aBomber, aDasher, aShooter, aArmored, aFlyer, aBoss, aMagus)),
                 Asset<StageData>("Stages/Stage_4_Shadow", iResetData,
-                    iS => PrototypeDefaults.Act4(iS, aDasher, aShooter, aFlyer, aArmored, aBomber, aShadow)),
+                    iStage => PrototypeDefaults.Act4(iStage, aDasher, aShooter, aFlyer, aArmored, aBomber, aShadow)),
                 Asset<StageData>("Stages/Stage_5_Mirror", iResetData,
-                    iS => PrototypeDefaults.Act5(iS, aGrunt, aShooter, aMirrorBlade, aMirrorCaster, aMirrorBrawler, aShadow)),
+                    iStage => PrototypeDefaults.Act5(iStage, aGrunt, aShooter, aMirrorBlade, aMirrorCaster, aMirrorBrawler, aShadow)),
                 Asset<StageData>("Stages/Stage_9_Endless", iResetData,
-                    iS => PrototypeDefaults.Endless(iS, aGrunt, aDasher, aShooter, aBomber, aFlyer, aArmored, aBoss, aMagus)),
+                    iStage => PrototypeDefaults.Endless(iStage, aGrunt, aDasher, aShooter, aBomber, aFlyer, aArmored, aBoss, aMagus)),
                 Asset<StageData>("Stages/Stage_10_Explore", iResetData, PrototypeDefaults.ExplorationStage),
             };
             // 既にあるエンドレスにも、新しいボスを加える
@@ -288,21 +288,21 @@ namespace BattleFight.EditorTools
             var aLoadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", aPanel, 20);
 
             // ---------- 参照の設定 ----------
-            Configure(aDamageable, iSo =>
+            Configure(aDamageable, iSerialized =>
             {
-                iSo.FindProperty("mTeam").enumValueIndex = (int)Team.Player;
-                iSo.FindProperty("mMaxHealth").floatValue = 200f;
+                iSerialized.FindProperty("mTeam").enumValueIndex = (int)Team.Player;
+                iSerialized.FindProperty("mMaxHealth").floatValue = 200f;
             });
-            Configure(aSlots, iSo =>
+            Configure(aSlots, iSerialized =>
             {
-                SetArray(iSo, "mAttackARack", aSwordCombo, aHammerCombo, aChainCombo);
-                SetArray(iSo, "mAttackBRack", aSwordIai, aHammerQuake, aChainPull);
-                SetArray(iSo, "mMovementRack", aSwordStep, aHammerJump, aChainWire);
-                SetArray(iSo, "mWeaponDatabase", aWeapons);
-                iSo.FindProperty("mDatabase").objectReferenceValue = aDatabase;
+                SetArray(iSerialized, "mAttackARack", aSwordCombo, aHammerCombo, aChainCombo);
+                SetArray(iSerialized, "mAttackBRack", aSwordIai, aHammerQuake, aChainPull);
+                SetArray(iSerialized, "mMovementRack", aSwordStep, aHammerJump, aChainWire);
+                SetArray(iSerialized, "mWeaponDatabase", aWeapons);
+                iSerialized.FindProperty("mDatabase").objectReferenceValue = aDatabase;
                 // プリセット方式を試せるよう、最初からプリセット方式にしておく
-                iSo.FindProperty("mMode").enumValueIndex = (int)SwapMode.Preset;
-                var aPresets = iSo.FindProperty("mDefaultPresets");
+                iSerialized.FindProperty("mMode").enumValueIndex = (int)SwapMode.Preset;
+                var aPresets = iSerialized.FindProperty("mDefaultPresets");
                 SetPreset(aPresets, 0, "剣士", aSwordCombo, aSwordIai, aSwordStep);
                 SetPreset(aPresets, 1, "魔導士", aStaffBolt, aStaffThunder, aStaffBlink);
                 SetPreset(aPresets, 2, "ガンナー", aGunRapid, aGunGrenade, aGunJet);
@@ -310,96 +310,96 @@ namespace BattleFight.EditorTools
             });
             if (aCharacter != null)
             {
-                Configure(aCharacter, iSo =>
+                Configure(aCharacter, iSerialized =>
                 {
-                    iSo.FindProperty("mAnimator").objectReferenceValue = aPlayer.GetComponentInChildren<Animator>();
-                    iSo.FindProperty("mExecutor").objectReferenceValue = aExecutor;
-                    iSo.FindProperty("mMotor").objectReferenceValue = aMotor;
-                    iSo.FindProperty("mSelf").objectReferenceValue = aDamageable;
-                    iSo.FindProperty("mHandAnchor").objectReferenceValue = aHand;
+                    iSerialized.FindProperty("mAnimator").objectReferenceValue = aPlayer.GetComponentInChildren<Animator>();
+                    iSerialized.FindProperty("mExecutor").objectReferenceValue = aExecutor;
+                    iSerialized.FindProperty("mMotor").objectReferenceValue = aMotor;
+                    iSerialized.FindProperty("mSelf").objectReferenceValue = aDamageable;
+                    iSerialized.FindProperty("mHandAnchor").objectReferenceValue = aHand;
                 });
             }
-            Configure(aWeaponHolder, iSo =>
+            Configure(aWeaponHolder, iSerialized =>
             {
-                iSo.FindProperty("mHandAnchor").objectReferenceValue = aHand;
-                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
-                iSo.FindProperty("mSurfaceMaterial").objectReferenceValue = Mat("Surface", Color.white);
-                SetArray(iSo, "mWeaponDatabase", aWeapons);
+                iSerialized.FindProperty("mHandAnchor").objectReferenceValue = aHand;
+                iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSerialized.FindProperty("mSurfaceMaterial").objectReferenceValue = Mat("Surface", Color.white);
+                SetArray(iSerialized, "mWeaponDatabase", aWeapons);
             });
-            Configure(aLockOn, iSo =>
+            Configure(aLockOn, iSerialized =>
             {
-                iSo.FindProperty("mInput").objectReferenceValue = aInput;
-                iSo.FindProperty("mViewTransform").objectReferenceValue = aCameraObject.transform;
+                iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
+                iSerialized.FindProperty("mViewTransform").objectReferenceValue = aCameraObject.transform;
             });
-            Configure(aStyle, iSo => iSo.FindProperty("mConfig").objectReferenceValue = aStyleConfig);
-            Configure(aExecutor, iSo =>
+            Configure(aStyle, iSerialized => iSerialized.FindProperty("mConfig").objectReferenceValue = aStyleConfig);
+            Configure(aExecutor, iSerialized =>
             {
-                iSo.FindProperty("mInput").objectReferenceValue = aInput;
-                iSo.FindProperty("mMotor").objectReferenceValue = aMotor;
-                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
-                iSo.FindProperty("mWeapons").objectReferenceValue = aWeaponHolder;
-                iSo.FindProperty("mLockOn").objectReferenceValue = aLockOn;
-                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
-                iSo.FindProperty("mSelf").objectReferenceValue = aDamageable;
-                iSo.FindProperty("mView").objectReferenceValue = aCamera;
+                iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
+                iSerialized.FindProperty("mMotor").objectReferenceValue = aMotor;
+                iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSerialized.FindProperty("mWeapons").objectReferenceValue = aWeaponHolder;
+                iSerialized.FindProperty("mLockOn").objectReferenceValue = aLockOn;
+                iSerialized.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSerialized.FindProperty("mSelf").objectReferenceValue = aDamageable;
+                iSerialized.FindProperty("mView").objectReferenceValue = aCamera;
             });
-            Configure(aPlayerController, iSo =>
+            Configure(aPlayerController, iSerialized =>
             {
-                iSo.FindProperty("mInput").objectReferenceValue = aInput;
-                iSo.FindProperty("mMotor").objectReferenceValue = aMotor;
-                iSo.FindProperty("mExecutor").objectReferenceValue = aExecutor;
-                iSo.FindProperty("mDamageable").objectReferenceValue = aDamageable;
-                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
-                iSo.FindProperty("mCameraTransform").objectReferenceValue = aCameraObject.transform;
+                iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
+                iSerialized.FindProperty("mMotor").objectReferenceValue = aMotor;
+                iSerialized.FindProperty("mExecutor").objectReferenceValue = aExecutor;
+                iSerialized.FindProperty("mDamageable").objectReferenceValue = aDamageable;
+                iSerialized.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSerialized.FindProperty("mCameraTransform").objectReferenceValue = aCameraObject.transform;
             });
-            Configure(aCameraRig, iSo =>
+            Configure(aCameraRig, iSerialized =>
             {
-                iSo.FindProperty("mTarget").objectReferenceValue = aPlayer.transform;
-                iSo.FindProperty("mInput").objectReferenceValue = aInput;
-                iSo.FindProperty("mLockOn").objectReferenceValue = aLockOn;
+                iSerialized.FindProperty("mTarget").objectReferenceValue = aPlayer.transform;
+                iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
+                iSerialized.FindProperty("mLockOn").objectReferenceValue = aLockOn;
             });
             // 実行時に生成する仮モデル用。シーンから参照してシェーダーがビルドに残るようにする
             var aSurface = Mat("Surface", Color.white);
-            Configure(aFeedback, iSo =>
+            Configure(aFeedback, iSerialized =>
             {
-                iSo.FindProperty("mCameraRig").objectReferenceValue = aCameraRig;
-                iSo.FindProperty("mEffectMaterial").objectReferenceValue = aSurface;
+                iSerialized.FindProperty("mCameraRig").objectReferenceValue = aCameraRig;
+                iSerialized.FindProperty("mEffectMaterial").objectReferenceValue = aSurface;
             });
-            Configure(aHud, iSo =>
+            Configure(aHud, iSerialized =>
             {
-                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
-                iSo.FindProperty("mExecutor").objectReferenceValue = aExecutor;
-                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
-                iSo.FindProperty("mPlayer").objectReferenceValue = aDamageable;
-                iSo.FindProperty("mLockOn").objectReferenceValue = aLockOn;
-                iSo.FindProperty("mDirector").objectReferenceValue = aDirector;
-                iSo.FindProperty("mView").objectReferenceValue = aCamera;
+                iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSerialized.FindProperty("mExecutor").objectReferenceValue = aExecutor;
+                iSerialized.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSerialized.FindProperty("mPlayer").objectReferenceValue = aDamageable;
+                iSerialized.FindProperty("mLockOn").objectReferenceValue = aLockOn;
+                iSerialized.FindProperty("mDirector").objectReferenceValue = aDirector;
+                iSerialized.FindProperty("mView").objectReferenceValue = aCamera;
             });
-            Configure(aLoadoutEditor, iSo =>
+            Configure(aLoadoutEditor, iSerialized =>
             {
-                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
-                iSo.FindProperty("mInput").objectReferenceValue = aInput;
+                iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
             });
-            Configure(aDirector, iSo =>
+            Configure(aDirector, iSerialized =>
             {
-                iSo.FindProperty("mPlayer").objectReferenceValue = aPlayer.transform;
-                iSo.FindProperty("mInput").objectReferenceValue = aInput;
-                iSo.FindProperty("mStyle").objectReferenceValue = aStyle;
-                iSo.FindProperty("mEnemyMaterial").objectReferenceValue = aSurface;
-                SetArray(iSo, "mStages", aStages);
-                iSo.FindProperty("mArenaRoot").objectReferenceValue = aArenaRoot.gameObject;
-                iSo.FindProperty("mExploration").objectReferenceValue = aExploration;
-                iSo.FindProperty("mSlots").objectReferenceValue = aSlots;
+                iSerialized.FindProperty("mPlayer").objectReferenceValue = aPlayer.transform;
+                iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
+                iSerialized.FindProperty("mStyle").objectReferenceValue = aStyle;
+                iSerialized.FindProperty("mEnemyMaterial").objectReferenceValue = aSurface;
+                SetArray(iSerialized, "mStages", aStages);
+                iSerialized.FindProperty("mArenaRoot").objectReferenceValue = aArenaRoot.gameObject;
+                iSerialized.FindProperty("mExploration").objectReferenceValue = aExploration;
+                iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
             });
-            Configure(aStageSelect, iSo =>
+            Configure(aStageSelect, iSerialized =>
             {
-                iSo.FindProperty("mDirector").objectReferenceValue = aDirector;
-                iSo.FindProperty("mRankConfig").objectReferenceValue = aStyleConfig;
+                iSerialized.FindProperty("mDirector").objectReferenceValue = aDirector;
+                iSerialized.FindProperty("mRankConfig").objectReferenceValue = aStyleConfig;
             });
 
             EditorSceneManager.SaveScene(aScene, ScenePath);
 
-            var aBuildScenes = EditorBuildSettings.scenes.Where(iS => iS.path != ScenePath).ToList();
+            var aBuildScenes = EditorBuildSettings.scenes.Where(iScene => iScene.path != ScenePath).ToList();
             aBuildScenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
             EditorBuildSettings.scenes = aBuildScenes.ToArray();
 
@@ -447,9 +447,9 @@ namespace BattleFight.EditorTools
                 // アリーナ中央の上空
                 new Vector3(0f, 12f, 0f),
             };
-            for (int aI = 0; aI < aGrapplePoints.Length; aI++)
+            for (int aGrapplePointIndex = 0; aGrapplePointIndex < aGrapplePoints.Length; aGrapplePointIndex++)
             {
-                var aPoint = Part(PrimitiveType.Sphere, $"GrapplePoint_{aI + 1}", aArena, aGrapplePoints[aI], Vector3.one * 0.8f, aGrappleMat);
+                var aPoint = Part(PrimitiveType.Sphere, $"GrapplePoint_{aGrapplePointIndex + 1}", aArena, aGrapplePoints[aGrapplePointIndex], Vector3.one * 0.8f, aGrappleMat);
                 aPoint.gameObject.AddComponent<GrapplePoint>();
             }
             return aArena;
@@ -492,28 +492,28 @@ namespace BattleFight.EditorTools
         static Transform Part(PrimitiveType iShape, string iName, Transform iParent, Vector3 iLocalPosition, Vector3 iLocalScale,
             Material iMaterial, bool iKeepCollider = false)
         {
-            var aGo = GameObject.CreatePrimitive(iShape);
-            aGo.name = iName;
-            if (!iKeepCollider) Object.DestroyImmediate(aGo.GetComponent<Collider>());
-            aGo.transform.SetParent(iParent, false);
-            aGo.transform.localPosition = iLocalPosition;
-            aGo.transform.localScale = iLocalScale;
-            aGo.GetComponent<Renderer>().sharedMaterial = iMaterial;
-            return aGo.transform;
+            var aObject = GameObject.CreatePrimitive(iShape);
+            aObject.name = iName;
+            if (!iKeepCollider) Object.DestroyImmediate(aObject.GetComponent<Collider>());
+            aObject.transform.SetParent(iParent, false);
+            aObject.transform.localPosition = iLocalPosition;
+            aObject.transform.localScale = iLocalScale;
+            aObject.GetComponent<Renderer>().sharedMaterial = iMaterial;
+            return aObject.transform;
         }
 
         static void Configure(Object iTarget, Action<SerializedObject> iConfigure)
         {
-            var aSo = new SerializedObject(iTarget);
-            iConfigure(aSo);
-            aSo.ApplyModifiedPropertiesWithoutUndo();
+            var aSerialized = new SerializedObject(iTarget);
+            iConfigure(aSerialized);
+            aSerialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        static void SetArray(SerializedObject iSo, string iField, params Object[] iValues)
+        static void SetArray(SerializedObject iSerialized, string iField, params Object[] iValues)
         {
-            var aProperty = iSo.FindProperty(iField);
+            var aProperty = iSerialized.FindProperty(iField);
             aProperty.arraySize = iValues.Length;
-            for (int aI = 0; aI < iValues.Length; aI++) aProperty.GetArrayElementAtIndex(aI).objectReferenceValue = iValues[aI];
+            for (int aValueIndex = 0; aValueIndex < iValues.Length; aValueIndex++) aProperty.GetArrayElementAtIndex(aValueIndex).objectReferenceValue = iValues[aValueIndex];
         }
 
         static void EnsureEndlessBoss(StageData iEndless, EnemyProfile iBoss)
@@ -546,7 +546,7 @@ namespace BattleFight.EditorTools
 
         static void EnsureEndlessEntry(StageData iEndless, EnemyProfile iProfile, float iCost, int iMinWave)
         {
-            if (iEndless == null || iProfile == null || iEndless.EndlessPool.Exists(iE => iE.Profile == iProfile)) return;
+            if (iEndless == null || iProfile == null || iEndless.EndlessPool.Exists(iEntry => iEntry.Profile == iProfile)) return;
             iEndless.EndlessPool.Add(new EndlessEntry { Profile = iProfile, Cost = iCost, MinWave = iMinWave });
             EditorUtility.SetDirty(iEndless);
         }

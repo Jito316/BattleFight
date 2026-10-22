@@ -1,14 +1,32 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <!-- ステージ選択(起動時とステージ選択へ戻ったとき)。行は StageSelectUI.cs がステージの数だけ作る -->
+    <!-- ステージ選択(起動時とステージ選択へ戻ったとき)。行とスロットは StageSelectUI.cs が作る -->
     <Style src="Common.uss" />
     <Style src="StageSelect.uss" />
 
     <ui:VisualElement name="stage-select" class="select">
         <ui:VisualElement class="select__window panel panel--strong">
             <ui:Label text="BattleFight" class="select__logo" />
+            <!-- セーブスロット -->
+            <ui:VisualElement class="profile">
+                <ui:VisualElement name="profile-list" class="profile__list" />
+                <ui:Button name="profile-delete" text="このスロットを消す" class="profile__delete" />
+            </ui:VisualElement>
             <ui:Label text="ステージを選んでください" class="select__lead" />
             <ui:VisualElement name="stage-list" class="select__list" />
             <ui:Label name="footer" class="select__footer" />
+        </ui:VisualElement>
+
+        <!-- 消す前の確認 -->
+        <ui:VisualElement name="confirm" class="confirm">
+            <ui:VisualElement class="confirm__window panel panel--strong">
+                <ui:Label name="confirm-title" class="confirm__title" />
+                <ui:Label name="confirm-text" class="confirm__text" />
+                <ui:VisualElement class="confirm__buttons">
+                    <ui:Button name="confirm-cancel" text="やめる" class="confirm__button" />
+                    <ui:Button name="confirm-ok" text="消す" class="confirm__button confirm__button--danger" />
+                </ui:VisualElement>
+                <ui:Label text="←・→ で選ぶ   Enter(Aボタン)で決定   Esc(Bボタン)でやめる" class="confirm__hint" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

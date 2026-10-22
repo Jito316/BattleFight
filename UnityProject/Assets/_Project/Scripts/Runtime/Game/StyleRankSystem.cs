@@ -35,7 +35,7 @@ namespace BattleFight
         void Update()
         {
             Meter.Tick(Time.deltaTime);
-            Announcements.RemoveAll(iA => Time.unscaledTime - iA.Time > AnnouncementLifetime);
+            Announcements.RemoveAll(iAnnouncement => Time.unscaledTime - iAnnouncement.Time > AnnouncementLifetime);
         }
 
         public void RegisterHit(string iMoveKey, WeaponType iWeapon, float iBasePoints, bool iArsenal)

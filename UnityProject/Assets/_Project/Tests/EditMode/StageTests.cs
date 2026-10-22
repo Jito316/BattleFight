@@ -19,7 +19,7 @@ namespace BattleFight.Tests
         [TearDown]
         public void TearDown()
         {
-            foreach (var aO in mCreated) Object.DestroyImmediate(aO);
+            foreach (var aCreated in mCreated) Object.DestroyImmediate(aCreated);
             mCreated.Clear();
         }
 

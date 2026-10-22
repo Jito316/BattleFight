@@ -16,9 +16,9 @@ namespace BattleFight.Tests
         [TestCase(WeaponType.Sword, WeaponType.Sword, WeaponType.Chain, WeaponType.Sword)]
         [TestCase(WeaponType.Sword, WeaponType.Chain, WeaponType.Sword, WeaponType.Sword)]
         [TestCase(WeaponType.Sword, WeaponType.Chain, WeaponType.Chain, WeaponType.Chain)]
-        public void TwoSame_IsSynergyForThePair(WeaponType iA, WeaponType iB, WeaponType iM, WeaponType iExpected)
+        public void TwoSame_IsSynergyForThePair(WeaponType iAttackA, WeaponType iAttackB, WeaponType iMovement, WeaponType iExpected)
         {
-            var aBonus = WeaponBonusResolver.Resolve(iA, iB, iM);
+            var aBonus = WeaponBonusResolver.Resolve(iAttackA, iAttackB, iMovement);
 
             Assert.AreEqual(WeaponBonusKind.Synergy, aBonus.Kind);
             Assert.AreEqual(iExpected, aBonus.Weapon);

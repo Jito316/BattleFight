@@ -66,7 +66,7 @@ namespace BattleFight.EditorTools
             {
                 if (aSkill == null || !mSkillMotions.TryGetValue(aSkill.name, out var aEntry)) continue;
                 var aSteps = new string[aSkill.StepCount];
-                for (int aI = 0; aI < aSteps.Length; aI++) aSteps[aI] = aEntry.Steps[System.Math.Min(aI, aEntry.Steps.Length - 1)];
+                for (int aStepIndex = 0; aStepIndex < aSteps.Length; aStepIndex++) aSteps[aStepIndex] = aEntry.Steps[System.Math.Min(aStepIndex, aEntry.Steps.Length - 1)];
                 aSkill.ChargeMotion = aEntry.Charge;
                 aSkill.Motions = aSteps;
                 EditorUtility.SetDirty(aSkill);

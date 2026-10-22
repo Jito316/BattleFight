@@ -221,9 +221,9 @@ namespace BattleFight
                 return;
             }
 
-            for (int aI = 0; aI < SkillSlotController.PresetCount; aI++)
+            for (int aIndex = 0; aIndex < SkillSlotController.PresetCount; aIndex++)
             {
-                if (mInput.Consume(PlayerInputReader.SwapAction(aI))) TrySelectPreset(aI);
+                if (mInput.Consume(PlayerInputReader.SwapAction(aIndex))) TrySelectPreset(aIndex);
             }
         }
 
@@ -286,9 +286,9 @@ namespace BattleFight
             bool aAnyLanded = false;
             bool aAnyWeak = false;
             mTargetBuffer.Clear();
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aTarget = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aTarget == null || aTarget.Team == mSelf.Team || aTarget.IsDead || mTargetBuffer.Contains(aTarget)) continue;
                 mTargetBuffer.Add(aTarget);
 
@@ -367,9 +367,9 @@ namespace BattleFight
 
                 int aCount = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up, mDriveRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
                 mTargetBuffer.Clear();
-                for (int aI = 0; aI < aCount; aI++)
+                for (int aIndex = 0; aIndex < aCount; aIndex++)
                 {
-                    var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                    var aTarget = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                     if (aTarget == null || aTarget.Team == mSelf.Team || aTarget.IsDead || mTargetBuffer.Contains(aTarget)) continue;
                     mTargetBuffer.Add(aTarget);
                 }
@@ -577,10 +577,10 @@ namespace BattleFight
 
         // ---------- 実行中 ----------
 
-        void TickSkill(float iDt)
+        void TickSkill(float iDeltaTime)
         {
-            mPhaseTime += iDt;
-            mSkillTime += iDt;
+            mPhaseTime += iDeltaTime;
+            mSkillTime += iDeltaTime;
 
             mSelf.Invulnerable = mSkillTime < FrameTime.ToSeconds(mCurrent.InvulnerableFrames)
                                 || Time.time < mExtraInvulnerableUntil
@@ -598,7 +598,7 @@ namespace BattleFight
             {
                 case Phase.Startup:
                 {
-                    ApplyForward(iDt);
+                    ApplyForward(iDeltaTime);
                     float aDuration = FrameTime.ToSeconds(mStep.StartupFrames);
                     if (mPhaseTime >= aDuration)
                     {
@@ -610,7 +610,7 @@ namespace BattleFight
                 }
                 case Phase.Active:
                 {
-                    ApplyForward(iDt);
+                    ApplyForward(iDeltaTime);
                     DoHitbox();
                     float aDuration = FrameTime.ToSeconds(mStep.ActiveFrames);
                     if (mPhaseTime >= aDuration)
@@ -643,7 +643,7 @@ namespace BattleFight
                     break;
                 }
                 case Phase.Airborne:
-                    mMotor.Displace(mMoveDirection * (mCurrent.DashDistance / 0.8f) * iDt);
+                    mMotor.Displace(mMoveDirection * (mCurrent.DashDistance / 0.8f) * iDeltaTime);
                     if (mPhaseTime > 0.1f && mMotor.IsGrounded)
                     {
                         if (mCurrent.StepCount > 1) BeginStep(1);
@@ -651,7 +651,7 @@ namespace BattleFight
                     }
                     break;
                 case Phase.Travel:
-                    TickTravel(iDt);
+                    TickTravel(iDeltaTime);
                     break;
                 case Phase.PullWait:
                     if (mTravelEnemy == null || !mTravelEnemy.IsBeingPulled || mPhaseTime > 0.5f) BeginStep(0);
@@ -703,7 +703,7 @@ namespace BattleFight
             if (mPhaseTime >= aDuration && !(aHasNext && mCurrent.AutoChain)) EndSkill();
         }
 
-        void ApplyForward(float iDt)
+        void ApplyForward(float iDeltaTime)
         {
             var aStep = mStep;
             float aTotal = FrameTime.ToSeconds(aStep.StartupFrames + aStep.ActiveFrames);
@@ -715,7 +715,7 @@ namespace BattleFight
                 float aDistance = Flat(aTarget.transform.position - transform.position).magnitude;
                 if (aDistance <= mStopDistance + aTarget.Radius) return;
             }
-            mMotor.Displace(mMoveDirection * (aStep.ForwardMove * iDt / aTotal));
+            mMotor.Displace(mMoveDirection * (aStep.ForwardMove * iDeltaTime / aTotal));
         }
 
         void OnActiveStart()
@@ -735,8 +735,8 @@ namespace BattleFight
                 case SkillBehavior.Beam:
                     if (CombatFeedback.Instance != null)
                     {
-                        GetBeam(out var aFrom, out var aTo);
-                        CombatFeedback.Instance.SpawnBeam(aFrom, aTo, mCurrent.BeamRadius, aColor,
+                        GetBeam(out var aFrom, out var aOffset);
+                        CombatFeedback.Instance.SpawnBeam(aFrom, aOffset, mCurrent.BeamRadius, aColor,
                             Mathf.Max(0.05f, FrameTime.ToSeconds(aStep.ActiveFrames)));
                     }
                     break;
@@ -768,8 +768,8 @@ namespace BattleFight
             int aCount;
             if (mCurrent.Behavior == SkillBehavior.Beam)
             {
-                GetBeam(out var aFrom, out var aTo);
-                aCount = Physics.OverlapCapsuleNonAlloc(aFrom, aTo, mCurrent.BeamRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+                GetBeam(out var aFrom, out var aOffset);
+                aCount = Physics.OverlapCapsuleNonAlloc(aFrom, aOffset, mCurrent.BeamRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
             }
             else
             {
@@ -779,17 +779,17 @@ namespace BattleFight
             }
 
             mTargetBuffer.Clear();
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
                 // 探索: ひび割れた壁(決まった武器種の技で崩れる)
-                var aWall = mOverlapBuffer[aI].GetComponentInParent<BreakableWall>();
+                var aWall = mOverlapBuffer[aIndex].GetComponentInParent<BreakableWall>();
                 if (aWall != null)
                 {
                     aWall.TryBreak(mCurrent);
                     continue;
                 }
 
-                var aTarget = mOverlapBuffer[aI].GetComponentInParent<Damageable>();
+                var aTarget = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
                 if (aTarget == null || aTarget.Team == mSelf.Team || aTarget.IsDead || !mHitThisStep.Add(aTarget)) continue;
                 mTargetBuffer.Add(aTarget);
             }
@@ -917,8 +917,8 @@ namespace BattleFight
             var aTarget = mLockOn.Target;
             if (aTarget != null && !aTarget.IsDead)
             {
-                Vector3 aTo = aTarget.CenterPoint - iOrigin;
-                if (aTo.sqrMagnitude > 0.01f) return aTo.normalized;
+                Vector3 aOffset = aTarget.CenterPoint - iOrigin;
+                if (aOffset.sqrMagnitude > 0.01f) return aOffset.normalized;
             }
             return transform.forward;
         }
@@ -933,12 +933,12 @@ namespace BattleFight
             int aCount = Mathf.Max(1, mCurrent.ProjectileCount);
             bool aFullCircle = mCurrent.ProjectileSpread >= 359f;
 
-            for (int aI = 0; aI < aCount; aI++)
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
                 float aAngle;
                 if (aCount == 1) aAngle = 0f;
-                else if (aFullCircle) aAngle = 360f * aI / aCount;
-                else aAngle = Mathf.Lerp(-mCurrent.ProjectileSpread * 0.5f, mCurrent.ProjectileSpread * 0.5f, aI / (aCount - 1f));
+                else if (aFullCircle) aAngle = 360f * aIndex / aCount;
+                else aAngle = Mathf.Lerp(-mCurrent.ProjectileSpread * 0.5f, mCurrent.ProjectileSpread * 0.5f, aIndex / (aCount - 1f));
 
                 Vector3 aDirection = Quaternion.AngleAxis(aAngle, Vector3.up) * aAim;
                 Vector3 aSpawn = aFullCircle ? transform.position + Vector3.up * 1.2f + aDirection * 0.6f : aOrigin;
@@ -1138,7 +1138,7 @@ namespace BattleFight
             mPhaseTime = 0f;
         }
 
-        void TickTravel(float iDt)
+        void TickTravel(float iDeltaTime)
         {
             mMotor.GravityScale = 0f;
             mMotor.SetVerticalVelocity(0f);
@@ -1152,24 +1152,24 @@ namespace BattleFight
             }
 
             Vector3 aDestination = mTravelEnemy != null ? ApproachPoint(mTravelEnemy) : mTravelTarget;
-            Vector3 aTo = aDestination - transform.position;
-            float aStepLength = mCurrent.MoveSpeed * iDt;
+            Vector3 aOffset = aDestination - transform.position;
+            float aStepLength = mCurrent.MoveSpeed * iDeltaTime;
 
-            Vector3 aFlat = Flat(aTo);
+            Vector3 aFlat = Flat(aOffset);
             if (aFlat.sqrMagnitude > 0.01f)
             {
                 mMoveDirection = aFlat.normalized;
                 mMotor.FaceDirection(mMoveDirection);
             }
 
-            if (aTo.magnitude <= aStepLength + 0.3f || mPhaseTime >= mTravelTimeout)
+            if (aOffset.magnitude <= aStepLength + 0.3f || mPhaseTime >= mTravelTimeout)
             {
-                mMotor.Displace(Vector3.ClampMagnitude(aTo, aStepLength));
+                mMotor.Displace(Vector3.ClampMagnitude(aOffset, aStepLength));
                 ArriveTravel();
             }
             else
             {
-                mMotor.Displace(aTo.normalized * aStepLength);
+                mMotor.Displace(aOffset.normalized * aStepLength);
             }
         }
 
@@ -1201,9 +1201,9 @@ namespace BattleFight
             foreach (var aEnemy in EnemyController.Active)
             {
                 if (aEnemy.IsDead) continue;
-                Vector3 aTo = aEnemy.transform.position - transform.position;
-                float aDistance = aTo.magnitude;
-                if (aDistance > iRange || Vector3.Dot(Flat(aTo).normalized, mMoveDirection) < 0.5f) continue;
+                Vector3 aOffset = aEnemy.transform.position - transform.position;
+                float aDistance = aOffset.magnitude;
+                if (aDistance > iRange || Vector3.Dot(Flat(aOffset).normalized, mMoveDirection) < 0.5f) continue;
                 if (aDistance < aBestDistance)
                 {
                     aBestDistance = aDistance;
@@ -1277,6 +1277,6 @@ namespace BattleFight
             return aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward;
         }
 
-        static Vector3 Flat(Vector3 iV) => new Vector3(iV.x, 0f, iV.z);
+        static Vector3 Flat(Vector3 iVector) => new Vector3(iVector.x, 0f, iVector.z);
     }
 }

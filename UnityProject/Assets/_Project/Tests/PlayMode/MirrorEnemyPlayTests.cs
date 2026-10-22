@@ -60,7 +60,7 @@ namespace BattleFight.Tests
                 if (aStage.Waves == null) continue;
                 foreach (var aWave in aStage.Waves)
                 {
-                    var aFound = aWave.Enemies.FirstOrDefault(iE => iE != null && iE.DisplayName == iDisplayName);
+                    var aFound = aWave.Enemies.FirstOrDefault(iProfile => iProfile != null && iProfile.DisplayName == iDisplayName);
                     if (aFound != null) return aFound;
                 }
             }

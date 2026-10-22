@@ -37,7 +37,7 @@ namespace BattleFight
         // 探索モード: 集めたスキルだけを使える。編成はアリーナとは別に保存する
         bool mCollecting;
         SkillPreset[] mCollectionPresets;
-        string mStorageKey = LoadoutStorage.PrefsKey;
+        string mStorageKey = LoadoutStorage.SaveName;
 
         /// <summary>スロットのスキルが変わった(切り替え・編成の変更)</summary>
         public event Action<SlotType> SlotChanged;
@@ -72,24 +72,48 @@ namespace BattleFight
                 new SkillRack(mMovementRack),
             };
 
+            LoadArenaLoadout();
+            RecomputeBonus();
+        }
+
+        void OnEnable() => SaveProfiles.Changed += OnProfileChanged;
+
+        void OnDisable() => SaveProfiles.Changed -= OnProfileChanged;
+
+        void LoadArenaLoadout()
+        {
             ResetPresetsToDefault();
             if (mPersistLoadout && LoadoutStorage.TryLoad(mDatabase, out var aSaved))
             {
                 mMode = aSaved.Mode;
-                for (int aI = 0; aI < mPresets.Count && aI < aSaved.Presets.Count; aI++) mPresets[aI] = aSaved.Presets[aI];
+                for (int aIndex = 0; aIndex < mPresets.Count && aIndex < aSaved.Presets.Count; aIndex++) mPresets[aIndex] = aSaved.Presets[aIndex];
                 mPresetIndex = Mathf.Clamp(aSaved.PresetIndex, 0, mPresets.Count - 1);
             }
+        }
+
+        /// <summary>セーブスロットが変わったら、そのスロットの編成を読み直す</summary>
+        void OnProfileChanged()
+        {
+            if (mCollecting)
+            {
+                BeginCollection(mCollectionPresets);
+                return;
+            }
+            LoadArenaLoadout();
             RecomputeBonus();
+            for (int aIndex = 0; aIndex < 3; aIndex++) SlotChanged?.Invoke((SlotType)aIndex);
+            PresetChanged?.Invoke();
+            ModeChanged?.Invoke();
         }
 
         void ResetPresetsToDefault()
         {
             var aSources = mCollecting ? mCollectionPresets : mDefaultPresets;
             mPresets.Clear();
-            for (int aI = 0; aI < PresetCount; aI++)
+            for (int aIndex = 0; aIndex < PresetCount; aIndex++)
             {
-                var aSource = aSources != null && aI < aSources.Length ? aSources[aI] : null;
-                mPresets.Add(aSource != null ? aSource.Clone() : new SkillPreset { Name = $"プリセット{aI + 1}" });
+                var aSource = aSources != null && aIndex < aSources.Length ? aSources[aIndex] : null;
+                mPresets.Add(aSource != null ? aSource.Clone() : new SkillPreset { Name = $"プリセット{aIndex + 1}" });
             }
             mPresetIndex = 0;
         }
@@ -108,26 +132,26 @@ namespace BattleFight
         {
             mCollecting = true;
             mCollectionPresets = iStartingPresets;
-            mStorageKey = LoadoutStorage.ExplorationPrefsKey;
+            mStorageKey = LoadoutStorage.ExplorationSaveName;
             mMode = SwapMode.Preset;
 
             ResetPresetsToDefault();
             if (mPersistLoadout && LoadoutStorage.TryLoad(mStorageKey, mDatabase, out var aSaved))
             {
-                for (int aI = 0; aI < mPresets.Count && aI < aSaved.Presets.Count; aI++) mPresets[aI] = aSaved.Presets[aI];
+                for (int aIndex = 0; aIndex < mPresets.Count && aIndex < aSaved.Presets.Count; aIndex++) mPresets[aIndex] = aSaved.Presets[aIndex];
                 mPresetIndex = Mathf.Clamp(aSaved.PresetIndex, 0, mPresets.Count - 1);
             }
             foreach (var aPreset in mPresets)
             {
-                for (int aS = 0; aS < 3; aS++)
+                for (int aSlot = 0; aSlot < 3; aSlot++)
                 {
-                    if (!IsAvailable(aPreset.Get((SlotType)aS))) aPreset.Set((SlotType)aS, null);
+                    if (!IsAvailable(aPreset.Get((SlotType)aSlot))) aPreset.Set((SlotType)aSlot, null);
                 }
             }
             if (mPresets[mPresetIndex].IsEmpty) mPresetIndex = FirstNonEmptyPreset();
 
             RecomputeBonus();
-            for (int aI = 0; aI < 3; aI++) SlotChanged?.Invoke((SlotType)aI);
+            for (int aIndex = 0; aIndex < 3; aIndex++) SlotChanged?.Invoke((SlotType)aIndex);
             ModeChanged?.Invoke();
             PresetChanged?.Invoke();
         }
@@ -139,21 +163,21 @@ namespace BattleFight
         public int EquipNewSkill(SkillData iSkill)
         {
             if (iSkill == null) return -1;
-            for (int aI = 0; aI < mPresets.Count; aI++)
+            for (int aPresetIndex = 0; aPresetIndex < mPresets.Count; aPresetIndex++)
             {
-                if (mPresets[aI].Get(iSkill.Slot) != null) continue;
-                AssignPresetSkill(aI, iSkill.Slot, iSkill);
+                if (mPresets[aPresetIndex].Get(iSkill.Slot) != null) continue;
+                AssignPresetSkill(aPresetIndex, iSkill.Slot, iSkill);
                 SaveLoadout();
-                return aI;
+                return aPresetIndex;
             }
             return -1;
         }
 
         int FirstNonEmptyPreset()
         {
-            for (int aI = 0; aI < mPresets.Count; aI++)
+            for (int aPresetIndex = 0; aPresetIndex < mPresets.Count; aPresetIndex++)
             {
-                if (!mPresets[aI].IsEmpty) return aI;
+                if (!mPresets[aPresetIndex].IsEmpty) return aPresetIndex;
             }
             return 0;
         }
@@ -186,9 +210,9 @@ namespace BattleFight
             var aBefore = new[] { GetCurrent(SlotType.AttackA), GetCurrent(SlotType.AttackB), GetCurrent(SlotType.Movement) };
             mPresetIndex = iIndex;
             RecomputeBonus();
-            for (int aI = 0; aI < 3; aI++)
+            for (int aIndex = 0; aIndex < 3; aIndex++)
             {
-                if (GetCurrent((SlotType)aI) != aBefore[aI]) SlotChanged?.Invoke((SlotType)aI);
+                if (GetCurrent((SlotType)aIndex) != aBefore[aIndex]) SlotChanged?.Invoke((SlotType)aIndex);
             }
             PresetChanged?.Invoke();
             return true;
@@ -200,7 +224,7 @@ namespace BattleFight
             if (mMode == iNewMode || mCollecting) return;
             mMode = iNewMode;
             RecomputeBonus();
-            for (int aI = 0; aI < 3; aI++) SlotChanged?.Invoke((SlotType)aI);
+            for (int aIndex = 0; aIndex < 3; aIndex++) SlotChanged?.Invoke((SlotType)aIndex);
             ModeChanged?.Invoke();
         }
 
@@ -225,7 +249,7 @@ namespace BattleFight
         {
             ResetPresetsToDefault();
             RecomputeBonus();
-            for (int aI = 0; aI < 3; aI++) SlotChanged?.Invoke((SlotType)aI);
+            for (int aIndex = 0; aIndex < 3; aIndex++) SlotChanged?.Invoke((SlotType)aIndex);
             PresetChanged?.Invoke();
         }
 
@@ -246,11 +270,11 @@ namespace BattleFight
 
         void RecomputeBonus()
         {
-            var aA = GetCurrent(SlotType.AttackA);
-            var aB = GetCurrent(SlotType.AttackB);
-            var aM = GetCurrent(SlotType.Movement);
-            Bonus = aA != null && aB != null && aM != null
-                ? WeaponBonusResolver.Resolve(aA.Weapon, aB.Weapon, aM.Weapon)
+            var aAttackA = GetCurrent(SlotType.AttackA);
+            var aAttackB = GetCurrent(SlotType.AttackB);
+            var aMovement = GetCurrent(SlotType.Movement);
+            Bonus = aAttackA != null && aAttackB != null && aMovement != null
+                ? WeaponBonusResolver.Resolve(aAttackA.Weapon, aAttackB.Weapon, aMovement.Weapon)
                 : WeaponBonus.None;
         }
     }

@@ -50,7 +50,7 @@ namespace BattleFight.Tests
         public void RepeatPenalty_NeverGoesBelowMinimum()
         {
             float aGained = 0f;
-            for (int aI = 0; aI < 20; aI++) aGained = mMeter.RegisterHit("combo#0", WeaponType.Sword, 20f, false);
+            for (int aIndex = 0; aIndex < 20; aIndex++) aGained = mMeter.RegisterHit("combo#0", WeaponType.Sword, 20f, false);
 
             Assert.AreEqual(20f * mConfig.MinRepeatMultiplier, aGained, 1e-4f);
         }

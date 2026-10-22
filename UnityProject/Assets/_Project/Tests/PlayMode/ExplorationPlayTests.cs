@@ -55,9 +55,9 @@ namespace BattleFight.Tests
             mPlayer = mExecutor.transform;
 
             int aIndex = -1;
-            for (int aI = 0; aI < mDirector.Stages.Count; aI++)
+            for (int aStageIndex = 0; aStageIndex < mDirector.Stages.Count; aStageIndex++)
             {
-                if (mDirector.Stages[aI].Kind == StageKind.Exploration) aIndex = aI;
+                if (mDirector.Stages[aStageIndex].Kind == StageKind.Exploration) aIndex = aStageIndex;
             }
             Assert.GreaterOrEqual(aIndex, 0, "探索のステージがない");
             mDirector.StartStage(aIndex);
@@ -68,7 +68,7 @@ namespace BattleFight.Tests
         SkillData Skill(string iAssetName) => mSlots.Database.Find(iAssetName);
 
         static T FindInRegion<T>(string iName) where T : Component =>
-            Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None).First(iC => iC.name == iName);
+            Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None).First(iComponent => iComponent.name == iName);
 
         /// <summary>マップの原点からの相対位置へプレイヤーを動かす</summary>
         void Teleport(Vector3 iLocal, Vector3 iForward)

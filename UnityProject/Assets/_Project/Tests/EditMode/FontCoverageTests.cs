@@ -30,16 +30,16 @@ namespace BattleFight.Tests
                 // テストのメッセージは画面に出ないので対象外(subset_font.py と同じ)
                 if (aPath.Replace('\\', '/').Contains("/Tests/")) continue;
                 string aText = File.ReadAllText(aPath, Encoding.UTF8);
-                foreach (char aC in aText) aUsed.Add(aC);
-                foreach (Match aM in mEscape.Matches(aText)) aUsed.Add((char)System.Convert.ToInt32(aM.Groups[1].Value, 16));
+                foreach (char aChar in aText) aUsed.Add(aChar);
+                foreach (Match aMatch in mEscape.Matches(aText)) aUsed.Add((char)System.Convert.ToInt32(aMatch.Groups[1].Value, 16));
             }
 
             var aMissing = new StringBuilder();
-            foreach (char aC in aUsed)
+            foreach (char aChar in aUsed)
             {
                 // 制御文字・サロゲート・ASCII 以外の記号でフォントにない字を集める
-                if (aC < 0x20 || char.IsSurrogate(aC)) continue;
-                if (!aFont.HasCharacter(aC)) aMissing.Append(aC);
+                if (aChar < 0x20 || char.IsSurrogate(aChar)) continue;
+                if (!aFont.HasCharacter(aChar)) aMissing.Append(aChar);
             }
             Assert.IsEmpty(aMissing.ToString(),
                 "フォントにない文字があります。`python Tools/subset_font.py` を実行してフォントを作り直してください: " + aMissing);

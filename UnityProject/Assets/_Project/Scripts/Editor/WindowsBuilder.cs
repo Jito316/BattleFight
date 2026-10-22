@@ -28,9 +28,9 @@ namespace BattleFight.EditorTools
             {
                 EditorApplication.Exit(Build() ? 0 : 1);
             }
-            catch (Exception aE)
+            catch (Exception aException)
             {
-                Debug.LogException(aE);
+                Debug.LogException(aException);
                 EditorApplication.Exit(1);
             }
         }

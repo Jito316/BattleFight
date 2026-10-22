@@ -42,10 +42,10 @@ namespace BattleFight.Tests
         [Test]
         public void Chain_StopsAtMax()
         {
-            for (int aI = 0; aI < 5; aI++)
+            for (int aIndex = 0; aIndex < 5; aIndex++)
             {
-                mMeter.OnSwap(aI);
-                mMeter.OnHit(aI + 0.1f);
+                mMeter.OnSwap(aIndex);
+                mMeter.OnHit(aIndex + 0.1f);
             }
             Assert.AreEqual(3, mMeter.Chain);
             Assert.AreEqual(1.3f, mMeter.DamageMultiplier, 1e-4f);

@@ -80,11 +80,11 @@ namespace BattleFight
             if (mAnimator == null || mDead) return;
 
             // 実際に動いた量から速さを出す(押し出しや技の移動もそのまま足の動きになる)
-            float aDt = Mathf.Max(Time.deltaTime, 1e-5f);
+            float aDeltaTime = Mathf.Max(Time.deltaTime, 1e-5f);
             Vector3 aDelta = transform.position - mLastPosition;
             mLastPosition = transform.position;
-            float aTarget = new Vector3(aDelta.x, 0f, aDelta.z).magnitude / aDt;
-            mSpeed = Mathf.Lerp(mSpeed, aTarget, 1f - Mathf.Exp(-12f * aDt));
+            float aTarget = new Vector3(aDelta.x, 0f, aDelta.z).magnitude / aDeltaTime;
+            mSpeed = Mathf.Lerp(mSpeed, aTarget, 1f - Mathf.Exp(-12f * aDeltaTime));
             mAnimator.SetFloat(SpeedParameter, mSpeed);
 
             bool aBusy = mExecutor != null && mExecutor.IsBusy;

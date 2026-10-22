@@ -40,10 +40,10 @@ namespace BattleFight
             foreach (var aEnemy in EnemyController.Active)
             {
                 if (aEnemy.IsDead) continue;
-                Vector3 aTo = aEnemy.transform.position - transform.position;
-                float aDistance = aTo.magnitude;
+                Vector3 aOffset = aEnemy.transform.position - transform.position;
+                float aDistance = aOffset.magnitude;
                 if (aDistance > mMaxDistance) continue;
-                float aFacing = Vector3.Dot(Vector3.ProjectOnPlane(aTo, Vector3.up).normalized, aForward);
+                float aFacing = Vector3.Dot(Vector3.ProjectOnPlane(aOffset, Vector3.up).normalized, aForward);
                 float aScore = aDistance * (2f - aFacing);
                 if (aScore < aBestScore)
                 {

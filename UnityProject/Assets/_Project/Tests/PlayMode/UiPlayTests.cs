@@ -139,7 +139,7 @@ namespace BattleFight.Tests
         public IEnumerator LoadoutEditor_InExploration_HidesSkillsNotCollected()
         {
             yield return Load();
-            int aExplore = Enumerable.Range(0, mDirector.Stages.Count).First(iI => mDirector.Stages[iI].Kind == StageKind.Exploration);
+            int aExplore = Enumerable.Range(0, mDirector.Stages.Count).First(iIndex => mDirector.Stages[iIndex].Kind == StageKind.Exploration);
             mDirector.StartStage(aExplore);
             yield return WaitUntil(() => mDirector.State == ArenaDirector.GameState.Fighting, 5f);
 
@@ -148,7 +148,7 @@ namespace BattleFight.Tests
             var aRoot = RootOf<LoadoutEditorUI>();
             Assert.IsTrue(Displayed(aRoot.Q("editor")));
 
-            var aNames = aRoot.Query<Label>(className: "skill-row__name").ToList().Select(iL => iL.text).ToList();
+            var aNames = aRoot.Query<Label>(className: "skill-row__name").ToList().Select(iLabel => iLabel.text).ToList();
             CollectionAssert.Contains(aNames, "連斬");
             CollectionAssert.DoesNotContain(aNames, "重撃", "手に入れていないスキルの名前が出ている");
             Assert.Greater(aRoot.Query(className: "skill-row--locked").ToList().Count, 0);

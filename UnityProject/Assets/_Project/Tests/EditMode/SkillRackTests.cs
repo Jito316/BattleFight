@@ -16,20 +16,20 @@ namespace BattleFight.Tests
         [Test]
         public void Cycle_WrapsAroundThroughAllCandidates()
         {
-            var aA = Skill("a");
-            var aB = Skill("b");
-            var aC = Skill("c");
-            var aRack = new SkillRack(new[] { aA, aB, aC });
+            var aFirst = Skill("a");
+            var aSecond = Skill("b");
+            var aThird = Skill("c");
+            var aRack = new SkillRack(new[] { aFirst, aSecond, aThird });
 
-            Assert.AreSame(aA, aRack.Current);
-            Assert.AreSame(aB, aRack.Next);
+            Assert.AreSame(aFirst, aRack.Current);
+            Assert.AreSame(aSecond, aRack.Next);
             Assert.IsTrue(aRack.Cycle());
-            Assert.AreSame(aB, aRack.Current);
+            Assert.AreSame(aSecond, aRack.Current);
             aRack.Cycle();
-            Assert.AreSame(aC, aRack.Current);
-            Assert.AreSame(aA, aRack.Next);
+            Assert.AreSame(aThird, aRack.Current);
+            Assert.AreSame(aFirst, aRack.Next);
             aRack.Cycle();
-            Assert.AreSame(aA, aRack.Current);
+            Assert.AreSame(aFirst, aRack.Current);
         }
 
         [Test]
