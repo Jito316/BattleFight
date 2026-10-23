@@ -253,3 +253,17 @@
     -unity-text-align: middle-center;
     margin-top: 14px;
 }
+
+.profile__settings {
+    font-size: 15px;
+    padding: 4px 18px;
+    margin: 0 0 0 8px;
+    border-radius: 10px;
+    border-width: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+}
+
+.profile__settings:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}

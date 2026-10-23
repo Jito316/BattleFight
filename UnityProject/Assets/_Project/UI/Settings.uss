@@ -1,0 +1,111 @@
+/* 設定画面(Settings.uxml) */
+
+.settings {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(4, 6, 10, 0.7);
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.settings--open {
+    display: flex;
+}
+
+.settings__window {
+    width: 820px;
+    padding: 26px 40px 18px 40px;
+    border-radius: 16px;
+}
+
+.settings__title {
+    font-size: 36px;
+    -unity-text-align: middle-center;
+    margin-bottom: 14px;
+}
+
+.setting-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 14px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0);
+    background-color: var(--bf-card);
+}
+
+.setting-row--selected {
+    border-color: #6FC3FF;
+    background-color: rgba(47, 127, 216, 0.22);
+}
+
+.setting-row__label {
+    width: 220px;
+    font-size: 22px;
+}
+
+.setting-row__arrow {
+    width: 40px;
+    height: 36px;
+    font-size: 20px;
+    margin: 0 6px;
+    padding: 0;
+    border-radius: 8px;
+    border-width: 0;
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+}
+
+.setting-row__bar {
+    flex-grow: 1;
+    height: 14px;
+    border-radius: 7px;
+    background-color: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.setting-row__fill {
+    height: 100%;
+    background-color: #6FC3FF;
+    border-radius: 7px;
+}
+
+.setting-row__value {
+    width: 120px;
+    font-size: 20px;
+    -unity-text-align: middle-right;
+    color: var(--bf-gold);
+}
+
+.settings__buttons {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+.settings__button {
+    width: 220px;
+    font-size: 20px;
+    padding: 8px 0;
+    margin: 0 10px;
+    border-radius: 10px;
+    border-width: 0;
+    background-color: var(--bf-card);
+    color: #FFFFFF;
+}
+
+.settings__button--primary {
+    background-color: rgba(47, 127, 216, 0.55);
+}
+
+.settings__hint {
+    font-size: 15px;
+    color: var(--bf-text-dim);
+    -unity-text-align: middle-center;
+    margin-top: 12px;
+}

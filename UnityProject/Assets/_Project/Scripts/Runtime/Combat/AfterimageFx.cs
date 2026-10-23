@@ -11,6 +11,7 @@ namespace BattleFight
 
         public void Play(float iLife)
         {
+            mElapsed = 0f;
             mLife = Mathf.Max(0.05f, iLife);
             mBaseScale = transform.localScale;
         }
@@ -21,7 +22,7 @@ namespace BattleFight
             float aProgress = mElapsed / mLife;
             float aShrink = 1f - 0.5f * aProgress;
             transform.localScale = new Vector3(mBaseScale.x * aShrink, mBaseScale.y * (1f - 0.15f * aProgress), mBaseScale.z * aShrink);
-            if (aProgress >= 1f) Destroy(gameObject);
+            if (aProgress >= 1f) EffectPool.Release(gameObject);
         }
     }
 }

@@ -10,6 +10,7 @@
             <ui:VisualElement class="profile">
                 <ui:VisualElement name="profile-list" class="profile__list" />
                 <ui:Button name="profile-delete" text="このスロットを消す" class="profile__delete" />
+                <ui:Button name="open-settings" text="設定" class="profile__settings" />
             </ui:VisualElement>
             <ui:Label text="ステージを選んでください" class="select__lead" />
             <ui:VisualElement name="stage-list" class="select__list" />

@@ -28,6 +28,7 @@ namespace BattleFight
         {
             if (!Application.isPlaying) return;
             LastStrength = Mathf.Max(iLow, iHigh);
+            if (!GameSettings.Vibration) return;
             var aGamepad = Gamepad.current;
             if (aGamepad == null) return;
             if (mInstance == null) mInstance = new GameObject("Rumble").AddComponent<Rumble>();

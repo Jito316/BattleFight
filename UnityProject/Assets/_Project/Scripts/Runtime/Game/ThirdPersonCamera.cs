@@ -137,6 +137,7 @@ namespace BattleFight
 
             Vector2 aLook = mInput.StickLook * (mStickSensitivity * aDeltaTime);
             if (Cursor.lockState == CursorLockMode.Locked) aLook += mInput.MouseDelta * mMouseSensitivity;
+            aLook *= GameSettings.CameraSensitivity;
 
             var aLockTarget = mLockOn != null ? mLockOn.Target : null;
             if (aLockTarget != null)

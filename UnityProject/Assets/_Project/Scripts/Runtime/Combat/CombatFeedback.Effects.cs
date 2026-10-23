@@ -5,21 +5,49 @@ namespace BattleFight
     /// <summary>CombatFeedback: 演出を出す(火花・衝撃波・斬撃・残像・欠片・ダメージの数字など)</summary>
     public partial class CombatFeedback
     {
-        /// <summary>ビームの見た目。from から to へ伸びる細い円柱を、duration 秒だけ出す。</summary>
-        public void SpawnBeam(Vector3 iFrom, Vector3 iTo, float iRadius, Color iColor, float iDuration)
+        /// <summary>演出に使う、当たり判定のない形を作る(EffectPool がしまっておけるよう、ここでだけ作る)</summary>
+        GameObject CreateShape(PrimitiveType iShape)
         {
-            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            aObject.name = "Beam";
+            var aObject = GameObject.CreatePrimitive(iShape);
+            // 当たり判定はすぐに消す(残ると、同じフレームの弾が壁として当たってしまう)
             DestroyImmediate(aObject.GetComponent<Collider>());
             var aRenderer = aObject.GetComponent<Renderer>();
             if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
-            aRenderer.material.color = iColor;
+            aRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            aRenderer.receiveShadows = false;
+            return aObject;
+        }
+
+        /// <summary>メッシュを後から入れる入れ物(残像・斬撃の弧)</summary>
+        GameObject CreateMeshHolder()
+        {
+            var aObject = new GameObject();
+            aObject.AddComponent<MeshFilter>();
+            var aRenderer = aObject.AddComponent<MeshRenderer>();
+            if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
+            aRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            aRenderer.receiveShadows = false;
+            return aObject;
+        }
+
+        /// <summary>種類ごとの部品(なければ足す)</summary>
+        static T Fx<T>(GameObject iObject) where T : Component
+        {
+            var aFx = iObject.GetComponent<T>();
+            return aFx != null ? aFx : iObject.AddComponent<T>();
+        }
+
+        /// <summary>ビームの見た目。from から to へ伸びる細い円柱を、duration 秒だけ出す。</summary>
+        public void SpawnBeam(Vector3 iFrom, Vector3 iTo, float iRadius, Color iColor, float iDuration)
+        {
+            var aObject = EffectPool.Get("Beam", () => CreateShape(PrimitiveType.Cylinder));
+            aObject.GetComponent<Renderer>().material.color = iColor;
 
             Vector3 aDirection = iTo - iFrom;
             aObject.transform.position = iFrom + aDirection * 0.5f;
             aObject.transform.rotation = Quaternion.FromToRotation(Vector3.up, aDirection.normalized);
             aObject.transform.localScale = new Vector3(iRadius * 2f, aDirection.magnitude * 0.5f, iRadius * 2f);
-            Destroy(aObject, iDuration);
+            Fx<LifetimeFx>(aObject).Play(iDuration);
         }
 
         /// <summary>当たった場所から火花を散らす(小さな欠片が飛んで消える)</summary>
@@ -51,16 +79,12 @@ namespace BattleFight
 
         void SpawnDebris(Vector3 iPosition, Vector3 iVelocity, Color iColor, float iSize, float iLifetime, Transform iHoming)
         {
-            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            aObject.name = iHoming != null ? "Shard" : "Debris";
-            DestroyImmediate(aObject.GetComponent<Collider>());
-            var aRenderer = aObject.GetComponent<Renderer>();
-            if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
-            aRenderer.material.color = iColor;
+            var aObject = EffectPool.Get(iHoming != null ? "Shard" : "Debris", () => CreateShape(PrimitiveType.Cube));
+            aObject.GetComponent<Renderer>().material.color = iColor;
             aObject.transform.position = iPosition;
             aObject.transform.rotation = Random.rotation;
             aObject.transform.localScale = Vector3.one * iSize;
-            aObject.AddComponent<DebrisFx>().Play(iVelocity, iLifetime, iHoming);
+            Fx<DebrisFx>(aObject).Play(iVelocity, iLifetime, iHoming);
         }
 
         public void SpawnDamageNumber(Vector3 iPosition, float iAmount, Color iColor, float iScale = 1f)
@@ -85,15 +109,12 @@ namespace BattleFight
             {
                 var aSourceRenderer = aFilter.GetComponent<MeshRenderer>();
                 if (aSourceRenderer == null || !aSourceRenderer.enabled) continue;
-                var aObject = new GameObject("Afterimage");
+                var aObject = EffectPool.Get("Afterimage", CreateMeshHolder);
                 aObject.transform.SetPositionAndRotation(aFilter.transform.position, aFilter.transform.rotation);
                 aObject.transform.localScale = aFilter.transform.lossyScale;
-                aObject.AddComponent<MeshFilter>().sharedMesh = aFilter.sharedMesh;
-                var aRenderer = aObject.AddComponent<MeshRenderer>();
-                if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
-                aRenderer.material.color = iColor;
-                aRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                aObject.AddComponent<AfterimageFx>().Play(iLife);
+                aObject.GetComponent<MeshFilter>().sharedMesh = aFilter.sharedMesh;
+                aObject.GetComponent<MeshRenderer>().material.color = iColor;
+                Fx<AfterimageFx>(aObject).Play(iLife);
             }
         }
 
@@ -103,12 +124,9 @@ namespace BattleFight
         public SwingArcFx SpawnSwingArc(Vector3 iCenter, Quaternion iRotation, float iRadius, float iArcDegrees, float iThickness,
             float iDirection, Color iColor)
         {
-            var aObject = new GameObject("SwingArc");
+            var aObject = EffectPool.Get("SwingArc", CreateMeshHolder);
             aObject.transform.SetPositionAndRotation(iCenter, iRotation);
-            aObject.AddComponent<MeshFilter>();
-            var aRenderer = aObject.AddComponent<MeshRenderer>();
-            if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
-            var aArc = aObject.AddComponent<SwingArcFx>();
+            var aArc = Fx<SwingArcFx>(aObject);
             aArc.Play(iRadius, iArcDegrees, iThickness, iDirection, iColor);
             return aArc;
         }
@@ -118,18 +136,14 @@ namespace BattleFight
         {
             for (int aIndex = 0; aIndex < iCount; aIndex++)
             {
-                var aObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                aObject.name = "ArmorShard";
-                DestroyImmediate(aObject.GetComponent<Collider>());
-                var aRenderer = aObject.GetComponent<Renderer>();
-                if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
-                aRenderer.material.color = Color.Lerp(iColor, Color.white, Random.Range(0f, 0.3f));
+                var aObject = EffectPool.Get("ArmorShard", () => CreateShape(PrimitiveType.Cube));
+                aObject.GetComponent<Renderer>().material.color = Color.Lerp(iColor, Color.white, Random.Range(0f, 0.3f));
                 aObject.transform.position = iPosition + Random.insideUnitSphere * 0.3f;
                 aObject.transform.rotation = Random.rotation;
                 aObject.transform.localScale = new Vector3(iSize, iSize * 0.4f, iSize * Random.Range(0.6f, 1.2f));
                 Vector3 aVelocity = Random.onUnitSphere * Random.Range(6f, 10f);
                 aVelocity.y = Mathf.Abs(aVelocity.y) + 3f;
-                aObject.AddComponent<DebrisFx>().Play(aVelocity, Random.Range(0.5f, 0.8f), null);
+                Fx<DebrisFx>(aObject).Play(aVelocity, Random.Range(0.5f, 0.8f), null);
             }
         }
 
@@ -163,25 +177,19 @@ namespace BattleFight
         /// <summary>斬撃の線: 当たった場所を横切る細長い板が、一瞬で伸びて細くなって消える</summary>
         public void SpawnSlash(Vector3 iPosition, Vector3 iDirection, Color iColor, float iLength)
         {
-            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            aObject.name = "Slash";
-            DestroyImmediate(aObject.GetComponent<Collider>());
-            if (mEffectMaterial != null) aObject.GetComponent<Renderer>().sharedMaterial = mEffectMaterial;
+            var aObject = EffectPool.Get("Slash", () => CreateShape(PrimitiveType.Cube));
             Vector3 aForward = iDirection.sqrMagnitude > 1e-4f ? iDirection.normalized : Vector3.forward;
             // 攻撃の向きに直角な面で、斜めに走る線にする
             aObject.transform.position = iPosition;
             aObject.transform.rotation = Quaternion.LookRotation(aForward) * Quaternion.Euler(0f, 0f, Random.Range(-60f, 60f));
-            aObject.AddComponent<SlashFx>().Play(iLength, Color.Lerp(iColor, Color.white, 0.5f));
+            Fx<SlashFx>(aObject).Play(iLength, Color.Lerp(iColor, Color.white, 0.5f));
         }
 
         public void SpawnShockwave(Vector3 iPosition, float iRadius, Color iColor)
         {
-            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            aObject.name = "Shockwave";
-            DestroyImmediate(aObject.GetComponent<Collider>());
-            if (mEffectMaterial != null) aObject.GetComponent<Renderer>().sharedMaterial = mEffectMaterial;
+            var aObject = EffectPool.Get("Shockwave", () => CreateShape(PrimitiveType.Cylinder));
             aObject.transform.position = new Vector3(iPosition.x, Mathf.Max(0.05f, iPosition.y), iPosition.z);
-            aObject.AddComponent<ShockwaveFx>().Play(iRadius, iColor);
+            Fx<ShockwaveFx>(aObject).Play(iRadius, iColor);
         }
     }
 }

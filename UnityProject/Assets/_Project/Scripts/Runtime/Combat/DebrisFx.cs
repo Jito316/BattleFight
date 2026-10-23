@@ -13,6 +13,7 @@ namespace BattleFight
 
         public void Play(Vector3 iStartVelocity, float iLife, Transform iTarget)
         {
+            mElapsed = 0f;
             mVelocity = iStartVelocity;
             mLifetime = iLife;
             mHoming = iTarget;
@@ -38,7 +39,7 @@ namespace BattleFight
             transform.position += mVelocity * aDeltaTime;
             transform.Rotate(mVelocity * (40f * aDeltaTime), Space.World);
             transform.localScale = Vector3.one * (mSize * Mathf.Clamp01(1.2f - aProgress));
-            if (aProgress >= 1f) Destroy(gameObject);
+            if (aProgress >= 1f) EffectPool.Release(gameObject);
         }
     }
 }

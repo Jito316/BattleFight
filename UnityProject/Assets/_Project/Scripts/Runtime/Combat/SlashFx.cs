@@ -12,6 +12,7 @@ namespace BattleFight
 
         public void Play(float iLength, Color iColor)
         {
+            mElapsed = 0f;
             mLength = iLength;
             GetComponent<Renderer>().material.color = iColor;
             transform.localScale = new Vector3(0.01f, 0.08f, 0.01f);
@@ -24,7 +25,7 @@ namespace BattleFight
             float aProgress = Mathf.Clamp01(mElapsed / mDuration);
             float aGrow = Mathf.Min(1f, aProgress * 4f);
             transform.localScale = new Vector3(mLength * aGrow, 0.09f * (1f - aProgress) + 0.01f, 0.02f);
-            if (aProgress >= 1f) Destroy(gameObject);
+            if (aProgress >= 1f) EffectPool.Release(gameObject);
         }
     }
 }
