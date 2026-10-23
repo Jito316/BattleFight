@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1072501248239445051
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2186458722752147075}
+  - component: {fileID: 2422189842671237280}
+  - component: {fileID: 4533414828932533164}
+  m_Layer: 0
+  m_Name: GameDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2186458722752147075
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1072501248239445051}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2422189842671237280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1072501248239445051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf0963a4a7ee03b49b24cb5824fca2bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.ArenaDirector
+  mStages:
+  - {fileID: 11400000, guid: d1215be2dde9e7c4b822d637bf8f6001, type: 2}
+  - {fileID: 11400000, guid: 01a14bd2ce089954f9acafb79fb17f6c, type: 2}
+  - {fileID: 11400000, guid: 37b1c36679dbbf648a871dbc7eca837b, type: 2}
+  - {fileID: 11400000, guid: 104dcdb9e470b6849b034563fab0f055, type: 2}
+  - {fileID: 11400000, guid: e26db415db78f314c9609b25e8aa2245, type: 2}
+  - {fileID: 11400000, guid: 3c3313c0acdb57244adb1818dfc4b8f2, type: 2}
+  - {fileID: 11400000, guid: da593febefa66474bb7ef367fd9df698, type: 2}
+  - {fileID: 11400000, guid: 7de69cd7a8df6074d83ff9603a5acd0c, type: 2}
+  mPlayer: {fileID: 0}
+  mInput: {fileID: 0}
+  mStyle: {fileID: 0}
+  mEnemyMaterial: {fileID: 2100000, guid: d07ade094bd16e941affa0c5b22aa315, type: 2}
+  mArenaCenter: {x: 0, y: 0, z: 0}
+  mSpawnRadius: 14
+  mFirstWaveDelay: 1.5
+  mWaveInterval: 2.5
+  mBaseShardReward: 10
+  mTrainingRespawnDelay: 1.5
+  mArenaRoot: {fileID: 0}
+  mExploration: {fileID: 0}
+  mSlots: {fileID: 0}
+--- !u!114 &4533414828932533164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1072501248239445051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10c45d593b816134895c07b93b244884, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.CombatFeedback
+  mCameraRig: {fileID: 0}
+  mEffectMaterial: {fileID: 2100000, guid: d07ade094bd16e941affa0c5b22aa315, type: 2}
+  mHitStopTimeScale: 0.05
+  mMaxHitStop: 0.15
+  mEffects: {fileID: 11400000, guid: d43a312608f5b524c965161c677ed048, type: 2}

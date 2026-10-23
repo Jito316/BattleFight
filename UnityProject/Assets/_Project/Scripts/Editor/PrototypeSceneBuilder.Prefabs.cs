@@ -16,6 +16,12 @@ namespace BattleFight.EditorTools
         const string mPrefabRoot = mRoot + "/Prefabs";
         public const string PlayerPrefabPath = mPrefabRoot + "/Player/Player.prefab";
         public const string EnemyBasePrefabPath = mPrefabRoot + "/Enemies/Enemy_Base.prefab";
+        // シーンに置く物(シーンを分けて作業できるよう、それぞれプレハブにする)
+        public const string ArenaPrefabPath = mPrefabRoot + "/Scene/Arena.prefab";
+        public const string ExplorationPrefabPath = mPrefabRoot + "/Scene/Exploration.prefab";
+        public const string CameraPrefabPath = mPrefabRoot + "/Scene/MainCamera.prefab";
+        public const string DirectorPrefabPath = mPrefabRoot + "/Scene/GameDirector.prefab";
+        public const string UiPrefabPath = mPrefabRoot + "/Scene/UI.prefab";
 
         static void EnsurePrefabFolders()
         {
@@ -23,6 +29,7 @@ namespace BattleFight.EditorTools
             EnsureFolder(mPrefabRoot, "Player");
             EnsureFolder(mPrefabRoot, "Enemies");
             EnsureFolder(mPrefabRoot, "Weapons");
+            EnsureFolder(mPrefabRoot, "Scene");
         }
 
         /// <summary>プレハブの部品のマテリアル(プレハブに保存できるよう、アセットとして作る)</summary>
@@ -101,16 +108,16 @@ namespace BattleFight.EditorTools
         }
 
         /// <summary>
-        /// プレイヤーをシーンに置く。プレハブがあればそのインスタンス、なければ iBuild で組み立ててプレハブにする。
+        /// シーンにプレハブを置く。プレハブがあればそのインスタンス、なければ iBuild で組み立ててプレハブにする。
         /// シーンの物(カメラなど)への参照は、置いたあとにインスタンスへ入れる(プレハブには入れられない)
         /// </summary>
-        static GameObject PlacePlayer(Func<GameObject> iBuild)
+        static GameObject PlacePrefab(string iPath, Func<GameObject> iBuild)
         {
-            var aPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
+            var aPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(iPath);
             if (aPrefab != null) return (GameObject)PrefabUtility.InstantiatePrefab(aPrefab);
-            var aPlayer = iBuild();
-            PrefabUtility.SaveAsPrefabAssetAndConnect(aPlayer, PlayerPrefabPath, InteractionMode.AutomatedAction);
-            return aPlayer;
+            var aObject = iBuild();
+            PrefabUtility.SaveAsPrefabAssetAndConnect(aObject, iPath, InteractionMode.AutomatedAction);
+            return aObject;
         }
     }
 }

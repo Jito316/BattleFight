@@ -42,12 +42,13 @@ namespace BattleFight.Tests
         }
 
         [Test]
-        public void SceneEffects_UseTheLibrary()
+        public void GameDirector_UsesTheLibrary()
         {
-            // シーンの CombatFeedback が差し替え表をつないでいるか(シーンのファイルの中を見る)
-            var aLibraryGuid = AssetDatabase.AssetPathToGUID(mLibraryPath);
-            var aScene = System.IO.File.ReadAllText("Assets/_Project/Scenes/Prototype_Arena.unity");
-            StringAssert.Contains($"mEffects: {{fileID: 11400000, guid: {aLibraryGuid}", aScene, "シーンの CombatFeedback に差し替え表がつながっていない");
+            // ゲーム進行のプレハブの CombatFeedback が、差し替え表をつないでいるか
+            var aDirector = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Scene/GameDirector.prefab");
+            Assert.NotNull(aDirector, "ゲーム進行のプレハブがない");
+            var aFeedback = aDirector.GetComponent<CombatFeedback>();
+            Assert.AreEqual(AssetDatabase.LoadAssetAtPath<EffectLibrary>(mLibraryPath), aFeedback.Effects, "CombatFeedback に差し替え表がつながっていない");
         }
     }
 }
