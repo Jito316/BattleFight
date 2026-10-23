@@ -21,6 +21,7 @@ namespace BattleFight
             public float Zoom = 1f;
             public bool Vibration = true;
             public float CameraSensitivity = 1f;
+            public bool HideGuide;
         }
 
         static SavedData mData;
@@ -68,6 +69,9 @@ namespace BattleFight
         public const float MaxCameraSensitivity = 2f;
 
         /// <summary>すべて作ったときの値に戻す</summary>
+        /// <summary>操作説明を出すか(一度閉じたら、次に遊ぶときも閉じたまま)</summary>
+        public static bool ShowGuide { get => !Data.HideGuide; set => Set(() => Data.HideGuide = !value); }
+
         public static void ResetToDefaults() => Set(() => mData = new SavedData());
 
         /// <summary>保存された文字列から読み直す(テスト用)</summary>

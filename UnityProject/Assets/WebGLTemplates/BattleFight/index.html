@@ -67,7 +67,9 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#fill").style.width = (100 * progress) + "%";
-        }).then(() => {
+        }).then((instance) => {
+          // 遊んで確かめる用(コンソールから unityInstance.SendMessage を呼べるように)
+          window.unityInstance = instance;
           document.querySelector("#loading").remove();
           canvas.focus();
         }).catch((message) => showError(String(message)));

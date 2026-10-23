@@ -40,6 +40,12 @@ namespace BattleFight
         /// <summary>大きな相手を見るために、いつもより引いている距離</summary>
         float mExtraDistance;
 
+        /// <summary>この距離(体の表面から)より近い大きな敵がいたら、ロックオンしていなくても引く</summary>
+        const float NearBigEnemyGap = 5f;
+
+        /// <summary>この大きさの相手の全体が入るように、いつもより引く距離</summary>
+        static float ExtraDistanceFor(float iRadius) => Mathf.Clamp((iRadius - 0.5f) * 4f, 0f, 4f);
+
         /// <summary>今のカメラの距離(テスト用)</summary>
         public float CurrentDistance => mDistance + mExtraDistance;
 
@@ -184,7 +190,14 @@ namespace BattleFight
             Vector3 aViewFocus = mFocus + aRotation * Vector3.right * (mShoulderOffset * mShoulder);
             Vector3 aBack = -(aRotation * Vector3.forward);
             // 大きな相手(ボス・巨大なエリート)にロックオンしたら、全体が入るよう引く
-            float aWantExtra = aLockTarget != null ? Mathf.Clamp((aLockTarget.Radius - 0.5f) * 4f, 0f, 4f) : 0f;
+            float aWantExtra = aLockTarget != null ? ExtraDistanceFor(aLockTarget.Radius) : 0f;
+            // ロックオンしていなくても、すぐ近くの大きな敵で画面がふさがらないよう少し引く
+            foreach (var aEnemy in EnemyController.Active)
+            {
+                if (aEnemy == null || aEnemy.IsDead) continue;
+                float aGap = Vector3.Distance(aEnemy.transform.position, mTarget.position) - aEnemy.Radius;
+                if (aGap <= NearBigEnemyGap) aWantExtra = Mathf.Max(aWantExtra, ExtraDistanceFor(aEnemy.Radius) * 0.7f);
+            }
             mExtraDistance = Mathf.Lerp(mExtraDistance, aWantExtra, 1f - Mathf.Exp(-3f * aDeltaTime));
             Vector3 aPosition = aViewFocus + aBack * ObstructedDistance(aViewFocus, aBack, mDistance + mExtraDistance);
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
