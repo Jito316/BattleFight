@@ -120,6 +120,7 @@ namespace BattleFight
                 Knockback = mKnockback,
                 Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : Vector3.forward,
                 Source = mSource,
+                Ranged = true,
             });
             Destroy(gameObject);
         }
@@ -140,6 +141,7 @@ namespace BattleFight
                     Knockback = mKnockback,
                     Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : Vector3.forward,
                     Source = mSource,
+                    Ranged = true,
                 });
                 break;
             }

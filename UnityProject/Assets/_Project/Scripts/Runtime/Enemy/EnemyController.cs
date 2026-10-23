@@ -325,6 +325,8 @@ namespace BattleFight
         {
             mState = State.Windup;
             mStateTime = 0f;
+            // 攻撃が来ることを音でも知らせる(重い攻撃ほど低い)
+            SoundPlayer.Play(Sfx.EnemyWindup, mProfile.IsBoss ? 0.5f : 0.3f, mAttack.Damage >= 20f || mAttack.JumpSlam ? 0.75f : 1.1f);
             mAttackLanded = false;
             mTeleported = false;
             mRepeatsLeft = mAttack.Repeat;
@@ -389,6 +391,7 @@ namespace BattleFight
 
         void OnAttackStart()
         {
+            if (!mAttack.Ranged) SoundPlayer.Play(Sfx.Swing, 0.4f, mAttack.Damage >= 20f ? 0.55f : 0.75f);
             // 飛んでいる敵はプレイヤーへ向かって斜めに急降下する
             mAttackDirection = transform.forward;
             if (mProfile.Flying && mTarget != null)

@@ -186,7 +186,7 @@ namespace BattleFight
             HandleSwaps();
 
             // ヒットストップ中は技を進めない(切り替えは受け付ける: 当てた瞬間のスワップキャンセル)
-            bool aFrozen = IsHitFrozen && mCurrent != null;
+            bool aFrozen = IsHitFrozen;
             mMotor.Frozen = aFrozen;
             if (IsStunned)
             {
@@ -1300,6 +1300,12 @@ namespace BattleFight
             mMotor.GravityScale = 1f;
             mSelf.Invulnerable = Time.time < mExtraInvulnerableUntil;
             mWeapons.ClearTemporary();
+        }
+
+        /// <summary>ヒットストップ: しばらくプレイヤーを止める(攻撃を受けた瞬間など)</summary>
+        public void Freeze(float iDuration)
+        {
+            if (iDuration > 0f) mFrozenUntil = Mathf.Max(mFrozenUntil, Time.unscaledTime + iDuration);
         }
 
         /// <summary>被弾などで技を中断する</summary>

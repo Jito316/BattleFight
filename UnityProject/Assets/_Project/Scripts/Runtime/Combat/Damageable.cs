@@ -16,6 +16,8 @@ namespace BattleFight
         public GameObject Source;
         /// <summary>被弾ののけぞり・つぶれの大きさ(1 = ふつう。0 のときは 1 として扱う)</summary>
         public float Reaction;
+        /// <summary>弾・爆発による攻撃か(撃った敵はヒットストップで止めない)</summary>
+        public bool Ranged;
     }
 
     public enum HitOutcome

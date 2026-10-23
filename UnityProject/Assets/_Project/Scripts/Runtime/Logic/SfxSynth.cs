@@ -21,6 +21,8 @@ namespace BattleFight
         Swap,
         /// <summary>銃を撃った音</summary>
         Shot,
+        /// <summary>敵の攻撃の予備動作(だんだん高くなる音で、攻撃が来ることを知らせる)</summary>
+        EnemyWindup,
     }
 
     /// <summary>
@@ -51,6 +53,7 @@ namespace BattleFight
                 Sfx.Defeat => Saturate(Mix(Drop(0.6f, 80f, 30f, 5f, 1f), Rumble(aRandom, 0.6f, 5f, 0.8f, 0.1f)), 1.5f),
                 Sfx.Hurt => Saturate(Drop(0.25f, 220f, 120f, 10f, 1f), 3f),
                 Sfx.Swap => Mix(Ring(0.08f, 60f, 0.6f, 1800f), Ring(0.08f, 80f, 0.4f, 2400f)),
+                Sfx.EnemyWindup => Rise(0.3f, 260f, 620f, 0.8f),
                 _ => new float[1],
             };
             return Normalize(aSamples);
@@ -88,6 +91,23 @@ namespace BattleFight
                 float aFrequency = iTo + (iFrom - iTo) * (float)Math.Exp(-aTime * 18f);
                 aPhase += 2 * Math.PI * aFrequency / SampleRate;
                 aOut[aIndex] = (float)Math.Sin(aPhase) * (float)Math.Exp(-aTime * iDecay) * iGain;
+            }
+            return aOut;
+        }
+
+        /// <summary>だんだん高く・大きくなる音(予備動作)。最後は少し短く切る</summary>
+        static float[] Rise(float iSeconds, float iFrom, float iTo, float iGain)
+        {
+            var aOut = new float[Length(iSeconds)];
+            double aPhase = 0;
+            for (int aIndex = 0; aIndex < aOut.Length; aIndex++)
+            {
+                float aProgress = aIndex / (float)aOut.Length;
+                float aFrequency = iFrom + (iTo - iFrom) * aProgress * aProgress;
+                aPhase += 2 * Math.PI * aFrequency / SampleRate;
+                float aEnvelope = aProgress * Math.Min(1f, (1f - aProgress) * 12f);
+                // 少し角ばった音にして、ほかの効果音に埋もれないようにする
+                aOut[aIndex] = (float)Math.Tanh(Math.Sin(aPhase) * 2.5) * aEnvelope * iGain;
             }
             return aOut;
         }
