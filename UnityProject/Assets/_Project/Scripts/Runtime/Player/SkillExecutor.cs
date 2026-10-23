@@ -123,6 +123,12 @@ namespace BattleFight
         float mLastSwapCancelTime = -99f;
         float mFrozenUntil = -1f;
         PlayerGuard mGuard;
+        float mNextAfterimageTime;
+        Transform mBody;
+        /// <summary>回避の残像の色</summary>
+        static readonly Color mAfterimageColor = new Color(0.55f, 0.75f, 1f);
+        /// <summary>残像を出す間隔(秒)</summary>
+        const float mAfterimageInterval = 0.035f;
         /// <summary>この段で、当てたときの踏み込みをもう入れたか(1段に1回だけ)</summary>
         bool mLungedThisStep;
 
@@ -210,6 +216,7 @@ namespace BattleFight
 
             if (mCurrent == null) mSelf.Invulnerable = Time.time < mExtraInvulnerableUntil;
             UpdateWeaponPose();
+            UpdateAfterimages();
 
             var aMovement = mSlots.GetCurrent(SlotType.Movement);
             GrapplePreview = aMovement != null && aMovement.Behavior == SkillBehavior.Grapple ? FindGrapplePoint(aMovement.Range) : null;
@@ -518,6 +525,14 @@ namespace BattleFight
             mTravelToPoint = false;
 
             mWeapons.ShowTemporary(iSkill.Weapon);
+            if (iSkill.Slot == SlotType.Movement)
+            {
+                if (CombatFeedback.Instance != null)
+                {
+                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.1f, new Color(0.7f, 0.68f, 0.62f));
+                }
+                Rumble.Play(0.1f, 0.25f, 0.05f);
+            }
 
             var aTarget = mLockOn.Target;
             Vector3 aDesired = Flat(mMotor.DesiredDirection);
@@ -828,6 +843,9 @@ namespace BattleFight
             // コンボが続くほど、当たりを大きく見せる。技の締めの一撃はさらに大きく
             float aComboScale = HitEmphasis.ComboScale(Combo.Count);
             bool aFinale = aSkill == mCurrent && iContext.StepIndex == mStepIndex && HitEmphasis.IsFinale(aSkill, iContext.StepIndex, mIsFinisher);
+            // 見切り(敵だけが遅い)の間に近接で当てると、反撃として大きく見せる
+            bool aPunish = EnemyTime.IsSlowed && IsMelee(aSkill) && aSkill == mCurrent;
+            if (aPunish) aFinale = true;
             float aFinaleScale = aFinale ? 1.5f : 1f;
             Vector3 aKickDirection = transform.forward;
 
@@ -1360,6 +1378,16 @@ namespace BattleFight
         }
 
         // ---------- 見た目 ----------
+
+        /// <summary>移動スキルで無敵の間は、通ったあとに残像を残す</summary>
+        void UpdateAfterimages()
+        {
+            bool aDodging = mCurrent != null && mCurrent.Slot == SlotType.Movement && mSelf.Invulnerable;
+            if (!aDodging || CombatFeedback.Instance == null || Time.unscaledTime < mNextAfterimageTime) return;
+            if (mBody == null) mBody = transform.Find("Body");
+            mNextAfterimageTime = Time.unscaledTime + mAfterimageInterval;
+            CombatFeedback.Instance.SpawnAfterimage(mBody, mAfterimageColor, 0.22f);
+        }
 
         void UpdateWeaponPose()
         {

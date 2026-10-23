@@ -137,6 +137,9 @@ namespace BattleFight
         VisualElement mImpactFlash;
         VisualElement mImpactVignette;
         VisualElement mDangerVignette;
+        VisualElement mSlowVignette;
+        /// <summary>今の、見切りの間の紫の縁の濃さ(テスト用)</summary>
+        public float SlowAmount { get; private set; }
 
         /// <summary>HP がこの割合より少なくなると、画面の縁が赤く脈打つ</summary>
         public const float DangerHealthRatio = 0.3f;
@@ -221,6 +224,13 @@ namespace BattleFight
             mImpactFlash = mRoot.Q("impact-flash");
             mImpactVignette = mRoot.Q("impact-vignette");
             mDangerVignette = mRoot.Q("danger-vignette");
+            mSlowVignette = mRoot.Q("slow-vignette");
+            if (mSlowVignette != null)
+            {
+                if (mVignetteTexture == null) mVignetteTexture = CreateVignetteTexture();
+                mSlowVignette.style.backgroundImage = new StyleBackground(mVignetteTexture);
+                mSlowVignette.style.unityBackgroundImageTintColor = new Color(0.6f, 0.4f, 1f);
+            }
             if (mVignetteTexture == null) mVignetteTexture = CreateVignetteTexture();
             if (mImpactVignette != null) mImpactVignette.style.backgroundImage = new StyleBackground(mVignetteTexture);
             if (mDangerVignette != null)
@@ -908,6 +918,10 @@ namespace BattleFight
             float aBeat = Mathf.Pow(Mathf.Abs(Mathf.Sin(Time.unscaledTime * 3.2f)), 6f);
             DangerAmount = aDanger ? (0.25f + 0.35f * (1f - aHealthRatio / DangerHealthRatio)) * (0.55f + 0.45f * aBeat) : 0f;
             if (mDangerVignette != null) mDangerVignette.style.opacity = DangerAmount;
+
+            // 見切り(敵だけが遅い)の間: 画面の縁がうっすら紫に光り、終わりに向けて薄くなる
+            SlowAmount = aInBattle && EnemyTime.IsSlowed ? 0.15f + 0.3f * EnemyTime.Remaining : 0f;
+            if (mSlowVignette != null) mSlowVignette.style.opacity = SlowAmount;
         }
 
         EnemyTag EnemyTagAt(int iIndex)

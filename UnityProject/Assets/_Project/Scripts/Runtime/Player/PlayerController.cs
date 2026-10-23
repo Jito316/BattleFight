@@ -102,10 +102,24 @@ namespace BattleFight
                 // 見切り: しばらく敵だけが遅くなる。避けてから反撃する時間
                 EnemyTime.Slow();
                 SoundPlayer.Play(Sfx.Dodge, 0.8f);
+                // 時間が止まるような、低く長い響き
+                SoundPlayer.Play(Sfx.Parry, 0.45f, 0.55f);
+                Rumble.Play(0.3f, 0.7f, 0.15f);
+                // 空振りした敵は、その場で一瞬止まる
+                if (!iHit.Ranged && iHit.Source != null)
+                {
+                    var aEnemy = iHit.Source.GetComponent<EnemyController>();
+                    if (aEnemy != null) aEnemy.Freeze(0.12f);
+                }
                 if (CombatFeedback.Instance != null)
                 {
-                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 3.5f, new Color(0.75f, 0.5f, 1f));
-                    CombatFeedback.Instance.Shake(0.15f);
+                    var aFeedback = CombatFeedback.Instance;
+                    var aColor = new Color(0.75f, 0.5f, 1f);
+                    aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 3.5f, aColor);
+                    aFeedback.Shake(0.15f);
+                    aFeedback.Punch(3f);
+                    aFeedback.Vignette(aColor, 0.7f);
+                    aFeedback.SpawnAfterimage(transform.Find("Body"), aColor, 0.45f);
                 }
             }
         }
