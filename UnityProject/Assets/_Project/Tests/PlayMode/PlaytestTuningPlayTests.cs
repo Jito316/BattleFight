@@ -466,6 +466,41 @@ namespace BattleFight.Tests
             }
         }
 
+        static float Luminance(Color iColor)
+        {
+            var aLinear = iColor.linear;
+            return 0.2126f * aLinear.r + 0.7152f * aLinear.g + 0.0722f * aLinear.b;
+        }
+
+        static float Contrast(Color iFirst, Color iSecond)
+        {
+            float aFirst = Luminance(iFirst);
+            float aSecond = Luminance(iSecond);
+            return (Mathf.Max(aFirst, aSecond) + 0.05f) / (Mathf.Min(aFirst, aSecond) + 0.05f);
+        }
+
+        [UnityTest]
+        public IEnumerator AttackAreas_StandOutFromEachStageFloor()
+        {
+            yield return LoadEmptyArena();
+            // 範囲の外側(届く広さ)が床に溶けると、どこまで届くかわからない(第1幕の茶色い床で、ほぼ見えなかった)
+            foreach (var aStage in mDirector.Stages)
+            {
+                if (aStage == null || aStage.Waves == null) continue;
+                Color aFloor = aStage.Theme.FloorColor;
+                bool aDark = EnemyTelegraph.IsDarkFloor(aFloor);
+                foreach (var aWave in aStage.Waves)
+                {
+                    foreach (var aProfile in aWave.Enemies)
+                    {
+                        if (aProfile == null) continue;
+                        float aContrast = Contrast(EnemyTelegraph.AreaColor(aProfile.TelegraphColor, aDark), aFloor);
+                        Assert.Greater(aContrast, 2f, $"{aStage.name} の床の上で、{aProfile.DisplayName} の攻撃の範囲が見えにくい({aContrast:0.00})");
+                    }
+                }
+            }
+        }
+
         [UnityTest]
         public IEnumerator ClosedGuide_StaysClosedNextTime()
         {

@@ -18,6 +18,8 @@ namespace BattleFight
         /// <summary>ガードできない(逃げるしかない)攻撃の色。ふつうの攻撃の色(琥珀色など)と見分けられるよう、赤はここだけで使う</summary>
         public static readonly Color DangerColor = new Color(1f, 0.12f, 0.15f);
         const float mAimLength = 14f;
+        /// <summary>床の明るさ(grayscale)がこれより暗いステージでは、範囲の外側を明るく描く</summary>
+        const float DarkFloorThreshold = 0.45f;
 
         EnemyController mEnemy;
         Material mMaterial;
@@ -132,13 +134,30 @@ namespace BattleFight
             mArea.gameObject.SetActive(true);
             mArea.position = new Vector3(aCenter.x, aGround + 0.03f, aCenter.z);
             mArea.localScale = new Vector3(aRadius * 2f, 0.01f, aRadius * 2f);
-            mAreaRenderer.material.color = Color.Lerp(aColor * 0.45f, Color.white, aBlink * 0.6f);
+            bool aDarkFloor = IsDarkFloor(CurrentFloorColor());
+            mAreaRenderer.material.color = Color.Lerp(AreaColor(aColor, aDarkFloor), Color.white, aBlink * 0.6f);
 
             mFill.gameObject.SetActive(true);
             float aFill = aRadius * 2f * Mathf.Clamp01(aProgress);
             mFill.position = new Vector3(aCenter.x, aGround + 0.045f, aCenter.z);
             mFill.localScale = new Vector3(aFill, 0.01f, aFill);
-            mFillRenderer.material.color = aBright;
+            // 暗い床では外側が予告の色そのものなので、埋まっていく内側は白寄りにして見分ける
+            mFillRenderer.material.color = aDarkFloor ? Color.Lerp(aBright, Color.white, 0.45f) : aBright;
+        }
+
+        /// <summary>
+        /// 範囲の外側(届く広さ)の色。暗い床では予告の色そのまま、明るい床では暗くする。
+        /// 外側をいつも暗くしていたので、暗い床(第1幕の茶色など)では床に溶けて、届く広さが見えなかった
+        /// </summary>
+        public static Color AreaColor(Color iTelegraph, bool iDarkFloor) => iDarkFloor ? iTelegraph : iTelegraph * 0.3f;
+
+        public static bool IsDarkFloor(Color iFloor) => iFloor.grayscale < DarkFloorThreshold;
+
+        /// <summary>今のステージの床の色(わからなければ暗い床とみなす色)</summary>
+        static Color CurrentFloorColor()
+        {
+            var aStage = ArenaDirector.Instance != null ? ArenaDirector.Instance.CurrentStage : null;
+            return aStage != null && aStage.Theme != null ? aStage.Theme.FloorColor : Color.black;
         }
 
         void ShowAim(Color iColor, float iProgress)
