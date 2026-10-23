@@ -52,8 +52,11 @@ namespace BattleFight
             if (CombatFeedback.Instance != null)
             {
                 var aBounds = GetComponent<Collider>() != null ? GetComponent<Collider>().bounds : new Bounds(transform.position, Vector3.one);
-                CombatFeedback.Instance.SpawnShockwave(new Vector3(aBounds.center.x, aBounds.min.y + 0.05f, aBounds.center.z),
-                    Mathf.Max(aBounds.extents.x, aBounds.extents.z) + 1f, new Color(0.9f, 0.7f, 0.5f));
+                var aGround = new Vector3(aBounds.center.x, aBounds.min.y + 0.05f, aBounds.center.z);
+                float aSize = Mathf.Max(aBounds.extents.x, aBounds.extents.z) + 1f;
+                var aDustColor = new Color(0.9f, 0.7f, 0.5f);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.WallBreak, aGround, transform.rotation, aSize, aDustColor))
+                    CombatFeedback.Instance.SpawnShockwave(aGround, aSize, aDustColor);
             }
             if (aRegion != null) aRegion.Notify("壁が崩れた", new Color(1f, 0.85f, 0.6f));
             gameObject.SetActive(false);

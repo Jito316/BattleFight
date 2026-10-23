@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98abc8104acedb24f96ca276fb71eca3, type: 3}
   m_Name: Weapon_Gauntlet
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.WeaponTypeData
-  weapon: 5
-  displayName: "\u62F3"
-  color: {r: 1, g: 0.35, b: 0.45, a: 1}
-  headShape: 3
-  headScale: {x: 0.28, y: 0.28, z: 0.32}
-  headOffset: {x: 0, y: 0, z: 0.12}
-  headRotation: {x: 0, y: 0, z: 0}
-  handleLength: 0
-  masteryFinisher: {fileID: 11400000, guid: 82dd77d53a9515d48a517f9c7b5f8fe7, type: 2}
-  synergyStaggerBonus: 0.15
+  Weapon: 5
+  DisplayName: "\u62F3"
+  Color: {r: 1, g: 0.35, b: 0.45, a: 1}
+  Prefab: {fileID: 6558542429605769563, guid: b047a39e47a735449b945311b5545b49, type: 3}
+  HeadShape: 3
+  HeadScale: {x: 0.28, y: 0.28, z: 0.32}
+  HeadOffset: {x: 0, y: 0, z: 0.12}
+  HeadRotation: {x: 0, y: 0, z: 0}
+  HandleLength: 0
+  MasteryFinisher: {fileID: 11400000, guid: 82dd77d53a9515d48a517f9c7b5f8fe7, type: 2}
+  SynergyStaggerBonus: 0.15

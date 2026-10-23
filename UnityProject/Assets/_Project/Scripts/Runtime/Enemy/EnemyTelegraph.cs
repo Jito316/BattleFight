@@ -101,7 +101,10 @@ namespace BattleFight
             if (IsGlinting && !mGlinted)
             {
                 mGlinted = true;
-                if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnSparks(mEnemy.CenterPoint + Vector3.up * 0.6f, Color.white, 6, 4f);
+                var aFeedback = CombatFeedback.Instance;
+                var aGlintPoint = mEnemy.CenterPoint + Vector3.up * 0.6f;
+                if (aFeedback != null && !aFeedback.PlayCue(EffectCue.AttackGlint, aGlintPoint, mEnemy.transform.rotation, 1f, Color.white))
+                    aFeedback.SpawnSparks(aGlintPoint, Color.white, 6, 4f);
             }
 
             IsDanger = aAttack.Unblockable;

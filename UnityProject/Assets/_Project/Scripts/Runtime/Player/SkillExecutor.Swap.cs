@@ -58,7 +58,8 @@ namespace BattleFight
             var aWeaponData = mSlots.GetWeaponData(iShown.Weapon);
             if (CombatFeedback.Instance != null && aWeaponData != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, aWeaponData.Color);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.WeaponSwap, transform.position, transform.rotation, 1.4f, aWeaponData.Color))
+                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.4f, aWeaponData.Color);
             }
 
             TryChangeAttack(iShown.Weapon);
@@ -76,7 +77,9 @@ namespace BattleFight
             var aData = mSlots.GetWeaponData(iWeapon);
             var aColor = aData != null ? aData.Color : Color.white;
             Vector3 aCenter = transform.position + Vector3.up;
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, mChangeAttackRadius, aColor);
+            if (CombatFeedback.Instance != null
+                && !CombatFeedback.Instance.PlayCue(EffectCue.ChangeAttack, transform.position, transform.rotation, mChangeAttackRadius, aColor))
+                CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, mChangeAttackRadius, aColor);
 
             int aCount = Physics.OverlapSphereNonAlloc(aCenter, mChangeAttackRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
             bool aAnyLanded = false;

@@ -30,7 +30,7 @@ namespace BattleFight
         const float mReactionDuration = 0.5f;
 
         /// <summary>見た目の部品をまとめる子の名前(EnemyFactory が作る)</summary>
-        public const string VisualName = "Visual";
+        public const string VisualName = PrimitiveVisuals.VisualName;
 
         public static readonly List<EnemyController> Active = new List<EnemyController>();
         static int mAttackTokensInUse;
@@ -67,6 +67,8 @@ namespace BattleFight
         float mFlashTimer;
         float mFrozenUntil = -1f;
         Transform mVisual;
+        CharacterVisual mCharacterVisual;
+        CharacterAnimation mAnimation;
         Vector3 mReactionDirection;
         float mReactionStrength;
         float mReactionTime;
@@ -178,7 +180,9 @@ namespace BattleFight
         {
             mProfile = iNewProfile;
             mTarget = iPlayer;
-            mVisual = transform.Find(VisualName);
+            mCharacterVisual = CharacterVisual.Of(this);
+            mVisual = mCharacterVisual != null ? mCharacterVisual.transform : transform.Find(VisualName);
+            mAnimation = GetComponent<CharacterAnimation>();
             if (Telegraph == null)
             {
                 Telegraph = gameObject.AddComponent<EnemyTelegraph>();
@@ -201,9 +205,8 @@ namespace BattleFight
             }
             mSkillSetIndex = 0;
             mSwapTimer = mProfile.SkillSwapInterval;
-            // 手に持つ武器(EnemyFactory が付ける)は、型の色で塗る
-            var aWeapon = mVisual != null ? mVisual.Find("Weapon") : transform.Find("Weapon");
-            mWeaponRenderer = aWeapon != null ? aWeapon.GetComponent<Renderer>() : null;
+            // 手に持つ武器(見た目に登録されたもの)は、型の色で塗る
+            mWeaponRenderer = mCharacterVisual != null ? mCharacterVisual.WeaponRenderer : null;
             mWeaponRendererIndex = mWeaponRenderer != null ? System.Array.IndexOf(mRenderers, mWeaponRenderer) : -1;
             ApplySkillSetColor();
         }
@@ -217,7 +220,9 @@ namespace BattleFight
             SkillSetChangedAt = Time.time;
             if (mState == State.Chase) mAttack = null;
             ApplySkillSetColor();
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1.2f, CurrentSkillSet.Color);
+            if (CombatFeedback.Instance != null
+                && !CombatFeedback.Instance.PlayCue(EffectCue.EnemySkillSwap, transform.position, transform.rotation, Radius + 1.2f, CurrentSkillSet.Color))
+                CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1.2f, CurrentSkillSet.Color);
             return true;
         }
 
@@ -348,6 +353,7 @@ namespace BattleFight
         {
             mState = State.Windup;
             mStateTime = 0f;
+            if (mAnimation != null) mAnimation.PlayEnemyAttack(mAttack);
             // 逃げるしかない攻撃: 予備動作の始まりに範囲の中にいたかを覚えておく(逃げ切ったら褒める)
             mTargetInDangerAtStart = mAttack.Unblockable && IsTargetInAttackArea();
             // 逃げるしかない攻撃は続けて出さない(この敵も、ほかの敵も、しばらく間をあける)
@@ -381,7 +387,7 @@ namespace BattleFight
         {
             mTeleported = true;
             if (mTarget == null) return;
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, mProfile.TelegraphColor);
+            SpawnTeleportEffect();
 
             Vector3 aBehind = mTarget.position - Flat(mTarget.forward).normalized * (Radius + 1.8f);
             // アリーナの外に出ないようにする
@@ -394,7 +400,16 @@ namespace BattleFight
             mController.enabled = true;
             Vector3 aLook = Flat(mTarget.position - transform.position);
             if (aLook.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(aLook);
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 1f, mProfile.TelegraphColor);
+            SpawnTeleportEffect();
+        }
+
+        /// <summary>瞬間移動で消えた・現れた場所の演出</summary>
+        void SpawnTeleportEffect()
+        {
+            var aFeedback = CombatFeedback.Instance;
+            if (aFeedback == null) return;
+            if (!aFeedback.PlayCue(EffectCue.EnemyTeleport, transform.position, transform.rotation, Radius + 1f, mProfile.TelegraphColor))
+                aFeedback.SpawnShockwave(transform.position, Radius + 1f, mProfile.TelegraphColor);
         }
 
         Vector3 TickWindup(float iDeltaTime)
@@ -453,7 +468,9 @@ namespace BattleFight
                     Vector3 aOffset = Quaternion.Euler(0f, aAngle, 0f) * Vector3.forward * (Radius + 2f);
                     if (ArenaDirector.Instance != null) ArenaDirector.Instance.SpawnExtra(mAttack.Summon, transform.position + aOffset);
                 }
-                if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 2f, mProfile.TelegraphColor);
+                if (CombatFeedback.Instance != null
+                    && !CombatFeedback.Instance.PlayCue(EffectCue.EnemySummon, transform.position, transform.rotation, Radius + 2f, mProfile.TelegraphColor))
+                    CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 2f, mProfile.TelegraphColor);
                 mAttackLanded = true;
             }
 
@@ -462,8 +479,9 @@ namespace BattleFight
                 var aCenter = transform.TransformPoint(mAttack.Offset);
                 if (CombatFeedback.Instance != null && !mAttack.Ranged && !mAttack.TargetedStrike)
                 {
-                    CombatFeedback.Instance.SpawnShockwave(new Vector3(aCenter.x, transform.position.y, aCenter.z),
-                        AttackRadius(mAttack), mProfile.TelegraphColor);
+                    var aGround = new Vector3(aCenter.x, transform.position.y, aCenter.z);
+                    if (!CombatFeedback.Instance.PlayCue(EffectCue.EnemyAttackLand, aGround, transform.rotation, AttackRadius(mAttack), mProfile.TelegraphColor))
+                        CombatFeedback.Instance.SpawnShockwave(aGround, AttackRadius(mAttack), mProfile.TelegraphColor);
                     CombatFeedback.Instance.Shake(0.2f);
                 }
             }
@@ -638,7 +656,9 @@ namespace BattleFight
             if (CombatFeedback.Instance != null)
             {
                 int aShards = Mathf.Clamp(Mathf.RoundToInt(mProfile.ShardValue * 3f), 2, 12);
-                CombatFeedback.Instance.SpawnDefeatBurst(CenterPoint, mProfile.Color, Mathf.Max(0.6f, mProfile.Scale), mTarget, aShards);
+                // 差し替えた演出でも、刻片がプレイヤーへ飛んでいくのはそのまま(拾えることが見えるように)
+                bool aReplaced = CombatFeedback.Instance.PlayCue(EffectCue.Defeat, CenterPoint, transform.rotation, Mathf.Max(0.6f, mProfile.Scale), mProfile.Color);
+                CombatFeedback.Instance.SpawnDefeatBurst(CenterPoint, mProfile.Color, Mathf.Max(0.6f, mProfile.Scale), mTarget, aShards, !aReplaced);
                 CombatFeedback.Instance.Shake(mProfile.IsBoss ? 0.45f : 0.12f);
             }
         }
@@ -718,7 +738,8 @@ namespace BattleFight
             EnterStagger(1.2f);
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 4f, mProfile.TelegraphColor);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.EnemyPhase2, transform.position, transform.rotation, Radius + 4f, mProfile.TelegraphColor))
+                    CombatFeedback.Instance.SpawnShockwave(transform.position, Radius + 4f, mProfile.TelegraphColor);
                 CombatFeedback.Instance.Shake(0.4f);
             }
             PhaseChanged?.Invoke(this);
@@ -844,6 +865,8 @@ namespace BattleFight
         void UpdateReaction(bool iFrozen)
         {
             if (mVisual == null || mReactionStrength <= 0f) return;
+            // Animator で動かす見た目では、コードの仮の動きは止める
+            if (mCharacterVisual != null && !mCharacterVisual.ProceduralMotion) return;
             if (!iFrozen) mReactionTime += Time.deltaTime;
             if (mReactionTime >= mReactionDuration)
             {

@@ -19,12 +19,12 @@ namespace BattleFight
 
             var aData = mSlots.GetWeaponData(mCurrent.Weapon);
             var aColor = aData != null ? aData.Color : Color.white;
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, 1.2f, aColor);
+            var aFeedback = CombatFeedback.Instance;
+            if (aFeedback != null && !aFeedback.PlayCue(EffectCue.BlinkOut, transform.position, transform.rotation, 1.2f, aColor))
+                aFeedback.SpawnShockwave(transform.position, 1.2f, aColor);
             mMotor.Teleport(aDirection * aDistance);
-            if (CombatFeedback.Instance != null)
-            {
-                CombatFeedback.Instance.SpawnShockwave(transform.position + aDirection * aDistance, 1.6f, aColor);
-            }
+            if (aFeedback != null && !aFeedback.PlayCue(EffectCue.BlinkIn, transform.position + aDirection * aDistance, transform.rotation, 1.6f, aColor))
+                aFeedback.SpawnShockwave(transform.position + aDirection * aDistance, 1.6f, aColor);
         }
 
         void BeginGrapple()

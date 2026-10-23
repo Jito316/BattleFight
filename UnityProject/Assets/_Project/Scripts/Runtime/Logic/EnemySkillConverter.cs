@@ -37,6 +37,7 @@ namespace BattleFight
             var aAttack = new EnemyAttack
             {
                 Name = iSkill.DisplayName,
+                AnimationState = iSkill.AnimationState,
                 SourceSkill = iSkill,
                 Windup = Mathf.Max(MinWindup, aStartup * iWindupScale + WindupPadding),
                 Active = Mathf.Max(0.1f, FrameTime.ToSeconds(aStep.ActiveFrames)),

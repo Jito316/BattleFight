@@ -59,7 +59,9 @@ namespace BattleFight
             {
                 if (CombatFeedback.Instance != null)
                 {
-                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.1f, new Color(0.7f, 0.68f, 0.62f));
+                    var aDustColor = new Color(0.7f, 0.68f, 0.62f);
+                    if (!CombatFeedback.Instance.PlayCue(EffectCue.DodgeStart, transform.position, transform.rotation, 1.1f, aDustColor))
+                        CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 1.1f, aDustColor);
                 }
                 Rumble.Play(0.1f, 0.25f, 0.05f);
             }
@@ -115,6 +117,8 @@ namespace BattleFight
         void BeginStep(int iIndex)
         {
             mStepIndex = iIndex;
+            if (mAnimation == null) mAnimation = GetComponent<CharacterAnimation>();
+            if (mAnimation != null) mAnimation.PlaySkill(mCurrent, iIndex);
             mPhase = Phase.Startup;
             mPhaseTime = 0f;
             mChainQueued = false;
@@ -298,8 +302,10 @@ namespace BattleFight
                     if (CombatFeedback.Instance != null)
                     {
                         GetBeam(out var aFrom, out var aOffset);
-                        CombatFeedback.Instance.SpawnBeam(aFrom, aOffset, mCurrent.BeamRadius, aColor,
-                            Mathf.Max(0.05f, FrameTime.ToSeconds(aStep.ActiveFrames)));
+                        var aBeamRotation = (aOffset - aFrom).sqrMagnitude > 1e-4f ? Quaternion.LookRotation(aOffset - aFrom) : transform.rotation;
+                        if (!CombatFeedback.Instance.PlayCue(EffectCue.Beam, aFrom, aBeamRotation, mCurrent.BeamRadius, aColor))
+                            CombatFeedback.Instance.SpawnBeam(aFrom, aOffset, mCurrent.BeamRadius, aColor,
+                                Mathf.Max(0.05f, FrameTime.ToSeconds(aStep.ActiveFrames)));
                     }
                     break;
             }
@@ -307,8 +313,9 @@ namespace BattleFight
             if (aStep.HitboxRadius >= 2.5f && mCurrent.Behavior != SkillBehavior.Beam && CombatFeedback.Instance != null)
             {
                 var aCenter = transform.TransformPoint(aStep.HitboxOffset);
-                CombatFeedback.Instance.SpawnShockwave(new Vector3(aCenter.x, transform.position.y + 0.05f, aCenter.z),
-                    aStep.HitboxRadius, aColor);
+                var aGround = new Vector3(aCenter.x, transform.position.y + 0.05f, aCenter.z);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.AreaAttack, aGround, transform.rotation, aStep.HitboxRadius, aColor))
+                    CombatFeedback.Instance.SpawnShockwave(aGround, aStep.HitboxRadius, aColor);
             }
             DoHitbox();
         }

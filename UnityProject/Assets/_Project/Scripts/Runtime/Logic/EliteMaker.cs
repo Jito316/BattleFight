@@ -40,6 +40,10 @@ namespace BattleFight
             return (EliteAffix)iRandom.Next(1, 5);
         }
 
+        /// <summary>エリートの体に混ぜる色(障壁は青、ほかは金)</summary>
+        public static Color TintColor(EliteAffix iAffix) =>
+            iAffix == EliteAffix.Barrier ? new Color(0.5f, 0.8f, 1f) : new Color(1f, 0.82f, 0.3f);
+
         /// <summary>エリートの複製を作る(使い終わったら破棄してよい)</summary>
         public static EnemyProfile Create(EnemyProfile iSource, EliteAffix iAffix)
         {
@@ -48,7 +52,7 @@ namespace BattleFight
             aElite.Elite = iAffix;
             aElite.EliteSource = iSource;
             aElite.ShardValue = iSource.ShardValue * ShardMultiplier;
-            aElite.Color = Color.Lerp(iSource.Color, new Color(1f, 0.82f, 0.3f), 0.35f);
+            aElite.Color = Color.Lerp(iSource.Color, TintColor(EliteAffix.Giant), 0.35f);
             switch (iAffix)
             {
                 case EliteAffix.Giant:
@@ -73,7 +77,7 @@ namespace BattleFight
                     aElite.MaxArmor = iSource.MaxArmor + 80f;
                     aElite.ArmorRegenDelay = 4f;
                     aElite.MaxHealth = iSource.MaxHealth * 1.3f;
-                    aElite.Color = Color.Lerp(iSource.Color, new Color(0.5f, 0.8f, 1f), 0.4f);
+                    aElite.Color = Color.Lerp(iSource.Color, TintColor(EliteAffix.Barrier), 0.4f);
                     break;
             }
             return aElite;

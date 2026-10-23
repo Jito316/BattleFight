@@ -30,6 +30,7 @@ MonoBehaviour:
   AttackCooldown: 0.3
   Attacks:
   - Name: "\u81EA\u7206"
+    AnimationState: 
     Range: 2.2
     Windup: 0.9
     Active: 0.1
@@ -67,6 +68,7 @@ MonoBehaviour:
   Phase2Message: "\u672C\u6C17\u306B\u306A\u3063\u305F!"
   Elite: 0
   EliteSource: {fileID: 0}
+  Prefab: {fileID: 8529528143782963384, guid: 9ce6e8ae8a9b1284bbf982e5f5c7eed0, type: 3}
   BodyShape: 0
   Scale: 0.9
   Color: {r: 0.95, g: 0.5, b: 0.15, a: 1}

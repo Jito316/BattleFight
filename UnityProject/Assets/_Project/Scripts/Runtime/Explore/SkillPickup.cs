@@ -94,7 +94,9 @@ namespace BattleFight
             }
             string aHintLine = string.IsNullOrEmpty(mHint) ? "" : $"\n<size=26><color=#FFE08A>{mHint}</color></size>";
             iRegion.Notify($"スキルを手に入れた\n{aNames}{aHintLine}\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnShockwave(transform.position, 2.5f, new Color(1f, 0.9f, 0.5f));
+            var aGlowColor = new Color(1f, 0.9f, 0.5f);
+            if (CombatFeedback.Instance != null && !CombatFeedback.Instance.PlayCue(EffectCue.SkillPickup, transform.position, 2.5f, aGlowColor))
+                CombatFeedback.Instance.SpawnShockwave(transform.position, 2.5f, aGlowColor);
             gameObject.SetActive(false);
         }
 

@@ -6,15 +6,14 @@ namespace BattleFight
 {
     /// <summary>
     /// 手に持つ武器の表示。普段は攻撃Aの武器を持ち、攻撃B・移動の発動中だけその武器に持ち替える。
-    /// 仮モデルなので、振りは手元のアンカーを回して表現する。
+    /// 武器の見た目は WeaponTypeData.Prefab(なければ仮モデル)。手は CharacterVisual.HandAnchor。
+    /// 振りは手を回して表現する(CharacterVisual の ProceduralMotion を外すと回さない。Animator に任せる)。
     /// </summary>
     public class WeaponHolder : MonoBehaviour
     {
         const float mPopDuration = 0.12f;
-        /// <summary>軌跡が消えるまでの時間</summary>
-        const float mTrailTime = 0.12f;
 
-        [SerializeField, FormerlySerializedAs("handAnchor")] Transform mHandAnchor;
+        [SerializeField, Tooltip("武器を持たせる手。空なら CharacterVisual の HandAnchor"), FormerlySerializedAs("handAnchor")] Transform mHandAnchor;
         [SerializeField, FormerlySerializedAs("weaponDatabase")] WeaponTypeData[] mWeaponDatabase;
         [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
         [SerializeField, Tooltip("武器の仮モデルに使うマテリアル(色は武器種ごとに変える)"), FormerlySerializedAs("surfaceMaterial")] Material mSurfaceMaterial;
@@ -22,6 +21,7 @@ namespace BattleFight
         readonly Dictionary<WeaponType, GameObject> mVisuals = new Dictionary<WeaponType, GameObject>();
         readonly Dictionary<WeaponType, TrailRenderer> mTrails = new Dictionary<WeaponType, TrailRenderer>();
         bool mTrailOn;
+        CharacterVisual mVisual;
         WeaponType mMainWeapon;
         WeaponType? mTemporaryWeapon;
         WeaponType? mShownWeapon;
@@ -29,6 +29,9 @@ namespace BattleFight
 
         void Start()
         {
+            mVisual = CharacterVisual.Of(this);
+            // 見た目(プレハブの Visual)を差し替えても武器が付くよう、手は見た目のものを優先する
+            if (mVisual != null && mVisual.HandAnchor != null) mHandAnchor = mVisual.HandAnchor;
             if (mWeaponDatabase != null)
             {
                 foreach (var aData in mWeaponDatabase)
@@ -56,39 +59,33 @@ namespace BattleFight
 
         GameObject BuildVisual(WeaponTypeData iData)
         {
-            var aRoot = new GameObject(iData.DisplayName);
-            aRoot.transform.SetParent(mHandAnchor, false);
-
-            if (iData.HandleLength > 0f)
+            WeaponVisual aWeapon;
+            if (iData.Prefab != null)
             {
-                var aHandle = CreatePart(PrimitiveType.Cube, aRoot.transform, new Color(0.25f, 0.2f, 0.15f));
-                aHandle.localScale = new Vector3(0.05f, 0.05f, iData.HandleLength);
-                aHandle.localPosition = new Vector3(0f, 0f, iData.HandleLength * 0.5f);
+                var aObject = Instantiate(iData.Prefab, mHandAnchor, false);
+                aObject.name = iData.DisplayName;
+                aWeapon = aObject.GetComponent<WeaponVisual>();
+                if (aWeapon == null) aWeapon = aObject.AddComponent<WeaponVisual>();
+            }
+            else
+            {
+                aWeapon = PrimitiveVisuals.BuildWeapon(iData, PrimitiveVisuals.RuntimeMaterials(mSurfaceMaterial));
+                aWeapon.transform.SetParent(mHandAnchor, false);
             }
 
-            var aHead = CreatePart(iData.HeadShape, aRoot.transform, iData.Color);
-            aHead.localPosition = iData.HeadOffset;
-            aHead.localRotation = Quaternion.Euler(iData.HeadRotation);
-            aHead.localScale = iData.HeadScale;
-
-            // 振ったときの軌跡(武器の先から出す)。攻撃判定が出ている間だけ描く
-            var aTip = new GameObject("Trail").transform;
-            aTip.SetParent(aRoot.transform, false);
-            aTip.localPosition = iData.HeadOffset;
-            var aTrail = aTip.gameObject.AddComponent<TrailRenderer>();
-            aTrail.time = mTrailTime;
-            aTrail.minVertexDistance = 0.05f;
-            aTrail.startWidth = Mathf.Clamp(Mathf.Max(iData.HeadScale.x, iData.HeadScale.y, iData.HeadScale.z) * 0.5f, 0.12f, 0.45f);
-            aTrail.endWidth = 0f;
+            // 振ったときの軌跡(武器の先から出す)。攻撃判定が出ている間だけ描く。プレハブに軌跡がなければ付ける
+            var aTrail = aWeapon.Trail;
+            if (aTrail == null)
+            {
+                float aWidth = Mathf.Clamp(Mathf.Max(iData.HeadScale.x, iData.HeadScale.y, iData.HeadScale.z) * 0.5f, 0.12f, 0.45f);
+                aTrail = PrimitiveVisuals.AddTrail(aWeapon.Tip, aWidth, mSurfaceMaterial);
+                aTrail.material.color = Color.Lerp(iData.Color, Color.white, 0.5f);
+            }
             aTrail.emitting = false;
-            aTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            aTrail.receiveShadows = false;
-            if (mSurfaceMaterial != null) aTrail.sharedMaterial = mSurfaceMaterial;
-            aTrail.material.color = Color.Lerp(iData.Color, Color.white, 0.5f);
             mTrails[iData.Weapon] = aTrail;
 
-            aRoot.SetActive(false);
-            return aRoot;
+            aWeapon.gameObject.SetActive(false);
+            return aWeapon.gameObject;
         }
 
         /// <summary>武器の軌跡を描くか(攻撃判定が出ている間だけ true にする)</summary>
@@ -107,17 +104,6 @@ namespace BattleFight
 
         /// <summary>軌跡を描いているか(テスト用)</summary>
         public bool IsTrailOn => mTrailOn;
-
-        Transform CreatePart(PrimitiveType iShape, Transform iParent, Color iColor)
-        {
-            var aPart = GameObject.CreatePrimitive(iShape);
-            Destroy(aPart.GetComponent<Collider>());
-            aPart.transform.SetParent(iParent, false);
-            var aRenderer = aPart.GetComponent<Renderer>();
-            if (mSurfaceMaterial != null) aRenderer.sharedMaterial = mSurfaceMaterial;
-            aRenderer.material.color = iColor;
-            return aPart.transform;
-        }
 
         public void SetMainWeapon(WeaponType iWeapon)
         {
@@ -149,6 +135,7 @@ namespace BattleFight
         /// <summary>振りの姿勢。normalized は -1(振りかぶり)〜 1(振り抜き)。</summary>
         public void SetSwing(float iNormalized, bool iOverhead, float iSide)
         {
+            if (!UsesProceduralMotion) return;
             mHandAnchor.localRotation = iOverhead
                 ? Quaternion.Euler(Mathf.LerpUnclamped(-100f, 60f, (iNormalized + 1f) * 0.5f), 0f, 0f)
                 : Quaternion.Euler(10f, iNormalized * 80f * iSide, 0f);
@@ -156,9 +143,13 @@ namespace BattleFight
 
         public void SetIdle()
         {
+            if (!UsesProceduralMotion) return;
             var aIdle = Quaternion.Euler(35f, 0f, 0f);
             mHandAnchor.localRotation = Quaternion.Slerp(mHandAnchor.localRotation, aIdle, 1f - Mathf.Exp(-15f * Time.deltaTime));
         }
+
+        /// <summary>コードで手を回すか(Animator で動かす見た目なら回さない)</summary>
+        bool UsesProceduralMotion => mHandAnchor != null && (mVisual == null || mVisual.ProceduralMotion);
 
         void LateUpdate()
         {

@@ -8,6 +8,22 @@ namespace BattleFight
         float mLife;
         float mElapsed;
         Vector3 mBaseScale;
+        Mesh mBakedMesh;
+
+        /// <summary>骨で動くモデルの形を焼き付ける入れ物(使い回すので、1 つの残像に 1 つだけ作る)</summary>
+        public Mesh BakedMesh
+        {
+            get
+            {
+                if (mBakedMesh == null) mBakedMesh = new Mesh { name = "Afterimage" };
+                return mBakedMesh;
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (mBakedMesh != null) Destroy(mBakedMesh);
+        }
 
         public void Play(float iLife)
         {

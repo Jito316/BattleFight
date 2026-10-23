@@ -5,13 +5,14 @@ namespace BattleFight
     /// <summary>
     /// プレイヤーが攻撃を受けたときの、体ののけぞり・つぶれ。足元を支点に、殴られた向きへ傾いてつぶれ、
     /// ヒットストップの間は小刻みに震え、止まり終わったらはねるように元へ戻る。
-    /// 見た目の体(「Body」)だけを動かすので、当たり判定や移動には影響しない。
+    /// 見た目の体(CharacterVisual.Body)だけを動かすので、当たり判定や移動には影響しない。
+    /// CharacterVisual の ProceduralMotion を外すと、動きを計算するだけで体は動かさない(Animator に任せる)。
     /// </summary>
     public class PlayerHitReaction : MonoBehaviour
     {
-        const string mBodyName = "Body";
         const float mDuration = 0.45f;
 
+        CharacterVisual mVisual;
         Transform mBody;
         Vector3 mBasePosition;
         Vector3 mBaseScale;
@@ -51,7 +52,8 @@ namespace BattleFight
 
         void Awake()
         {
-            mBody = transform.Find(mBodyName);
+            mVisual = CharacterVisual.Of(this);
+            mBody = mVisual != null ? mVisual.Body : null;
             if (mBody == null) return;
             mBasePosition = mBody.localPosition;
             mBaseScale = mBody.localScale;
@@ -115,6 +117,7 @@ namespace BattleFight
         /// <summary>のけぞり(iAmount)と、縦のつぶれ・伸び(mSquash)を合わせて、体の形を決める</summary>
         void ApplyPose(float iAmount, bool iFrozen)
         {
+            if (!mVisual.ProceduralMotion) return;
             if (iAmount == 0f && mSquash == 0f && mTwist == 0f)
             {
                 mBody.localPosition = mBasePosition;
