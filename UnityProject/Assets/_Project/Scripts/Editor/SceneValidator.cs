@@ -33,6 +33,7 @@ namespace BattleFight.EditorTools
             (typeof(ThirdPersonCamera), "mInput"),
             (typeof(ThirdPersonCamera), "mLockOn"),
             (typeof(LockOnSystem), "mViewTransform"),
+            (typeof(PlayerInputReader), "mActions"),
             (typeof(SkillExecutor), "mView"),
             (typeof(PlayerController), "mCameraTransform"),
             (typeof(BattleHud), "mSlots"),

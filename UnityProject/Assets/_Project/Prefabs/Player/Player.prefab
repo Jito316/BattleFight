@@ -101,6 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.PlayerInputReader
   mBufferTime: 0.15
+  mActions: {fileID: -944628639613478452, guid: 3f581dd58e99c044eaa585e2ebf97e6c, type: 3}
 --- !u!114 &6473337179556994763
 MonoBehaviour:
   m_ObjectHideFlags: 0

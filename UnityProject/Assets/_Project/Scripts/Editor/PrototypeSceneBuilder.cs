@@ -156,6 +156,7 @@ namespace BattleFight.EditorTools
             var aStyleConfig = Asset<StyleRankConfig>("StyleRankConfig", iResetData, _ => { });
             var aEffects = EnsureEffectLibrary();
             var aSounds = EnsureSoundLibrary();
+            var aInputActions = EnsureInputActions();
 
             var aGrunt = Asset<EnemyProfile>("Enemies/Enemy_Grunt", iResetData, PrototypeDefaults.Grunt);
             var aArmored = Asset<EnemyProfile>("Enemies/Enemy_Armored", iResetData, PrototypeDefaults.Armored);
@@ -243,6 +244,7 @@ namespace BattleFight.EditorTools
 
             // あとから足した参照を、今あるプレハブにも入れる(空のときだけ)
             FillEmptyReferences(DirectorPrefabPath, iDirector => FillIfEmpty(iDirector.GetComponent<CombatFeedback>(), "mSounds", aSounds));
+            FillEmptyReferences(PlayerPrefabPath, iPlayer => FillIfEmpty(iPlayer.GetComponent<PlayerInputReader>(), "mActions", aInputActions));
 
             AssetDatabase.SaveAssets();
             if (!aBuildScene)
@@ -348,6 +350,7 @@ namespace BattleFight.EditorTools
                     iSerialized.FindProperty("mSurfaceMaterial").objectReferenceValue = Mat("Surface", Color.white);
                     SetArray(iSerialized, "mWeaponDatabase", aWeapons);
                 });
+                Configure(aNewInput, iSerialized => iSerialized.FindProperty("mActions").objectReferenceValue = aInputActions);
                 Configure(aNewLockOn, iSerialized => iSerialized.FindProperty("mInput").objectReferenceValue = aNewInput);
                 Configure(aNewStyle, iSerialized => iSerialized.FindProperty("mConfig").objectReferenceValue = aStyleConfig);
                 Configure(aNewExecutor, iSerialized =>

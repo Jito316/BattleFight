@@ -35,14 +35,18 @@ namespace BattleFight
 
     /// <summary>
     /// 入力の読み取りと先行入力バッファ。
-    /// アクションはコードで定義する(ゲームパッド + キーボード/マウス)。
+    /// 操作の割り当ては .inputactions(Assets/_Project/Input/BattleFight.inputactions)から読む。
+    /// 空なら PlayerInputBindings の初期の割り当てを使う。
     /// </summary>
     public class PlayerInputReader : MonoBehaviour
     {
         static readonly int mActionCount = Enum.GetValues(typeof(PlayerAction)).Length;
 
         [SerializeField, Tooltip("先行入力を受け付ける秒数"), FormerlySerializedAs("bufferTime")] float mBufferTime = 0.15f;
+        [SerializeField, Tooltip("操作の割り当て(.inputactions)。空なら PlayerInputBindings の初期の割り当て")] InputActionAsset mActions;
 
+        /// <summary>使っている割り当て(複製。ほかのプレイヤーや元のアセットに影響しない)</summary>
+        InputActionAsset mAsset;
         InputAction mMove;
         InputAction mStickLook;
         InputAction mMouseLook;
@@ -52,74 +56,55 @@ namespace BattleFight
         public Vector2 Move => mMove.ReadValue<Vector2>();
         public Vector2 StickLook => mStickLook.ReadValue<Vector2>();
         public Vector2 MouseDelta => mMouseLook.ReadValue<Vector2>();
+        /// <summary>使っている割り当て(表示やテスト用)</summary>
+        public InputActionAsset Actions => mAsset;
 
         void Awake()
         {
-            mMove = new InputAction("Move", InputActionType.Value);
-            mMove.AddCompositeBinding("2DVector")
-                .With("Up", "<Keyboard>/w")
-                .With("Down", "<Keyboard>/s")
-                .With("Left", "<Keyboard>/a")
-                .With("Right", "<Keyboard>/d");
-            mMove.AddBinding("<Gamepad>/leftStick");
-
-            mStickLook = new InputAction("StickLook", InputActionType.Value, "<Gamepad>/rightStick");
-            mMouseLook = new InputAction("MouseLook", InputActionType.Value, "<Mouse>/delta");
-
-            mButtons = new InputAction[mActionCount];
             mPressedAt = new float[mActionCount];
             for (int aIndex = 0; aIndex < mActionCount; aIndex++) mPressedAt[aIndex] = float.NegativeInfinity;
-
-            Bind(PlayerAction.AttackA, "<Gamepad>/buttonWest", "<Mouse>/leftButton", "<Keyboard>/j");
-            Bind(PlayerAction.AttackB, "<Gamepad>/buttonNorth", "<Mouse>/rightButton", "<Keyboard>/e", "<Keyboard>/k");
-            Bind(PlayerAction.Movement, "<Gamepad>/buttonEast", "<Keyboard>/leftShift", "<Keyboard>/l");
-            Bind(PlayerAction.Jump, "<Gamepad>/buttonSouth", "<Keyboard>/space");
-            Bind(PlayerAction.LockOn, "<Gamepad>/leftShoulder", "<Keyboard>/tab", "<Mouse>/middleButton");
-            Bind(PlayerAction.Swap1, "<Gamepad>/dpad/left", "<Keyboard>/1");
-            Bind(PlayerAction.Swap2, "<Gamepad>/dpad/right", "<Keyboard>/2");
-            Bind(PlayerAction.Swap3, "<Gamepad>/dpad/down", "<Keyboard>/3");
-            Bind(PlayerAction.Swap4, "<Gamepad>/dpad/up", "<Keyboard>/4");
-            Bind(PlayerAction.Finisher, "<Gamepad>/rightShoulder", "<Keyboard>/f");
-            Bind(PlayerAction.Restart, "<Gamepad>/start", "<Keyboard>/r");
-            Bind(PlayerAction.OpenLoadout, "<Gamepad>/select", "<Keyboard>/p");
-            Bind(PlayerAction.Drive, "<Gamepad>/leftTrigger", "<Keyboard>/v");
-            Bind(PlayerAction.Guard, "<Gamepad>/rightTrigger", "<Keyboard>/q");
-            Bind(PlayerAction.LockOnLeft, "<Keyboard>/z");
-            Bind(PlayerAction.LockOnRight, "<Keyboard>/c");
+            Setup(mActions);
         }
 
-        void Bind(PlayerAction iAction, params string[] iPaths)
+        /// <summary>割り当てを替える(テストや、設定画面で割り当てを変えたとき)。空なら初期の割り当て</summary>
+        public void UseActions(InputActionAsset iActions)
         {
-            int aIndex = (int)iAction;
-            var aInputAction = new InputAction(iAction.ToString(), InputActionType.Button);
-            foreach (var aPath in iPaths) aInputAction.AddBinding(aPath);
-            aInputAction.performed += _ => mPressedAt[aIndex] = Time.unscaledTime;
-            mButtons[aIndex] = aInputAction;
+            Teardown();
+            Setup(iActions);
+            if (isActiveAndEnabled) mAsset.Enable();
         }
 
-        void OnEnable()
+        void Setup(InputActionAsset iActions)
         {
-            mMove.Enable();
-            mStickLook.Enable();
-            mMouseLook.Enable();
-            foreach (var aButton in mButtons) aButton.Enable();
+            mAsset = iActions != null ? Instantiate(iActions) : PlayerInputBindings.CreateDefault();
+            // 名前で探す。ない(名前を変えた)ときは、すぐわかるように止める
+            var aMap = mAsset.FindActionMap(PlayerInputBindings.MapName, true);
+            mMove = aMap.FindAction(PlayerInputBindings.MoveAction, true);
+            mStickLook = aMap.FindAction(PlayerInputBindings.StickLookAction, true);
+            mMouseLook = aMap.FindAction(PlayerInputBindings.MouseLookAction, true);
+            mButtons = new InputAction[mActionCount];
+            for (int aIndex = 0; aIndex < mActionCount; aIndex++)
+            {
+                int aActionIndex = aIndex;
+                var aAction = aMap.FindAction(((PlayerAction)aIndex).ToString(), true);
+                aAction.performed += _ => mPressedAt[aActionIndex] = Time.unscaledTime;
+                mButtons[aIndex] = aAction;
+            }
         }
 
-        void OnDisable()
+        void Teardown()
         {
-            mMove.Disable();
-            mStickLook.Disable();
-            mMouseLook.Disable();
-            foreach (var aButton in mButtons) aButton.Disable();
+            if (mAsset == null) return;
+            mAsset.Disable();
+            Destroy(mAsset);
+            mAsset = null;
         }
 
-        void OnDestroy()
-        {
-            mMove.Dispose();
-            mStickLook.Dispose();
-            mMouseLook.Dispose();
-            foreach (var aButton in mButtons) aButton.Dispose();
-        }
+        void OnEnable() => mAsset.Enable();
+
+        void OnDisable() => mAsset.Disable();
+
+        void OnDestroy() => Teardown();
 
         /// <summary>バッファ内に押下があるか(消費しない)</summary>
         public bool Peek(PlayerAction iAction) => Time.unscaledTime - mPressedAt[(int)iAction] <= mBufferTime;

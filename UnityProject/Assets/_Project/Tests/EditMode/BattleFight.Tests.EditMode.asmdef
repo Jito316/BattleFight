@@ -3,6 +3,7 @@
     "rootNamespace": "BattleFight.Tests",
     "references": [
         "BattleFight.Runtime",
+        "Unity.InputSystem",
         "BattleFight.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

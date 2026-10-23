@@ -2,7 +2,8 @@
     "name": "BattleFight.Editor",
     "rootNamespace": "BattleFight.EditorTools",
     "references": [
-        "BattleFight.Runtime"
+        "BattleFight.Runtime",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

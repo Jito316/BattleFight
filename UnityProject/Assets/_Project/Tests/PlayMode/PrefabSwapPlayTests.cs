@@ -164,6 +164,27 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator ChangingTheBindings_MovesTheAttackToTheNewKey()
+        {
+            yield return LoadEmptyArena();
+            var aReader = mPlayer.GetComponent<PlayerInputReader>();
+            Assert.NotNull(aReader.Actions, "操作の割り当てがない");
+            // プランナーが .inputactions で攻撃A を U キーだけに変えたつもり
+            var aChanged = Object.Instantiate(aReader.Actions);
+            var aAttack = aChanged.FindActionMap(PlayerInputBindings.MapName).FindAction(nameof(PlayerAction.AttackA));
+            for (int aBindingIndex = aAttack.bindings.Count - 1; aBindingIndex >= 0; aBindingIndex--) aAttack.ChangeBinding(aBindingIndex).Erase();
+            aAttack.AddBinding("<Keyboard>/u");
+            aReader.UseActions(aChanged);
+            Object.Destroy(aChanged);
+            yield return null;
+
+            yield return Tap(mKeyboard.jKey);
+            Assert.IsFalse(aReader.Peek(PlayerAction.AttackA), "割り当てを外した J キーで、まだ攻撃が出る");
+            yield return Tap(mKeyboard.uKey);
+            Assert.IsTrue(aReader.Peek(PlayerAction.AttackA) || mPlayer.GetComponent<SkillExecutor>().IsBusy, "新しく割り当てた U キーで攻撃が出ない");
+        }
+
+        [UnityTest]
         public IEnumerator TurningOffProceduralMotion_LeavesTheBodyToTheAnimator()
         {
             yield return LoadEmptyArena();
