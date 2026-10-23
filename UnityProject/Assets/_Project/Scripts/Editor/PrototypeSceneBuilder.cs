@@ -9,9 +9,10 @@ using Object = UnityEngine.Object;
 namespace BattleFight.EditorTools
 {
     /// <summary>
-    /// 試作アリーナのシーンとデータアセットを生成する。
-    /// メニュー: BattleFight/Build Prototype Arena
-    /// バッチ: -executeMethod BattleFight.EditorTools.PrototypeSceneBuilder.BuildFromCommandLine
+    /// 試作アリーナのデータ・プレハブ・シーンを用意する。
+    /// ふだん(メニュー: BattleFight/Update Data And Prefabs、バッチ: BuildFromCommandLine)は、データとプレハブの足りない物だけを作り、
+    /// シーンには手を付けない(シーンがなければ作る)。終わったらシーンの参照を確かめる(SceneValidator)。
+    /// シーンをプレハブから作り直す(手で直したシーンが消える)のは、メニュー: BattleFight/Rebuild Scene From Prefabs だけ。
     /// </summary>
     public static partial class PrototypeSceneBuilder
     {
@@ -20,11 +21,20 @@ namespace BattleFight.EditorTools
         public const string ScenePath = mRoot + "/Scenes/Prototype_Arena.unity";
         const string mHudFontPath = mRoot + "/Fonts/NotoSansJP-Bold-Subset.otf";
 
-        [MenuItem("BattleFight/Build Prototype Arena")]
+        [MenuItem("BattleFight/Update Data And Prefabs")]
         public static void BuildFromMenu()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            Build(iResetData: false);
+            Build(iResetData: false, iRebuildScene: false);
+        }
+
+        [MenuItem("BattleFight/Rebuild Scene From Prefabs")]
+        public static void RebuildSceneFromMenu()
+        {
+            if (!EditorUtility.DisplayDialog("BattleFight", "シーンをプレハブから作り直します。シーンで手を加えた所(置いた物・動かした物)は消えます。よろしいですか?", "作り直す", "キャンセル"))
+                return;
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Build(iResetData: false, iRebuildScene: true);
         }
 
         [MenuItem("BattleFight/Reset Data To Defaults")]
@@ -33,14 +43,23 @@ namespace BattleFight.EditorTools
             if (!EditorUtility.DisplayDialog("BattleFight", "スキル・武器・敵のアセットをたたき台の数値で上書きします。よろしいですか?", "上書き", "キャンセル"))
                 return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            Build(iResetData: true);
+            Build(iResetData: true, iRebuildScene: false);
         }
 
-        public static void BuildFromCommandLine()
+        /// <summary>バッチ: データとプレハブの足りない物を作り、シーンの参照を確かめる(問題があれば終了コード 1)</summary>
+        public static void BuildFromCommandLine() => RunFromCommandLine(false);
+
+        /// <summary>バッチ: シーンもプレハブから作り直す</summary>
+        public static void RebuildSceneFromCommandLine() => RunFromCommandLine(true);
+
+        static void RunFromCommandLine(bool iRebuildScene)
         {
             try
             {
-                Build(iResetData: false);
+                Build(iResetData: false, iRebuildScene: iRebuildScene);
+                var aProblems = SceneValidator.Validate(EditorSceneManager.OpenScene(ScenePath));
+                foreach (var aProblem in aProblems) Debug.LogError($"[BattleFight] シーンの問題: {aProblem}");
+                if (aProblems.Count > 0) EditorApplication.Exit(1);
             }
             catch (Exception aException)
             {
@@ -49,7 +68,7 @@ namespace BattleFight.EditorTools
             }
         }
 
-        static void Build(bool iResetData)
+        static void Build(bool iResetData, bool iRebuildScene)
         {
             EnsureFolder(mRoot, "Data");
             EnsureFolder(mDataRoot, "Skills");
@@ -58,8 +77,10 @@ namespace BattleFight.EditorTools
             EnsureFolder(mRoot, "Materials");
             EnsureFolder(mRoot, "Scenes");
 
+            // シーンはないときと、作り直すと決めたときだけ作る。
             // NewScene は未使用アセットを解放するので、アセットを読み込む前に作る
-            var aScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            bool aBuildScene = iRebuildScene || AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null;
+            var aScene = aBuildScene ? EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single) : default;
 
             // ---------- データ ----------
             var aSwordCombo = Asset<SkillData>("Skills/Skill_Sword_Combo", iResetData, PrototypeDefaults.SwordCombo);
@@ -220,8 +241,13 @@ namespace BattleFight.EditorTools
             });
 
             AssetDatabase.SaveAssets();
+            if (!aBuildScene)
+            {
+                Debug.Log("[BattleFight] データとプレハブを更新しました(シーンには手を付けていません)");
+                return;
+            }
 
-            // ---------- シーン ----------
+            // ---------- シーン(置く物はプレハブ。シーンの物どうしの参照だけを、置いたあとに入れる) ----------
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.55f, 0.6f, 0.7f);
             RenderSettings.ambientEquatorColor = new Color(0.4f, 0.4f, 0.45f);
@@ -240,8 +266,12 @@ namespace BattleFight.EditorTools
             aLight.shadows = LightShadows.Soft;
             aLightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
-            var aArenaRoot = BuildArena();
-            BuildArenaDecor(aArenaRoot);
+            var aArenaRoot = PlacePrefab(ArenaPrefabPath, () =>
+            {
+                var aArena = BuildArena();
+                BuildArenaDecor(aArena);
+                return aArena.gameObject;
+            }).transform;
 
             // 探索マップ(アリーナとは離れた場所に作る。探索のステージでだけ出す)
             var aExplorationSkills = new ExplorationSkills
@@ -256,11 +286,12 @@ namespace BattleFight.EditorTools
             {
                 Grunt = aGrunt, Armored = aArmored, Shooter = aShooter, Dasher = aDasher, Flyer = aFlyer, Boss = aBoss,
             };
-            var aExploration = BuildExploration(aExplorationSkills, aExplorationEnemies);
+            var aExploration = PlacePrefab(ExplorationPrefabPath,
+                () => BuildExploration(aExplorationSkills, aExplorationEnemies).gameObject).GetComponent<ExplorationRegion>();
 
             // プレイヤー。プレハブ(Prefabs/Player/Player.prefab)があればそれを置き、なければ仮モデルから組み立ててプレハブにする。
             // プレハブの中の参照(部品どうし・データ)はここで入れ、シーンの物(カメラ)への参照はあとでインスタンスに入れる
-            var aPlayer = PlacePlayer(() =>
+            var aPlayer = PlacePrefab(PlayerPrefabPath, () =>
             {
                 var aNewPlayer = new GameObject("Player") { tag = "Player" };
                 var aController = aNewPlayer.AddComponent<CharacterController>();
@@ -345,26 +376,60 @@ namespace BattleFight.EditorTools
             var aPlayerController = aPlayer.GetComponent<PlayerController>();
 
             // カメラ
-            var aCameraObject = new GameObject("Main Camera") { tag = "MainCamera" };
-            var aCamera = aCameraObject.AddComponent<Camera>();
-            aCamera.fieldOfView = 55f;
-            aCamera.clearFlags = CameraClearFlags.SolidColor;
-            aCamera.backgroundColor = new Color(0.55f, 0.65f, 0.78f);
-            aCamera.nearClipPlane = 0.1f;
-            aCameraObject.AddComponent<AudioListener>();
-            var aCameraRig = aCameraObject.AddComponent<ThirdPersonCamera>();
+            var aCameraObject = PlacePrefab(CameraPrefabPath, () =>
+            {
+                var aNewCamera = new GameObject("Main Camera") { tag = "MainCamera" };
+                var aCameraComponent = aNewCamera.AddComponent<Camera>();
+                aCameraComponent.fieldOfView = 55f;
+                aCameraComponent.clearFlags = CameraClearFlags.SolidColor;
+                aCameraComponent.backgroundColor = new Color(0.55f, 0.65f, 0.78f);
+                aCameraComponent.nearClipPlane = 0.1f;
+                aNewCamera.AddComponent<AudioListener>();
+                aNewCamera.AddComponent<ThirdPersonCamera>();
+                return aNewCamera;
+            });
             aCameraObject.transform.position = new Vector3(0f, 4f, -17f);
+            var aCamera = aCameraObject.GetComponent<Camera>();
+            var aCameraRig = aCameraObject.GetComponent<ThirdPersonCamera>();
 
-            // ゲーム進行
-            var aDirectorObject = new GameObject("GameDirector");
-            var aDirector = aDirectorObject.AddComponent<ArenaDirector>();
-            var aFeedback = aDirectorObject.AddComponent<CombatFeedback>();
-            // UI(UI Toolkit)。画面ごとに UIDocument を分け、同じ PanelSettings で重ねる
+            // ゲーム進行。実行時に生成する仮モデル用のマテリアルは、ここから参照してシェーダーがビルドに残るようにする
+            var aSurface = Mat("Surface", Color.white);
+            var aDirectorObject = PlacePrefab(DirectorPrefabPath, () =>
+            {
+                var aNewDirector = new GameObject("GameDirector");
+                var aNewArena = aNewDirector.AddComponent<ArenaDirector>();
+                var aNewFeedback = aNewDirector.AddComponent<CombatFeedback>();
+                Configure(aNewFeedback, iSerialized =>
+                {
+                    iSerialized.FindProperty("mEffectMaterial").objectReferenceValue = aSurface;
+                    iSerialized.FindProperty("mEffects").objectReferenceValue = aEffects;
+                });
+                Configure(aNewArena, iSerialized =>
+                {
+                    iSerialized.FindProperty("mEnemyMaterial").objectReferenceValue = aSurface;
+                    SetArray(iSerialized, "mStages", aStages);
+                });
+                return aNewDirector;
+            });
+            var aDirector = aDirectorObject.GetComponent<ArenaDirector>();
+            var aFeedback = aDirectorObject.GetComponent<CombatFeedback>();
+
+            // UI(UI Toolkit)。画面ごとに UIDocument を分け、同じ PanelSettings で重ねる。4 つの画面を 1 つのプレハブにまとめる
             var aPanel = BuildPanelSettings();
-            var aHud = UiDocument<BattleHud>("UI_Hud", "Hud", aPanel, 0);
-            var aStageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", aPanel, 10);
-            var aLoadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", aPanel, 20);
-            UiDocument<SettingsUI>("UI_Settings", "Settings", aPanel, 30);
+            var aUi = PlacePrefab(UiPrefabPath, () =>
+            {
+                var aNewUi = new GameObject("UI");
+                UiDocument<BattleHud>("UI_Hud", "Hud", aPanel, 0).transform.SetParent(aNewUi.transform, false);
+                var aNewStageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", aPanel, 10);
+                aNewStageSelect.transform.SetParent(aNewUi.transform, false);
+                Configure(aNewStageSelect, iSerialized => iSerialized.FindProperty("mRankConfig").objectReferenceValue = aStyleConfig);
+                UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", aPanel, 20).transform.SetParent(aNewUi.transform, false);
+                UiDocument<SettingsUI>("UI_Settings", "Settings", aPanel, 30).transform.SetParent(aNewUi.transform, false);
+                return aNewUi;
+            });
+            var aHud = aUi.GetComponentInChildren<BattleHud>(true);
+            var aStageSelect = aUi.GetComponentInChildren<StageSelectUI>(true);
+            var aLoadoutEditor = aUi.GetComponentInChildren<LoadoutEditorUI>(true);
 
             // ---------- 参照の設定 ----------
             // プレイヤー(プレハブのインスタンス)からシーンの物への参照
@@ -377,14 +442,7 @@ namespace BattleFight.EditorTools
                 iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
                 iSerialized.FindProperty("mLockOn").objectReferenceValue = aLockOn;
             });
-            // 実行時に生成する仮モデル用。シーンから参照してシェーダーがビルドに残るようにする
-            var aSurface = Mat("Surface", Color.white);
-            Configure(aFeedback, iSerialized =>
-            {
-                iSerialized.FindProperty("mCameraRig").objectReferenceValue = aCameraRig;
-                iSerialized.FindProperty("mEffectMaterial").objectReferenceValue = aSurface;
-                iSerialized.FindProperty("mEffects").objectReferenceValue = aEffects;
-            });
+            Configure(aFeedback, iSerialized => iSerialized.FindProperty("mCameraRig").objectReferenceValue = aCameraRig);
             Configure(aHud, iSerialized =>
             {
                 iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
@@ -405,17 +463,11 @@ namespace BattleFight.EditorTools
                 iSerialized.FindProperty("mPlayer").objectReferenceValue = aPlayer.transform;
                 iSerialized.FindProperty("mInput").objectReferenceValue = aInput;
                 iSerialized.FindProperty("mStyle").objectReferenceValue = aStyle;
-                iSerialized.FindProperty("mEnemyMaterial").objectReferenceValue = aSurface;
-                SetArray(iSerialized, "mStages", aStages);
                 iSerialized.FindProperty("mArenaRoot").objectReferenceValue = aArenaRoot.gameObject;
                 iSerialized.FindProperty("mExploration").objectReferenceValue = aExploration;
                 iSerialized.FindProperty("mSlots").objectReferenceValue = aSlots;
             });
-            Configure(aStageSelect, iSerialized =>
-            {
-                iSerialized.FindProperty("mDirector").objectReferenceValue = aDirector;
-                iSerialized.FindProperty("mRankConfig").objectReferenceValue = aStyleConfig;
-            });
+            Configure(aStageSelect, iSerialized => iSerialized.FindProperty("mDirector").objectReferenceValue = aDirector);
 
             EditorSceneManager.SaveScene(aScene, ScenePath);
 
@@ -424,7 +476,7 @@ namespace BattleFight.EditorTools
             EditorBuildSettings.scenes = aBuildScenes.ToArray();
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"[BattleFight] 試作アリーナを生成しました: {ScenePath}");
+            Debug.Log($"[BattleFight] シーンをプレハブから作りました: {ScenePath}");
         }
 
         static Transform BuildArena()
