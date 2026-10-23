@@ -29,5 +29,7 @@ namespace BattleFight
         public Color AmbientGround = new Color(0.2f, 0.2f, 0.22f);
         [Tooltip("床や壁の色を変えるか(探索のマップは自分の色を持つので、光と霧だけ変える)")]
         public bool TintArena = true;
+        [Tooltip("照り返しの強さ(0 〜 1)。暗いステージは弱くしないと、床が明るく浮いて見える")]
+        public float Reflection = 0.6f;
     }
 }

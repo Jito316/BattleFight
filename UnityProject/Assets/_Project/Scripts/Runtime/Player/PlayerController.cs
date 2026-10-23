@@ -51,7 +51,11 @@ namespace BattleFight
             Vector3 aForward = Vector3.ProjectOnPlane(aView.forward, Vector3.up).normalized;
             Vector3 aRight = Vector3.ProjectOnPlane(aView.right, Vector3.up).normalized;
             mMotor.DesiredDirection = aForward * aMove.y + aRight * aMove.x;
+            if (mLockOn == null) mLockOn = GetComponent<LockOnSystem>();
+            mMotor.FaceTarget = mLockOn != null && mLockOn.Target != null ? mLockOn.Target.transform : null;
         }
+
+        LockOnSystem mLockOn;
 
         void OnDamaged(HitInfo iHit, HitOutcome iOutcome)
         {

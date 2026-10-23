@@ -71,3 +71,4 @@ MonoBehaviour:
     AmbientEquator: {r: 0.3529412, g: 0.14117648, b: 0.1254902, a: 1}
     AmbientGround: {r: 0.11764706, g: 0.05490196, b: 0.047058824, a: 1}
     TintArena: 1
+    Reflection: 0.2

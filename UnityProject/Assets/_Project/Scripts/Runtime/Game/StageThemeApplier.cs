@@ -27,6 +27,7 @@ namespace BattleFight
             RenderSettings.fogColor = iTheme.FogColor;
             RenderSettings.fogStartDistance = iTheme.FogStart;
             RenderSettings.fogEndDistance = iTheme.FogEnd;
+            RenderSettings.reflectionIntensity = Mathf.Clamp01(iTheme.Reflection);
 
             if (iSun != null)
             {
