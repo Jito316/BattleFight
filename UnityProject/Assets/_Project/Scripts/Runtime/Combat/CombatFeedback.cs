@@ -197,6 +197,28 @@ namespace BattleFight
             });
         }
 
+        /// <summary>
+        /// 残像: iRoot の下の見た目(メッシュ)を、その場に写し取って残し、縮みながら消す(回避の速さを見せる)
+        /// </summary>
+        public void SpawnAfterimage(Transform iRoot, Color iColor, float iLife)
+        {
+            if (iRoot == null) return;
+            foreach (var aFilter in iRoot.GetComponentsInChildren<MeshFilter>())
+            {
+                var aSourceRenderer = aFilter.GetComponent<MeshRenderer>();
+                if (aSourceRenderer == null || !aSourceRenderer.enabled) continue;
+                var aObject = new GameObject("Afterimage");
+                aObject.transform.SetPositionAndRotation(aFilter.transform.position, aFilter.transform.rotation);
+                aObject.transform.localScale = aFilter.transform.lossyScale;
+                aObject.AddComponent<MeshFilter>().sharedMesh = aFilter.sharedMesh;
+                var aRenderer = aObject.AddComponent<MeshRenderer>();
+                if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
+                aRenderer.material.color = iColor;
+                aRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                aObject.AddComponent<AfterimageFx>().Play(iLife);
+            }
+        }
+
         /// <summary>アーマーが砕けた欠片: 大きめの破片が勢いよく飛び散る</summary>
         public void SpawnShards(Vector3 iPosition, Color iColor, int iCount, float iSize)
         {
@@ -305,6 +327,29 @@ namespace BattleFight
             transform.position += mVelocity * aDeltaTime;
             transform.Rotate(mVelocity * (40f * aDeltaTime), Space.World);
             transform.localScale = Vector3.one * (mSize * Mathf.Clamp01(1.2f - aProgress));
+            if (aProgress >= 1f) Destroy(gameObject);
+        }
+    }
+
+    /// <summary>残像。少しずつ細く・低くなって消える</summary>
+    public class AfterimageFx : MonoBehaviour
+    {
+        float mLife;
+        float mElapsed;
+        Vector3 mBaseScale;
+
+        public void Play(float iLife)
+        {
+            mLife = Mathf.Max(0.05f, iLife);
+            mBaseScale = transform.localScale;
+        }
+
+        void Update()
+        {
+            mElapsed += Time.unscaledDeltaTime;
+            float aProgress = mElapsed / mLife;
+            float aShrink = 1f - 0.5f * aProgress;
+            transform.localScale = new Vector3(mBaseScale.x * aShrink, mBaseScale.y * (1f - 0.15f * aProgress), mBaseScale.z * aShrink);
             if (aProgress >= 1f) Destroy(gameObject);
         }
     }
