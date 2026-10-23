@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457a5df0d0a43ee42814f83182286682, type: 3}
+  m_Name: SoundLibrary
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SoundLibrary
+  mOutput: {fileID: 0}
+  mEntries:
+  - Sound: 0
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 1
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 2
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 3
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 4
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 5
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 6
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 7
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 8
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 9
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 10
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 11
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 12
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 13
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 14
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 15
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 16
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 17
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 18
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 19
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 20
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 21
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 22
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05
+  - Sound: 23
+    Clips: []
+    Volume: 1
+    PitchVariation: 0.05

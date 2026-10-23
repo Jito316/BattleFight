@@ -4,7 +4,8 @@ using UnityEngine;
 namespace BattleFight
 {
     /// <summary>
-    /// 効果音を鳴らす。音は SfxSynth がはじめて使うときに作る。同時に鳴らせる数は mVoiceCount まで。
+    /// 効果音を鳴らす。音の差し替え表(SoundLibrary)に音のファイルがあればそれを、なければ SfxSynth が作った音を鳴らす
+    /// (作った音は、はじめて使うときに作る)。同時に鳴らせる数は mVoiceCount まで。
     /// 同じ音が短い間に重なりすぎないよう、同じ音は mMinInterval 秒あけて鳴らす(範囲攻撃で一度に当たったときなど)。
     /// </summary>
     public class SoundPlayer : MonoBehaviour
@@ -24,13 +25,29 @@ namespace BattleFight
         public static int PlayCount { get; private set; }
         /// <summary>最後に鳴らした音(テスト用)</summary>
         public static Sfx? LastPlayed { get; private set; }
+        /// <summary>最後に鳴らした音のファイル(テスト用)</summary>
+        public static AudioClip LastClip { get; private set; }
+
+        /// <summary>音の差し替え表(シーンの CombatFeedback が入れる。空なら作った音だけ)</summary>
+        public static SoundLibrary Library
+        {
+            get => mLibrary;
+            set
+            {
+                mLibrary = value;
+                if (mInstance != null) mInstance.ApplyOutput();
+            }
+        }
+        static SoundLibrary mLibrary;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             mInstance = null;
+            mLibrary = null;
             PlayCount = 0;
             LastPlayed = null;
+            LastClip = null;
         }
 
         static SoundPlayer Instance
@@ -62,6 +79,14 @@ namespace BattleFight
                 aSource.spatialBlend = 0f;
                 mVoices.Add(aSource);
             }
+            ApplyOutput();
+        }
+
+        /// <summary>鳴らす先(差し替え表の AudioMixer のグループ。なければ直接)</summary>
+        void ApplyOutput()
+        {
+            var aOutput = mLibrary != null ? mLibrary.Output : null;
+            foreach (var aVoice in mVoices) aVoice.outputAudioMixerGroup = aOutput;
         }
 
         void OnDestroy()
@@ -77,14 +102,18 @@ namespace BattleFight
 
             PlayCount++;
             LastPlayed = iSfx;
+            var aEntry = mLibrary != null ? mLibrary.Find(iSfx) : null;
+            var aClip = aEntry != null ? aEntry.Clips[Random.Range(0, aEntry.Clips.Length)] : Clip(iSfx);
+            LastClip = aClip;
             // 設定の音量(ミュートなら鳴らさない)
-            float aVolume = Mathf.Clamp01(iVolume) * mMasterVolume * GameSettings.EffectiveVolume;
+            float aVolume = Mathf.Clamp01(iVolume) * mMasterVolume * GameSettings.EffectiveVolume * (aEntry != null ? aEntry.Volume : 1f);
             if (aVolume <= 0f) return;
             var aSource = mVoices[mNextVoice];
             mNextVoice = (mNextVoice + 1) % mVoices.Count;
-            aSource.clip = Clip(iSfx);
+            aSource.clip = aClip;
             aSource.volume = aVolume;
-            aSource.pitch = iPitch * Random.Range(0.95f, 1.05f);
+            float aVariation = aEntry != null ? aEntry.PitchVariation : 0.05f;
+            aSource.pitch = iPitch * Random.Range(1f - aVariation, 1f + aVariation);
             aSource.Play();
         }
 

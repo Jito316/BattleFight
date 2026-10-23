@@ -84,3 +84,4 @@ MonoBehaviour:
   mHitStopTimeScale: 0.05
   mMaxHitStop: 0.15
   mEffects: {fileID: 11400000, guid: d43a312608f5b524c965161c677ed048, type: 2}
+  mSounds: {fileID: 11400000, guid: 9b440b2c41816f548a193ceb21c1c9c1, type: 2}

@@ -145,6 +145,31 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator SwappedJumpSound_PlaysTheArtistsClip_OthersStaySynthesized()
+        {
+            yield return LoadEmptyArena();
+            var aOriginal = SoundPlayer.Library;
+            var aClip = AudioClip.Create("ArtistJump", 2205, 1, 22050, false);
+            var aLibrary = ScriptableObject.CreateInstance<SoundLibrary>();
+            aLibrary.Set(Sfx.Jump, aClip);
+            SoundPlayer.Library = aLibrary;
+            try
+            {
+                yield return Tap(mKeyboard.spaceKey);
+                Assert.AreEqual(Sfx.Jump, SoundPlayer.LastPlayed);
+                Assert.AreEqual(aClip, SoundPlayer.LastClip, "差し替えたジャンプの音が鳴らない");
+
+                SoundPlayer.Play(Sfx.Guard);
+                Assert.AreNotEqual(aClip, SoundPlayer.LastClip);
+                StringAssert.StartsWith("Sfx_", SoundPlayer.LastClip.name, "差し替えていない音が、コードで作った音にならない");
+            }
+            finally
+            {
+                SoundPlayer.Library = aOriginal;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator SwappedDefeat_StillSendsTheShardsToThePlayer()
         {
             yield return LoadEmptyArena();

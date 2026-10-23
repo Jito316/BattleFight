@@ -107,6 +107,46 @@ namespace BattleFight.EditorTools
             return aLibrary;
         }
 
+        /// <summary>音の差し替え表。すべての音の種類(Sfx)の行を用意する(ファイルは空のまま。入っている行には手を付けない)</summary>
+        static SoundLibrary EnsureSoundLibrary()
+        {
+            var aLibrary = Asset<SoundLibrary>("SoundLibrary", false, _ => { });
+            bool aAdded = false;
+            foreach (Sfx aSound in Enum.GetValues(typeof(Sfx))) aAdded |= aLibrary.EnsureEntry(aSound);
+            if (aAdded) EditorUtility.SetDirty(aLibrary);
+            return aLibrary;
+        }
+
+        /// <summary>
+        /// 今あるプレハブの、空の参照だけを埋める(あとから足した参照のため。入っている参照には手を付けない)。
+        /// iSetup は (プレハブの中身, 埋めたか) を受け取り、埋めたら true を返す
+        /// </summary>
+        static void FillEmptyReferences(string iPath, Func<GameObject, bool> iSetup)
+        {
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(iPath) == null) return;
+            var aContents = PrefabUtility.LoadPrefabContents(iPath);
+            try
+            {
+                if (iSetup(aContents)) PrefabUtility.SaveAsPrefabAsset(aContents, iPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(aContents);
+            }
+        }
+
+        /// <summary>iComponent の iField が空なら iValue を入れる。入れたら true</summary>
+        static bool FillIfEmpty(Component iComponent, string iField, Object iValue)
+        {
+            if (iComponent == null || iValue == null) return false;
+            var aSerialized = new SerializedObject(iComponent);
+            var aProperty = aSerialized.FindProperty(iField);
+            if (aProperty == null || aProperty.objectReferenceValue != null) return false;
+            aProperty.objectReferenceValue = iValue;
+            aSerialized.ApplyModifiedPropertiesWithoutUndo();
+            return true;
+        }
+
         /// <summary>
         /// シーンにプレハブを置く。プレハブがあればそのインスタンス、なければ iBuild で組み立ててプレハブにする。
         /// シーンの物(カメラなど)への参照は、置いたあとにインスタンスへ入れる(プレハブには入れられない)

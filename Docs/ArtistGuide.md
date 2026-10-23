@@ -15,8 +15,8 @@
 | 武器(武器種ごと) | `Assets/_Project/Prefabs/Weapons/Weapon_*.prefab` | `Data/Weapons/Weapon_*.asset` の **Prefab** |
 
 - 最初の中身は、コードで作った仮モデル(箱・カプセル)。
-- シーンを作り直す(`BattleFight/Build Prototype Arena`)とき、**プレハブがあれば中身には手を付けない**。差し替えた見た目は消えない。
-- 仮モデルから作り直したいときは、そのプレハブを消してからシーンを作り直す。
+- データとプレハブを用意する(`BattleFight/Update Data And Prefabs`)とき、**プレハブがあれば中身には手を付けない**。差し替えた見た目は消えない。
+- 仮モデルから作り直したいときは、そのプレハブを消してから `BattleFight/Update Data And Prefabs` を実行する。
 - 体力・攻撃・速さなどの中身は、プレハブではなく `Data/` のデータで決める。見た目を替えても強さは変わらない。
 
 ## 2. キャラクター(プレイヤー・敵)
@@ -143,16 +143,48 @@ Weapon_Sword                   ← WeaponVisual。原点が手の位置、+Z が
 - 演出は使い回す(出し終わったら隠してしまっておき、次に出すときに最初から流し直す)。プレハブの中で自分を消さないこと。
 - 回避の残像は、キャラクターの見た目をその場で写すので差し替えない。
 
-## 6. 確かめ方
+## 6. 音
+
+音は「音の種類」ごとに差し替える。差し替え表は `Assets/_Project/Data/SoundLibrary.asset`。
+行に音のファイル(wav・ogg など)を入れると、**コードで作った音の代わりに** それを鳴らす。空の行は、コードで作った音のまま。
+
+| 項目 | 何に使うか |
+|---|---|
+| Output(表のいちばん上) | 鳴らす先の AudioMixer のグループ。空なら直接鳴らす。効果音のグループを作ったら、ここに入れる |
+| Clips | 鳴らす音のファイル。2 つ以上入れると、鳴らすたびにどれか 1 つを選ぶ |
+| Volume | 音量の倍率(ゲームの中の音量・設定画面の音量に掛ける) |
+| Pitch Variation | 鳴らすたびに音の高さを揺らす幅(0.05 なら ±5%)。同じ音の繰り返しを目立たなくする |
+
+| 音の種類 | いつ |
+|---|---|
+| Swing / SwingSword / SwingHeavy / SwingChain / SwingStaff / SwingFist | 振ったとき(武器ごと。Swing は移動スキルなどの軽い風切り) |
+| HitSword / HitHammer / HitChain / HitStaff / HitGun / HitGauntlet | 当たったとき(武器ごと) |
+| Weak / ArmorBreak / Defeat | 弱点に当てた / アーマーが砕けた / 敵を倒した |
+| Hurt / Dodge / Swap / Shot | 攻撃を受けた / 回避 / 持ち替え / 銃を撃った |
+| EnemyWindup | 敵の攻撃の予備動作(重い攻撃ほど低く鳴らす) |
+| Guard / Parry | ガードで受けた / パリィ・カウンター・見切り |
+| Jump / Land | 踏み切り / 着地(重いほど低く大きく鳴らす) |
+
+- 音の高さ・大きさは、ゲームの中で場面に合わせて変える(重い一撃は低く、など)。ファイルはふつうの高さで作る。
+- 音の種類は番号で保存されるので、プログラマーが種類を足すときは最後に足す。
+
+## 7. 確かめ方
 
 - `PrefabContractTests`(EditMode): プレハブに CharacterVisual・WeaponVisual があるか、登録が抜けていないか、マテリアルがアセットか、敵・武器のデータがプレハブにつながっているか。
 - `EffectLibraryTests`(EditMode): 差し替え表に、すべての場面の行が 1 つずつあるか。シーンにつながっているか。
 - `PrefabSwapPlayTests`(PlayMode): プレハブの見た目で出るか、別の見た目に替えられるか、アニメーションの合図が出るか。
-- `EffectSwapPlayTests`(PlayMode): 差し替えた演出が、いつもの演出の代わりに出るか。色が入るか。消えるか。
+- `SoundLibraryTests`(EditMode): 音の差し替え表に、すべての音の行が 1 つずつあるか。ゲーム進行につながっているか。
+- `EffectSwapPlayTests`(PlayMode): 差し替えた演出・音が、いつもの演出・音の代わりに出るか。色が入るか。消えるか。
 
 差し替えたあとは、これらのテストを回して通ることを確かめる。
 
-## 7. まだ差し替えられないもの
+## 8. シーンに置く物
 
-- 敵の攻撃範囲の表示・ガードの盾・弾の見た目。
-- シーン(アリーナの地形・UI)。シーンはまだコードから毎回作り直している(次に直す予定)。
+アリーナの地形・探索マップ・カメラ・ゲーム進行・UI も、それぞれプレハブ(`Assets/_Project/Prefabs/Scene/`)。
+地形の見た目を直すときは `Arena.prefab` / `Exploration.prefab` を開いて直す。シーン(`Prototype_Arena.unity`)はコードから作り直さない。
+直したら `BattleFight/Validate Scene` で、参照が切れていないか確かめる。
+
+## 9. まだ差し替えられないもの
+
+- 敵の攻撃範囲の表示・ガードの盾・弾の見た目(コードで作っている)。
+- BGM(まだない)。
