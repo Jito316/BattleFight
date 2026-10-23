@@ -46,6 +46,40 @@ namespace BattleFight
         /// <summary>この大きさの相手の全体が入るように、いつもより引く距離</summary>
         static float ExtraDistanceFor(float iRadius) => Mathf.Clamp((iRadius - 0.5f) * 4f, 0f, 4f);
 
+        /// <summary>壁で 1m 近づけられるごとに、上へ逃がす高さ</summary>
+        const float WallLiftPerMeter = 0.6f;
+        const float MaxWallLift = 2.2f;
+        /// <summary>今、壁をよけて上へ逃がしている高さ</summary>
+        float mWallLift;
+
+        /// <summary>この高さ以上の敵に隠れたら、上から見下ろす(ふつうの大きさの敵では動かさない)</summary>
+        const float BigEnemyHeight = 2.5f;
+
+        /// <summary>プレイヤーを隠している(隠していた)敵。離れるまで上から見下ろす</summary>
+        EnemyController mOccluder;
+
+        /// <summary>カメラからプレイヤーまでの間に敵の体があるかを調べ、隠している敵を覚える</summary>
+        void UpdateOccluder(Vector3 iCameraPosition)
+        {
+            if (mOccluder != null)
+            {
+                float aGap = Vector3.Distance(mOccluder.transform.position, mTarget.position) - mOccluder.Radius;
+                if (mOccluder.IsDead || aGap > NearBigEnemyGap) mOccluder = null;
+            }
+            Vector3 aChest = mTarget.position + Vector3.up;
+            Vector3 aToChest = aChest - iCameraPosition;
+            int aCount = Physics.RaycastNonAlloc(iCameraPosition, aToChest.normalized, mCameraHits, aToChest.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
+            {
+                var aEnemy = mCameraHits[aIndex].collider.GetComponentInParent<EnemyController>();
+                if (aEnemy == null || aEnemy.IsDead || aEnemy.Height < BigEnemyHeight) continue;
+                if (mOccluder == null || aEnemy.Height > mOccluder.Height) mOccluder = aEnemy;
+            }
+        }
+
+        /// <summary>今、壁や敵をよけて上へ逃がしている高さ(テスト用)</summary>
+        public float WallLift => mWallLift;
+
         /// <summary>今のカメラの距離(テスト用)</summary>
         public float CurrentDistance => mDistance + mExtraDistance;
 
@@ -199,7 +233,15 @@ namespace BattleFight
                 if (aGap <= NearBigEnemyGap) aWantExtra = Mathf.Max(aWantExtra, ExtraDistanceFor(aEnemy.Radius) * 0.7f);
             }
             mExtraDistance = Mathf.Lerp(mExtraDistance, aWantExtra, 1f - Mathf.Exp(-3f * aDeltaTime));
-            Vector3 aPosition = aViewFocus + aBack * ObstructedDistance(aViewFocus, aBack, mDistance + mExtraDistance);
+            float aWantDistance = mDistance + mExtraDistance;
+            float aDistance = ObstructedDistance(aViewFocus, aBack, aWantDistance);
+            // 壁で近づけられたぶん、上へ逃がして見下ろす(プレイヤーの体で画面がふさがらないように)
+            float aWantLift = Mathf.Clamp((aWantDistance - aDistance) * WallLiftPerMeter, 0f, MaxWallLift);
+            // 大きな敵の体でプレイヤーが隠れたら、その敵が離れるまで上から見下ろす
+            UpdateOccluder(aViewFocus + aBack * aDistance + Vector3.up * mWallLift);
+            if (mOccluder != null) aWantLift = Mathf.Max(aWantLift, Mathf.Min(MaxWallLift, mOccluder.Height - 0.6f));
+            mWallLift = Mathf.Lerp(mWallLift, aWantLift, 1f - Mathf.Exp(-4f * aDeltaTime));
+            Vector3 aPosition = aViewFocus + aBack * aDistance + Vector3.up * mWallLift;
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
             aPosition += Random.insideUnitSphere * mShake + mKick;
             mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDeltaTime));
