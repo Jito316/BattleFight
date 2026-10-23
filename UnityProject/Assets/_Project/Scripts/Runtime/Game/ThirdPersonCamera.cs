@@ -57,6 +57,8 @@ namespace BattleFight
         /// <summary>壁・大きな敵で縮めるときの、カメラの距離の下限</summary>
         const float MinWallDistance = 1.6f;
         const float MinBigEnemyDistance = 2.5f;
+        /// <summary>上へ逃がした先がぶつかるときの、カメラの距離の下限(近すぎるときは体を隠す)</summary>
+        const float LiftedMinDistance = 0.8f;
         /// <summary>カメラがプレイヤーの体にここまで近づいたら、体を隠す(影は残す)</summary>
         const float HideBodyDistance = 1.3f;
         /// <summary>プレイヤーの体を隠しているか</summary>
@@ -164,7 +166,7 @@ namespace BattleFight
         /// 壁の向こうに回り込まないよう、注視点からカメラまでの間にある地形の手前で止める。
         /// プレイヤーや敵(Damageable を持つもの)は無視する。
         /// </summary>
-        float ObstructedDistance(Vector3 iFrom, Vector3 iDirection, float iMaxDistance)
+        float ObstructedDistance(Vector3 iFrom, Vector3 iDirection, float iMaxDistance, float iMinWallDistance, out float oWallDistance)
         {
             const float aRadius = 0.3f;
             int aCount = Physics.SphereCastNonAlloc(iFrom, aRadius, iDirection, mCameraHits, iMaxDistance, ~0, QueryTriggerInteraction.Ignore);
@@ -186,8 +188,9 @@ namespace BattleFight
                 aNearestWall = Mathf.Min(aNearestWall, aHit.distance);
             }
             // 大きな敵の手前には、近づきすぎない(それより近い敵なら、カメラが敵の体の中に入る。中からは敵の面が見えないので隠れない)
-            float aWall = Mathf.Max(MinWallDistance, aNearestWall - 0.1f);
+            float aWall = Mathf.Max(iMinWallDistance, aNearestWall - 0.1f);
             float aEnemyLimit = Mathf.Max(MinBigEnemyDistance, aNearestEnemy - 0.1f);
+            oWallDistance = aWall;
             return Mathf.Min(aWall, aEnemyLimit);
         }
 
@@ -247,15 +250,22 @@ namespace BattleFight
             }
             mExtraDistance = Mathf.Lerp(mExtraDistance, aWantExtra, 1f - Mathf.Exp(-3f * aDeltaTime));
             float aWantDistance = mDistance + mExtraDistance;
-            float aDistance = ObstructedDistance(aViewFocus, aBack, aWantDistance);
+            float aDistance = ObstructedDistance(aViewFocus, aBack, aWantDistance, MinWallDistance, out float aWallDistance);
             // 近づくのはすぐ、離れるのはゆっくり(大きな敵が動いても、カメラががたつかないように)
             if (mObstructedDistance < 0f || aDistance < mObstructedDistance) mObstructedDistance = aDistance;
             else mObstructedDistance = Mathf.Lerp(mObstructedDistance, aDistance, 1f - Mathf.Exp(-3f * aDeltaTime));
             aDistance = mObstructedDistance;
-            // 壁や大きな敵で近づけられたぶん、上へ逃がして見下ろす(プレイヤーの体で画面がふさがらないように)
-            float aWantLift = Mathf.Clamp((aWantDistance - aDistance) * WallLiftPerMeter, 0f, MaxWallLift);
+            // 壁で近づけられたぶん、上へ逃がして見下ろす(プレイヤーの体で画面がふさがらないように)
+            // 大きな敵のときは上げない(上げると水平の距離が縮み、かえってプレイヤーに寄ってしまう)
+            float aWantLift = Mathf.Clamp((aWantDistance - aWallDistance) * WallLiftPerMeter, 0f, MaxWallLift);
             mWallLift = Mathf.Lerp(mWallLift, aWantLift, 1f - Mathf.Exp(-4f * aDeltaTime));
-            Vector3 aPosition = aViewFocus + aBack * aDistance + Vector3.up * mWallLift;
+            // 上へ逃がした先が、天井や台にめり込まないよう、もう一度ぶつかるところを調べて手前で止める
+            Vector3 aCameraOffset = aBack * aDistance + Vector3.up * mWallLift;
+            float aLength = aCameraOffset.magnitude;
+            Vector3 aOffsetDirection = aCameraOffset / aLength;
+            // (大きな敵の体の中に入るのはかまわないので、壁だけで止める)
+            ObstructedDistance(aViewFocus, aOffsetDirection, aLength, LiftedMinDistance, out float aLiftedWallDistance);
+            Vector3 aPosition = aViewFocus + aOffsetDirection * Mathf.Min(aLength, aLiftedWallDistance);
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
             aPosition += Random.insideUnitSphere * mShake + mKick;
             mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDeltaTime));
