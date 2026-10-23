@@ -10,9 +10,12 @@ namespace BattleFight
     /// </summary>
     public class EnemyTelegraph : MonoBehaviour
     {
-        /// <summary>攻撃が出る何秒前に白く光らせるか(パリィの受付と同じくらい)</summary>
-        public const float GlintTime = 0.2f;
-        /// <summary>ガードできない(逃げるしかない)攻撃の色</summary>
+        /// <summary>
+        /// 攻撃が出る何秒前に白く光らせるか。光ったのを見てから押して(人の反応 約0.2秒)、
+        /// パリィ(押して 0.18 秒以内)・見切り(回避の無敵)にちょうど間に合うように、少し早めに光らせる
+        /// </summary>
+        public const float GlintTime = 0.35f;
+        /// <summary>ガードできない(逃げるしかない)攻撃の色。ふつうの攻撃の色(琥珀色など)と見分けられるよう、赤はここだけで使う</summary>
         public static readonly Color DangerColor = new Color(1f, 0.12f, 0.15f);
         const float mAimLength = 14f;
 

@@ -54,5 +54,5 @@ MonoBehaviour:
   bodyShape: 1
   scale: 1
   color: {r: 0.45, g: 0.5, b: 0.6, a: 1}
-  telegraphColor: {r: 1, g: 0.3, b: 0.1, a: 1}
+  telegraphColor: {r: 1, g: 0.62, b: 0.1, a: 1}
   shardValue: 1

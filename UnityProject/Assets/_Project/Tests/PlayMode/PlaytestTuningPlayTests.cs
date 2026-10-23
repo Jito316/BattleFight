@@ -433,6 +433,39 @@ namespace BattleFight.Tests
             Assert.AreEqual(aName, aRegion.CurrentRoomName(), "room で、その部屋へ移らない");
         }
 
+        [Test]
+        public void Glint_ComesEarlyEnoughToReactInto_TheParryWindow()
+        {
+            // 光ったのを見てから押す(人の反応 約0.2秒)と、ちょうどパリィの受付(押して 0.18 秒以内に受ける)に入る
+            const float aReactionTime = 0.2f;
+            float aPressBeforeHit = EnemyTelegraph.GlintTime - aReactionTime;
+            Assert.Greater(aPressBeforeHit, 0f, "光ってから反応したのでは、もう当たっている");
+            Assert.LessOrEqual(aPressBeforeHit, GuardRules.ParryWindow, "光ってすぐ押すと、早すぎてパリィにならない");
+        }
+
+        [UnityTest]
+        public IEnumerator NormalAttackAreas_LookDifferentFromEscapeOnlyAreas()
+        {
+            yield return LoadEmptyArena();
+            Color.RGBToHSV(EnemyTelegraph.DangerColor, out float aDangerHue, out _, out _);
+            foreach (var aStage in mDirector.Stages)
+            {
+                if (aStage == null || aStage.Waves == null) continue;
+                foreach (var aWave in aStage.Waves)
+                {
+                    foreach (var aProfile in aWave.Enemies)
+                    {
+                        if (aProfile == null) continue;
+                        Color.RGBToHSV(aProfile.TelegraphColor, out float aHue, out _, out _);
+                        float aGap = Mathf.Abs(aHue - aDangerHue);
+                        aGap = Mathf.Min(aGap, 1f - aGap);
+                        // ガードできる攻撃の範囲が、逃げるしかない攻撃の赤と同じに見えると、どちらかわからない
+                        Assert.Greater(aGap, 0.08f, $"{aProfile.DisplayName} の予告の色が、逃げるしかない攻撃の赤に近すぎる");
+                    }
+                }
+            }
+        }
+
         [UnityTest]
         public IEnumerator ClosedGuide_StaysClosedNextTime()
         {
