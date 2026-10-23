@@ -41,10 +41,11 @@ namespace BattleFight.EditorTools
             }
             aPanel.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(mThemePath);
             aPanel.textSettings = aTextSettings;
-            // 1920x1080 を基準に、画面の高さに合わせて拡大縮小する(以前の HUD と同じ考え方)
+            // 1920x1080 を基準に、それがまるごと画面に入るように拡大縮小する
+            // (16:9 より横長なら高さに、4:3 のように縦長なら幅に合わせる。右端の表示が切れないように)
             aPanel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
             aPanel.referenceResolution = new Vector2Int(1920, 1080);
-            aPanel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
+            aPanel.screenMatchMode = PanelScreenMatchMode.Expand;
             aPanel.match = 1f;
             aPanel.clearColor = false;
             EditorUtility.SetDirty(aPanel);

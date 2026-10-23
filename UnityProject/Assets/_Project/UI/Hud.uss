@@ -8,9 +8,11 @@
     bottom: 0;
 }
 
-/* 3D の上に重ねるので、文字にはすべて影をつけて読みやすくする */
+/* 3D の上に重ねるので、文字にはすべて影と縁取りをつけて読みやすくする(白い床の第5幕でも読めるように) */
 .hud Label {
     text-shadow: 0 2px 3px rgba(0, 0, 0, 0.85);
+    -unity-text-outline-width: 0.8px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.75);
 }
 
 .layer {

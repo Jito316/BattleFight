@@ -44,8 +44,8 @@ namespace BattleFight.EditorTools
                 Hex("#0D1222"), Hex("#1A2140"), 20f, 95f, Hex("#AFC6FF"), 0.9f, new Vector2(60f, 150f),
                 Hex("#4A5A8C"), Hex("#2A3352"), Hex("#0D1018"), iReflection: 0.1f),
             // 第5幕 写し身: 白い床と、シアン・マゼンタの光
-            ["Stage_5_Mirror"] = Theme(Hex("#D8DCE6"), Hex("#A9AFC2"), Hex("#E6E9F2"), Hex("#C3C9DA"), Hex("#FF4FD8"), Hex("#B9A7D8"),
-                Hex("#E3D9F5"), Hex("#E8DFF7"), 40f, 150f, Hex("#E9F6FF"), 1.3f, new Vector2(70f, 10f),
+            ["Stage_5_Mirror"] = Theme(Hex("#A8AEBE"), Hex("#9298AC"), Hex("#CDD1DC"), Hex("#AEB4C8"), Hex("#FF4FD8"), Hex("#B9A7D8"),
+                Hex("#E3D9F5"), Hex("#E8DFF7"), 40f, 150f, Hex("#E9F6FF"), 1.15f, new Vector2(70f, 10f),
                 Hex("#8EE6F2"), Hex("#D9B8E8"), Hex("#6E6A85")),
             // エンドレス: 紫と赤の黄昏
             ["Stage_9_Endless"] = Theme(Hex("#3A2A3E"), Hex("#2A1C30"), Hex("#4C3352"), Hex("#4A2E4A"), Hex("#FF3D6E"), Hex("#2C1530"),

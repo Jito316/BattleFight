@@ -295,6 +295,16 @@ namespace BattleFight.Tests
             aEnemy.enabled = false;
             yield return new WaitForSeconds(1.5f);
             Assert.Greater(aRig.WallLift, 1f, "大きな敵の体でプレイヤーが隠れても、カメラが上がらない");
+
+            // 上がったあとは、カメラからプレイヤーの頭が見える
+            Vector3 aHead = mPlayer.position + Vector3.up * 1.6f;
+            Vector3 aFrom = aRig.transform.position;
+            bool aHidden = false;
+            foreach (var aHit in Physics.RaycastAll(aFrom, (aHead - aFrom).normalized, Vector3.Distance(aFrom, aHead), ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (aHit.collider.GetComponentInParent<EnemyController>() == aEnemy) aHidden = true;
+            }
+            Assert.IsFalse(aHidden, "カメラを上げても、まだボスの体でプレイヤーが隠れている");
         }
 
         EnemyProfile FindBoss()
@@ -312,6 +322,29 @@ namespace BattleFight.Tests
             }
             Assert.Fail("ボスがいない");
             return null;
+        }
+
+        [UnityTest]
+        public IEnumerator BrightestFloor_LeavesRoomForHudText()
+        {
+            yield return LoadEmptyArena();
+            // 白に近い床の上では、HUD の白い文字が読めない。どのステージの床も明るさを抑える
+            foreach (var aStage in mDirector.Stages)
+            {
+                if (aStage == null || aStage.Theme == null) continue;
+                Color aFloor = aStage.Theme.FloorColor;
+                float aLuminance = 0.2126f * aFloor.r + 0.7152f * aFloor.g + 0.0722f * aFloor.b;
+                Assert.Less(aLuminance, 0.75f, $"{aStage.name} の床が明るすぎる");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Hud_FitsScreensNarrowerThan16By9()
+        {
+            yield return LoadEmptyArena();
+            // 高さだけに合わせると、4:3 の画面で右端の表示が切れる。基準の 1920x1080 がまるごと入るようにする
+            var aDocument = Object.FindFirstObjectByType<BattleHud>().GetComponent<UnityEngine.UIElements.UIDocument>();
+            Assert.AreEqual(UnityEngine.UIElements.PanelScreenMatchMode.Expand, aDocument.panelSettings.screenMatchMode);
         }
 
         [UnityTest]
