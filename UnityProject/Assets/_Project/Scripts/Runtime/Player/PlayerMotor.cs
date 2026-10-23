@@ -32,6 +32,8 @@ namespace BattleFight
         public bool Frozen { get; set; }
         /// <summary>歩く速さの倍率(ガード中は遅くなる)</summary>
         public float SpeedScale { get; set; } = 1f;
+        /// <summary>歩いている間に向く相手(ロックオン中の敵)。null なら歩く向きを向く</summary>
+        public Transform FaceTarget { get; set; }
         public float GravityScale { get; set; } = 1f;
         public bool IsGrounded { get; private set; }
         public float VerticalVelocity => mVerticalVelocity;
@@ -86,9 +88,16 @@ namespace BattleFight
             float aAccel = !LocomotionEnabled ? mAcceleration * 2f : IsGrounded ? mAcceleration : mAirAcceleration;
             mPlanarVelocity = Vector3.MoveTowards(mPlanarVelocity, aTargetVelocity, aAccel * aDeltaTime);
 
-            if (LocomotionEnabled && aDesired.sqrMagnitude > 0.01f)
+            // ロックオン中は、下がるときも横へ回るときも敵の方を向いたまま(背を向けない)
+            Vector3 aFacing = aDesired;
+            if (FaceTarget != null)
             {
-                var aTargetRotation = Quaternion.LookRotation(aDesired);
+                aFacing = FaceTarget.position - transform.position;
+                aFacing.y = 0f;
+            }
+            if (LocomotionEnabled && aDesired.sqrMagnitude > 0.01f && aFacing.sqrMagnitude > 0.01f)
+            {
+                var aTargetRotation = Quaternion.LookRotation(aFacing);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, aTargetRotation, mTurnSpeed * aDeltaTime);
             }
 

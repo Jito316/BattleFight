@@ -23,6 +23,7 @@ namespace BattleFight
         [SerializeField, FormerlySerializedAs("lockOnTurnSpeed")] float mLockOnTurnSpeed = 8f;
         [SerializeField, FormerlySerializedAs("lockOnPitch")] float mLockOnPitch = 15f;
         [SerializeField, FormerlySerializedAs("followSharpness")] float mFollowSharpness = 20f;
+        [SerializeField, Tooltip("ロックオン中に、カメラを右へずらす量(プレイヤーが標的を隠さないように)")] float mShoulderOffset = 1.1f;
 
         float mYaw;
         float mPitch = 18f;
@@ -34,6 +35,8 @@ namespace BattleFight
         float mZoom;
         float mBaseFieldOfView;
         Camera mCamera;
+        /// <summary>右肩へのずれ(0 〜 1)。ロックオンの付け外しで、なめらかに変える</summary>
+        float mShoulder;
 
         /// <summary>今のズームの量(テスト用)</summary>
         public float Zoom => mZoom;
@@ -171,8 +174,11 @@ namespace BattleFight
             mFocus = Vector3.Lerp(mFocus, aDesiredFocus, 1f - Mathf.Exp(-mFollowSharpness * aDeltaTime));
 
             Quaternion aRotation = Quaternion.Euler(mPitch, mYaw, 0f);
+            // ロックオン中は、見る点ごと右へずらす(プレイヤーは画面の左寄り、標的は真ん中寄りに見える)
+            mShoulder = Mathf.MoveTowards(mShoulder, aLockTarget != null ? 1f : 0f, 3f * aDeltaTime);
+            Vector3 aViewFocus = mFocus + aRotation * Vector3.right * (mShoulderOffset * mShoulder);
             Vector3 aBack = -(aRotation * Vector3.forward);
-            Vector3 aPosition = mFocus + aBack * ObstructedDistance(mFocus, aBack, mDistance);
+            Vector3 aPosition = aViewFocus + aBack * ObstructedDistance(aViewFocus, aBack, mDistance);
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
             aPosition += Random.insideUnitSphere * mShake + mKick;
             mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDeltaTime));
@@ -180,7 +186,7 @@ namespace BattleFight
             mZoom = Mathf.Lerp(mZoom, 0f, 1f - Mathf.Exp(-9f * aDeltaTime));
             if (mCamera != null && mBaseFieldOfView > 0f) mCamera.fieldOfView = mBaseFieldOfView - mZoom;
 
-            transform.SetPositionAndRotation(aPosition, Quaternion.LookRotation(mFocus - aPosition));
+            transform.SetPositionAndRotation(aPosition, Quaternion.LookRotation(aViewFocus - aPosition));
         }
     }
 }
