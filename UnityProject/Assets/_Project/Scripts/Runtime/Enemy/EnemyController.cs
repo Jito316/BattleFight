@@ -34,6 +34,10 @@ namespace BattleFight
 
         public static readonly List<EnemyController> Active = new List<EnemyController>();
         static int mAttackTokensInUse;
+        /// <summary>この時刻までは、どの敵も逃げるしかない攻撃を始めない(重なると逃げ場がなくなる)</summary>
+        static float mNextDangerTime;
+        /// <summary>逃げるしかない攻撃のあと、次の逃げるしかない攻撃までにあける時間</summary>
+        public const float DangerSpacing = 2.5f;
         static readonly Collider[] mOverlapBuffer = new Collider[16];
 
         [SerializeField, FormerlySerializedAs("profile")] EnemyProfile mProfile;
@@ -84,6 +88,7 @@ namespace BattleFight
         {
             Active.Clear();
             mAttackTokensInUse = 0;
+            mNextDangerTime = 0f;
             PhaseChanged = null;
         }
 
@@ -311,6 +316,8 @@ namespace BattleFight
 
             Vector3 aOffset = Flat(mTarget.position - transform.position);
             float aDistance = aOffset.magnitude;
+            // 選んでいた逃げるしかない攻撃が、ほかの敵とかぶるなら選び直す
+            if (mAttack != null && !CanUse(mAttack)) mAttack = null;
             if (mAttack == null) mAttack = PickAttack();
             Face(aOffset, iDeltaTime);
 
@@ -343,6 +350,9 @@ namespace BattleFight
             mStateTime = 0f;
             // 逃げるしかない攻撃: 予備動作の始まりに範囲の中にいたかを覚えておく(逃げ切ったら褒める)
             mTargetInDangerAtStart = mAttack.Unblockable && IsTargetInAttackArea();
+            // 逃げるしかない攻撃は続けて出さない(この敵も、ほかの敵も、しばらく間をあける)
+            mLastWasDanger = IsSpacedDanger(mAttack);
+            if (mLastWasDanger) mNextDangerTime = Time.time + mAttack.Windup + mAttack.Active + mAttack.Recovery + DangerSpacing;
             // 攻撃が来ることを音でも知らせる(重い攻撃ほど低い)
             // 逃げるしかない攻撃は、低く大きな音で知らせる
             if (mAttack.Unblockable) SoundPlayer.Play(Sfx.EnemyWindup, 0.7f, 0.5f);
@@ -655,18 +665,33 @@ namespace BattleFight
             return mAvailableAttacks;
         }
 
+        /// <summary>前の攻撃が、逃げるしかない攻撃だったか</summary>
+        bool mLastWasDanger;
+
+        /// <summary>間をあける、逃げるしかない攻撃か(自爆は倒し方の一部なので数えない)</summary>
+        static bool IsSpacedDanger(EnemyAttack iAttack) => iAttack.Unblockable && !iAttack.SelfDestruct;
+
+        /// <summary>今この攻撃を始めてよいか(逃げるしかない攻撃は、続けたり重ねたりしない)</summary>
+        bool CanUse(EnemyAttack iAttack)
+        {
+            if (!IsSpacedDanger(iAttack)) return true;
+            return !mLastWasDanger && Time.time >= mNextDangerTime;
+        }
+
         EnemyAttack PickAttack()
         {
             var aAttacks = AvailableAttacks();
             if (aAttacks.Count == 0) return null;
             float aTotal = 0f;
-            foreach (var aAttack in aAttacks) aTotal += Mathf.Max(0f, aAttack.Weight);
+            foreach (var aAttack in aAttacks) if (CanUse(aAttack)) aTotal += Mathf.Max(0f, aAttack.Weight);
             float aRoll = Random.value * aTotal;
             foreach (var aAttack in aAttacks)
             {
+                if (!CanUse(aAttack)) continue;
                 aRoll -= Mathf.Max(0f, aAttack.Weight);
                 if (aRoll <= 0f) return aAttack;
             }
+            foreach (var aAttack in aAttacks) if (CanUse(aAttack)) return aAttack;
             return aAttacks[0];
         }
 

@@ -211,5 +211,71 @@ namespace BattleFight.Tests
             Assert.AreEqual(1, aStyle.Announcements.FindAll(iAnnouncement => iAnnouncement.Text == "WEAK!").Count, "同じ文字が並んでいる");
             Assert.AreEqual("WEAK!", aStyle.Announcements[aStyle.Announcements.Count - 1].Text, "最後に出た文字がいちばん新しくない");
         }
+
+        [UnityTest]
+        public IEnumerator DangerAttacks_DoNotOverlapOrRepeat()
+        {
+            yield return LoadEmptyArena();
+            var aProfile = FindArmored();
+            int aQuake = aProfile.Attacks.FindIndex(iAttack => iAttack.Unblockable);
+            var aEnemies = new System.Collections.Generic.List<EnemyController>();
+            for (int aIndex = 0; aIndex < 3; aIndex++)
+            {
+                var aEnemy = mDirector.SpawnExtra(aProfile, mPlayer.position + Quaternion.Euler(0f, aIndex * 120f, 0f) * Vector3.forward * 3f);
+                aEnemy.Damageable.Configure(Team.Enemy, 100000f, 0f, 0f);
+                aEnemies.Add(aEnemy);
+            }
+            yield return null;
+            Assert.IsTrue(aEnemies[0].ForceAttack(aQuake));
+            yield return null;
+
+            // 地割れが終わって間をあけるまで、ほかの敵も同じ敵も、逃げるしかない攻撃を始めない
+            float aUntil = Time.time + aProfile.Attacks[aQuake].Windup + aProfile.Attacks[aQuake].Active
+                + aProfile.Attacks[aQuake].Recovery + EnemyController.DangerSpacing - 0.2f;
+            bool aFirstQuakeOver = false;
+            while (Time.time < aUntil)
+            {
+                // 最初の地割れ(強制で出したもの)が終わるまでは、その敵だけ見逃す
+                if (aEnemies[0].CurrentAttack == null) aFirstQuakeOver = true;
+                for (int aIndex = 0; aIndex < aEnemies.Count; aIndex++)
+                {
+                    if (aIndex == 0 && !aFirstQuakeOver) continue;
+                    var aAttack = aEnemies[aIndex].CurrentAttack;
+                    Assert.IsFalse(aAttack != null && aAttack.Unblockable, "逃げるしかない攻撃が重なった・続いた");
+                }
+                yield return null;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator StandingNextToABigEnemy_PullsTheCameraBack_WithoutLockOn()
+        {
+            yield return LoadEmptyArena();
+            var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
+            float aBase = aRig.CurrentDistance;
+            var aGiant = mDirector.SpawnElite(FindArmored(), EliteAffix.Giant, mPlayer.position + mPlayer.forward * 3.5f);
+            aGiant.Damageable.Configure(Team.Enemy, 100000f, 0f, 0f);
+            yield return new WaitForSeconds(1.2f);
+            Assert.IsNull(mPlayer.GetComponent<LockOnSystem>().Target);
+            Assert.Greater(aRig.CurrentDistance, aBase + 0.8f, "すぐ近くに大きな敵がいても、カメラが引かない");
+        }
+
+        [UnityTest]
+        public IEnumerator ClosedGuide_StaysClosedNextTime()
+        {
+            GameSettings.ShowGuide = true;
+            yield return LoadEmptyArena();
+            var aHud = Object.FindFirstObjectByType<BattleHud>();
+            Assert.IsTrue(aHud.IsHelpShown);
+            yield return Tap(mKeyboard.digit0Key);
+            Assert.IsFalse(aHud.IsHelpShown);
+
+            // もう一度遊ぶ(シーンを読み直す)
+            yield return LoadEmptyArena();
+            aHud = Object.FindFirstObjectByType<BattleHud>();
+            bool aStillClosed = !aHud.IsHelpShown;
+            GameSettings.ShowGuide = true;
+            Assert.IsTrue(aStillClosed, "閉じた操作説明が、次に遊ぶとまた開いている");
+        }
     }
 }

@@ -204,6 +204,7 @@ namespace BattleFight
 
         void OnEnable()
         {
+            mShowHelp = GameSettings.ShowGuide;
             mDocument = GetComponent<UIDocument>();
             mRoot = mDocument.rootVisualElement;
             Bind();
@@ -408,7 +409,11 @@ namespace BattleFight
         void Update()
         {
             TrackLastDevice();
-            if (HelpTogglePressed()) mShowHelp = !mShowHelp;
+            if (HelpTogglePressed())
+            {
+                mShowHelp = !mShowHelp;
+                GameSettings.ShowGuide = mShowHelp;
+            }
             Refresh();
         }
 

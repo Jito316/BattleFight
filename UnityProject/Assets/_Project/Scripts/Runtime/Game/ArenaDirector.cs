@@ -75,6 +75,9 @@ namespace BattleFight
 
         public static ArenaDirector Instance { get; private set; }
 
+        /// <summary>次に始めるステージを、このウェーブから始める(遊んで確かめる用。0 なら最初から)</summary>
+        int mStartWaveIndex;
+
         public IReadOnlyList<StageData> Stages => mStages;
         public StageData CurrentStage { get; private set; }
         public int StageIndex { get; private set; } = -1;
@@ -214,7 +217,9 @@ namespace BattleFight
                     }
 
                 default:
-                    for (int aIndex = 0; aIndex < WaveCount; aIndex++)
+                    int aFirstWave = Mathf.Clamp(mStartWaveIndex, 0, Mathf.Max(0, WaveCount - 1));
+                    mStartWaveIndex = 0;
+                    for (int aIndex = aFirstWave; aIndex < WaveCount; aIndex++)
                     {
                         WaveNumber = aIndex + 1;
                         WaveLabel = CurrentStage.Waves[aIndex].Label;
@@ -233,6 +238,34 @@ namespace BattleFight
                     ThirdPersonCamera.SetCursorLocked(false);
                     break;
             }
+        }
+
+        /// <summary>
+        /// 遊んで確かめる用。ブラウザのコンソールから
+        /// unityInstance.SendMessage('GameDirector', 'PlaytestCommand', '1 4') で第1幕のウェーブ4から、
+        /// 'god' でプレイヤーが倒れなくなる
+        /// </summary>
+        public void PlaytestCommand(string iCommand)
+        {
+            var aWords = (iCommand ?? "").Trim().Split(' ');
+            if (aWords[0] == "god")
+            {
+                mPlayerDamageable.Configure(Team.Player, 100000f, 0f, 0f);
+                return;
+            }
+            if (!int.TryParse(aWords[0], out int aStage)) return;
+            mStartWaveIndex = aWords.Length > 1 && int.TryParse(aWords[1], out int aWave) ? aWave - 1 : 0;
+            StartCoroutine(PlaytestStart(aStage));
+        }
+
+        /// <summary>読み込み直後に呼ばれても、Start(ステージ選択へ)のあとで始める</summary>
+        IEnumerator PlaytestStart(int iStage)
+        {
+            yield return null;
+            // 前のステージの敵が残らないように片付ける
+            foreach (var aEnemy in mAlive) if (aEnemy != null) Destroy(aEnemy.gameObject);
+            mAlive.Clear();
+            StartStage(iStage);
         }
 
         void Spawn(IReadOnlyList<EnemyProfile> iEnemies)

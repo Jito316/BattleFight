@@ -572,6 +572,7 @@ namespace BattleFight.Tests
         public IEnumerator HelpKey0_TogglesGuide_AndGuideFollowsLastDevice()
         {
             var aGamepad = InputSystem.AddDevice<Gamepad>();
+            GameSettings.ShowGuide = true;
             yield return LoadArena();
             var aHud = Object.FindFirstObjectByType<BattleHud>();
 
@@ -591,6 +592,7 @@ namespace BattleFight.Tests
 
             yield return Tap(mKeyboard.wKey);
             Assert.IsFalse(aHud.UsingGamepad, "キーボードを押しても表示がキーボード用に戻らない");
+            GameSettings.ShowGuide = true;
         }
     }
 }
