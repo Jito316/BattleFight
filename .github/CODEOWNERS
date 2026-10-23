@@ -1,0 +1,21 @@
+# レビューをお願いする人(プルリクエストで、変えた所の持ち主に自動でレビュー依頼が出る)
+# チームが増えたら、担当ごとに行を足す(例: /UnityProject/Assets/_Project/Prefabs/ @アーティストの GitHub 名)
+
+# 全体
+*                                            @Jito316
+
+# コード・テスト
+/UnityProject/Assets/_Project/Scripts/       @Jito316
+/UnityProject/Assets/_Project/Tests/         @Jito316
+
+# 見た目(プレハブ・マテリアル・演出の差し替え表)
+/UnityProject/Assets/_Project/Prefabs/       @Jito316
+/UnityProject/Assets/_Project/Materials/     @Jito316
+/UnityProject/Assets/_Project/Data/EffectLibrary.asset @Jito316
+
+# 数値・文言(プランナー)
+/UnityProject/Assets/_Project/Data/          @Jito316
+
+# CI・Git の設定
+/.github/                                    @Jito316
+/.gitattributes                              @Jito316
