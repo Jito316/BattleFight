@@ -348,6 +348,23 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator GuardShield_ShowsAroundTheBody_FromBehind()
+        {
+            yield return LoadEmptyArena();
+            Press(mKeyboard.qKey);
+            yield return new WaitForSeconds(0.2f);
+            var aShield = mPlayer.Find("GuardShield");
+            Assert.NotNull(aShield, "ガードしても盾が出ない");
+            Assert.IsTrue(aShield.gameObject.activeSelf);
+            // 体より盾が大きくないと、後ろのカメラからは体に隠れて見えない
+            float aBodyWidth = mPlayer.GetComponent<CharacterController>().radius * 2f * mPlayer.lossyScale.x;
+            var aBounds = aShield.GetComponent<Renderer>().bounds;
+            float aShieldWidth = Mathf.Max(aBounds.size.x, aBounds.size.z);
+            Release(mKeyboard.qKey);
+            Assert.Greater(aShieldWidth, aBodyWidth + 0.5f, "盾が体に隠れて、後ろから見えない");
+        }
+
+        [UnityTest]
         public IEnumerator ClosedGuide_StaysClosedNextTime()
         {
             GameSettings.ShowGuide = true;
