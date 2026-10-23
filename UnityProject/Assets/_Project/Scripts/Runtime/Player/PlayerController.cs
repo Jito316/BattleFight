@@ -106,7 +106,7 @@ namespace BattleFight
         {
             if (mExecutor.TryConsumeJustDodge())
             {
-                mStyle.AddBonus(mStyle.Config.JustDodgeBonus, "JUST DODGE", new Color(0.6f, 1f, 0.6f));
+                mStyle.AddBonus(mStyle.Config.JustDodgeBonus, GameText.Get("announce.just_dodge"), new Color(0.6f, 1f, 0.6f));
                 // 見切り: しばらく敵だけが遅くなる。避けてから反撃する時間
                 EnemyTime.Slow();
                 SoundPlayer.Play(Sfx.Dodge, 0.8f);

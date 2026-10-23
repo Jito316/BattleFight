@@ -71,28 +71,28 @@ namespace BattleFight
             mRows.Clear();
             mRows.Add(new Row
             {
-                Label = "音量",
+                Label = GameText.Get("settings.volume"),
                 Fill = () => GameSettings.Muted ? 0f : GameSettings.Volume,
-                Value = () => GameSettings.Muted ? "ミュート" : Percent(GameSettings.Volume),
+                Value = () => GameSettings.Muted ? GameText.Get("settings.muted") : Percent(GameSettings.Volume),
                 Change = iDirection =>
                 {
                     GameSettings.Muted = false;
                     GameSettings.Volume += iDirection * mStep;
                 },
             });
-            mRows.Add(Strength("画面の揺れ", () => GameSettings.Shake, iValue => GameSettings.Shake = iValue));
-            mRows.Add(Strength("画面の光", () => GameSettings.Flash, iValue => GameSettings.Flash = iValue));
-            mRows.Add(Strength("ズーム", () => GameSettings.Zoom, iValue => GameSettings.Zoom = iValue));
+            mRows.Add(Strength(GameText.Get("settings.shake"), () => GameSettings.Shake, iValue => GameSettings.Shake = iValue));
+            mRows.Add(Strength(GameText.Get("settings.flash"), () => GameSettings.Flash, iValue => GameSettings.Flash = iValue));
+            mRows.Add(Strength(GameText.Get("settings.zoom"), () => GameSettings.Zoom, iValue => GameSettings.Zoom = iValue));
             mRows.Add(new Row
             {
-                Label = "振動",
+                Label = GameText.Get("settings.vibration"),
                 Fill = () => GameSettings.Vibration ? 1f : 0f,
-                Value = () => GameSettings.Vibration ? "オン" : "オフ",
+                Value = () => GameText.Get(GameSettings.Vibration ? "settings.on" : "settings.off"),
                 Change = _ => GameSettings.Vibration = !GameSettings.Vibration,
             });
             mRows.Add(new Row
             {
-                Label = "カメラの感度",
+                Label = GameText.Get("settings.camera"),
                 Fill = () => Mathf.InverseLerp(GameSettings.MinCameraSensitivity, GameSettings.MaxCameraSensitivity, GameSettings.CameraSensitivity),
                 Value = () => $"×{GameSettings.CameraSensitivity:0.0}",
                 Change = iDirection => GameSettings.CameraSensitivity += iDirection * mStep,
@@ -129,7 +129,7 @@ namespace BattleFight
         {
             Label = iLabel,
             Fill = iGet,
-            Value = () => iGet() <= 0f ? "なし" : Percent(iGet()),
+            Value = () => iGet() <= 0f ? GameText.Get("settings.none") : Percent(iGet()),
             Change = iDirection => iSet(iGet() + iDirection * mStep),
         };
 
@@ -217,7 +217,7 @@ namespace BattleFight
             }
             if (mHint != null)
             {
-                mHint.text = "W・S / ↑↓ で選ぶ   A・D / ←→ で変える   Esc・O(○ボタン)で閉じる   M でミュート";
+                mHint.text = GameText.Get("settings.hint");
             }
         }
 

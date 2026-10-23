@@ -88,7 +88,7 @@ namespace BattleFight
             }
             if (aGot.Count > 0)
             {
-                iRegion.Notify($"スキルを手に入れた\n<size=30>{string.Join("・", aGot)}</size>\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
+                iRegion.Notify(GameText.Format("explore.reward", string.Join("・", aGot)), Color.white);
             }
             if (mIsFinal) iRegion.Director.CompleteExploration();
         }

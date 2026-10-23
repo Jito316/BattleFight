@@ -11,7 +11,7 @@ namespace BattleFight
         {
             int aFinished = Combo.Tick(Time.time);
             if (aFinished < 10) return;
-            mStyle.AddBonus(aFinished * mStyle.Config.ComboBonusPerHit, $"{aFinished} HITS  {ComboCounter.Rating(aFinished)}", new Color(1f, 0.85f, 0.4f));
+            mStyle.AddBonus(aFinished * mStyle.Config.ComboBonusPerHit, GameText.Format("announce.combo", aFinished, ComboCounter.Rating(aFinished)), new Color(1f, 0.85f, 0.4f));
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace BattleFight
             if (!Drive.TryConsume()) yield break;
             IsDriving = true;
             if (mCurrent != null) EndSkill();
-            mStyle.AddBonus(100f, "CHANGE DRIVE", new Color(0.9f, 0.95f, 1f));
+            mStyle.AddBonus(100f, GameText.Get("announce.change_drive"), new Color(0.9f, 0.95f, 1f));
             if (CombatFeedback.Instance != null)
             {
                 CombatFeedback.Instance.SlowMotion(0.5f, 1.4f);

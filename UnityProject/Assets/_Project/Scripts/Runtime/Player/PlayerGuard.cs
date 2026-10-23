@@ -92,7 +92,7 @@ namespace BattleFight
                 // パリィ: 長めに止まり、画面が光り、殴った敵が大きくよろける
                 mExecutor.Freeze(0.16f);
                 if (aEnemy != null) aEnemy.Rebound(iHit.Direction, true);
-                if (mStyle != null) mStyle.AddBonus(mStyle.Config.CounterBonus, "PARRY!", mParryColor);
+                if (mStyle != null) mStyle.AddBonus(mStyle.Config.CounterBonus, GameText.Get("announce.parry"), mParryColor);
                 mExecutor.Drive.Add(0.1f);
                 SoundPlayer.Play(Sfx.Parry, 1f);
                 SoundPlayer.Play(Sfx.Weak, 0.5f, 1.2f);

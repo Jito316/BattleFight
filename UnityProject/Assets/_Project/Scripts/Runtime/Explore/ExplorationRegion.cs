@@ -157,7 +157,7 @@ namespace BattleFight
             var aRespawn = mLastSafePoint != null ? mLastSafePoint.transform.position : mSpawnPoint.position;
             Teleport(aRespawn);
             mPlayerDamageable.ApplyHit(new HitInfo { Damage = mFallDamage, Direction = Vector3.forward });
-            Notify("落ちてしまった…", new Color(1f, 0.6f, 0.5f));
+            Notify(GameText.Get("explore.fell"), new Color(1f, 0.6f, 0.5f));
         }
 
         void Teleport(Vector3 iPosition)

@@ -88,12 +88,12 @@ namespace BattleFight
                 var aData = iRegion.Slots != null ? iRegion.Slots.GetWeaponData(aSkill.Weapon) : null;
                 if (aNames.Length > 0) aNames.Append('\n');
                 aNames.Append($"<color=#{ColorUtility.ToHtmlStringRGB(aData != null ? aData.Color : Color.white)}>{aSkill.DisplayName}</color>");
-                aNames.Append($"<size=24>  {(aData != null ? aData.DisplayName : "")}・{SlotName(aSkill.Slot)}");
-                if (aPreset >= 0) aNames.Append($"  → プリセット{aPreset + 1}に入れた");
+                aNames.Append(GameText.Format("explore.pickup.line", aData != null ? aData.DisplayName : "", SlotName(aSkill.Slot)));
+                if (aPreset >= 0) aNames.Append(GameText.Format("explore.pickup.preset", aPreset + 1));
                 aNames.Append("</size>");
             }
             string aHintLine = string.IsNullOrEmpty(mHint) ? "" : $"\n<size=26><color=#FFE08A>{mHint}</color></size>";
-            iRegion.Notify($"スキルを手に入れた\n{aNames}{aHintLine}\n<size=22>[P] 編成で組み替えられる</size>", Color.white);
+            iRegion.Notify(GameText.Format("explore.pickup", aNames, aHintLine), Color.white);
             var aGlowColor = new Color(1f, 0.9f, 0.5f);
             if (CombatFeedback.Instance != null && !CombatFeedback.Instance.PlayCue(EffectCue.SkillPickup, transform.position, 2.5f, aGlowColor))
                 CombatFeedback.Instance.SpawnShockwave(transform.position, 2.5f, aGlowColor);
@@ -102,9 +102,9 @@ namespace BattleFight
 
         static string SlotName(SlotType iSlot) => iSlot switch
         {
-            SlotType.AttackA => "攻撃A",
-            SlotType.AttackB => "攻撃B",
-            _ => "移動",
+            SlotType.AttackA => GameText.Get("common.slot.attack_a"),
+            SlotType.AttackB => GameText.Get("common.slot.attack_b"),
+            _ => GameText.Get("common.slot.movement"),
         };
     }
 }

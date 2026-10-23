@@ -38,7 +38,7 @@ namespace BattleFight
             if (iCounter)
             {
                 mExtraInvulnerableUntil = Time.time + mCounterInvulnerableTime;
-                mStyle.AddBonus(mStyle.Config.CounterBonus, "COUNTER!", new Color(1f, 0.4f, 0.4f));
+                mStyle.AddBonus(mStyle.Config.CounterBonus, GameText.Get("announce.counter"), new Color(1f, 0.4f, 0.4f));
             }
 
             var aTarget = mLockOn.Target;

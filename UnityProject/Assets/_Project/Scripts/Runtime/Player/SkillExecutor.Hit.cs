@@ -17,7 +17,7 @@ namespace BattleFight
         {
             if (Time.unscaledTime - mLastWeakAnnounce < 0.6f) return;
             mLastWeakAnnounce = Time.unscaledTime;
-            mStyle.AddBonus(mWeaknessStyleBonus, "WEAK!", mWeakColor);
+            mStyle.AddBonus(mWeaknessStyleBonus, GameText.Get("announce.weak"), mWeakColor);
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace BattleFight
                     mStyle.AddBonus(aStep.StylePoints * 0.3f);
                 }
 
-                if (aOutcome == HitOutcome.ArmorBroken) mStyle.Announce("ARMOR BREAK", new Color(1f, 0.6f, 0.2f));
+                if (aOutcome == HitOutcome.ArmorBroken) mStyle.Announce(GameText.Get("announce.armor_break"), new Color(1f, 0.6f, 0.2f));
 
                 if (CombatFeedback.Instance != null)
                 {
@@ -151,12 +151,12 @@ namespace BattleFight
             if (aSwapStrike)
             {
                 mSwapStrikeUntil = -1f;
-                mStyle.AddBonus(mStyle.Config.SwapStrikeBonus, "SWAP STRIKE!", new Color(1f, 0.9f, 0.2f));
+                mStyle.AddBonus(mStyle.Config.SwapStrikeBonus, GameText.Get("announce.swap_strike"), new Color(1f, 0.9f, 0.2f));
             }
             if (aAnyWeak) AnnounceWeak();
             if (SwapChain.OnHit(Time.time))
             {
-                mStyle.AddBonus(mChainStyleBonusPerStep * SwapChain.Chain, $"CHAIN ×{SwapChain.Chain}", new Color(0.55f, 1f, 0.9f));
+                mStyle.AddBonus(mChainStyleBonusPerStep * SwapChain.Chain, GameText.Format("announce.chain", SwapChain.Chain), new Color(0.55f, 1f, 0.9f));
             }
             // 近接で当てたときは、プレイヤーも一緒に止まる(飛び道具は撃った本人は止まらない)。止まり終わったら少し踏み込む
             bool aMelee = IsMelee(aSkill) && aSkill == mCurrent;

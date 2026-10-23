@@ -38,7 +38,7 @@ namespace BattleFight
                 if (ExplorationSave.Checkpoint != mId)
                 {
                     ExplorationSave.Checkpoint = mId;
-                    aRegion.Notify("祭壇に触れた\n<size=26>体力が回復した。倒れたらここから再開する</size>", new Color(0.6f, 0.9f, 1f));
+                    aRegion.Notify(GameText.Get("explore.altar"), new Color(0.6f, 0.9f, 1f));
                 }
             }
             mTouching = aNear;
