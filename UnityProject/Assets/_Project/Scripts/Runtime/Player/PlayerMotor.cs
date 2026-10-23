@@ -36,6 +36,15 @@ namespace BattleFight
         public bool IsGrounded { get; private set; }
         public float VerticalVelocity => mVerticalVelocity;
 
+        /// <summary>この時間より短い空中は、着地として扱わない(段差を下りたときなど)</summary>
+        const float mMinAirTimeForLanding = 0.15f;
+        float mAirTime;
+
+        /// <summary>ジャンプした</summary>
+        public event System.Action Jumped;
+        /// <summary>空中から着地した。引数は着地したときの下向きの速さ</summary>
+        public event System.Action<float> Landed;
+
         void Awake()
         {
             mController = GetComponent<CharacterController>();
@@ -46,6 +55,7 @@ namespace BattleFight
             if (!IsGrounded) return false;
             mVerticalVelocity = mJumpVelocity;
             IsGrounded = false;
+            Jumped?.Invoke();
             return true;
         }
 
@@ -88,8 +98,16 @@ namespace BattleFight
             Vector3 aMotion = (mPlanarVelocity + mImpulseVelocity + Vector3.up * mVerticalVelocity) * aDeltaTime + mPendingDisplacement;
             mPendingDisplacement = Vector3.zero;
 
+            bool aWasGrounded = IsGrounded;
+            float aFallSpeed = -mVerticalVelocity;
             var aFlags = mController.Move(aMotion);
             IsGrounded = (aFlags & CollisionFlags.Below) != 0;
+            if (!IsGrounded) mAirTime += aDeltaTime;
+            else
+            {
+                if (!aWasGrounded && mAirTime >= mMinAirTimeForLanding) Landed?.Invoke(Mathf.Max(0f, aFallSpeed));
+                mAirTime = 0f;
+            }
             if (IsGrounded && mVerticalVelocity < 0f) mVerticalVelocity = -2f;
             if ((aFlags & CollisionFlags.Above) != 0 && mVerticalVelocity > 0f) mVerticalVelocity = 0f;
         }

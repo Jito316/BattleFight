@@ -164,6 +164,12 @@ namespace BattleFight
             if (mCameraRig != null) mCameraRig.AddKick(iDirection, iAmount);
         }
 
+        /// <summary>カメラを一瞬沈ませる(着地)</summary>
+        public void Dip(float iAmount)
+        {
+            if (mCameraRig != null) mCameraRig.AddDip(iAmount);
+        }
+
         /// <summary>一瞬ズームする(重い一撃・技の締め)</summary>
         public void Punch(float iDegrees)
         {

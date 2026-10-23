@@ -27,6 +27,10 @@ namespace BattleFight
         Guard,
         /// <summary>パリィ・カウンター(高く澄んで長く響く音)</summary>
         Parry,
+        /// <summary>ジャンプの踏み切り(短く上がる風切り)</summary>
+        Jump,
+        /// <summary>着地(低いドッという音と土の擦れ)</summary>
+        Land,
     }
 
     /// <summary>
@@ -58,6 +62,8 @@ namespace BattleFight
                 Sfx.Hurt => Saturate(Drop(0.25f, 220f, 120f, 10f, 1f), 3f),
                 Sfx.Swap => Mix(Ring(0.08f, 60f, 0.6f, 1800f), Ring(0.08f, 80f, 0.4f, 2400f)),
                 Sfx.EnemyWindup => Rise(0.3f, 260f, 620f, 0.8f),
+                Sfx.Jump => Mix(Whoosh(aRandom, 0.16f, 0.6f, false), Rise(0.12f, 300f, 700f, 0.25f)),
+                Sfx.Land => Mix(Rumble(aRandom, 0.25f, 14f, 0.8f, 0.12f), Drop(0.25f, 120f, 60f, 16f, 0.8f)),
                 Sfx.Guard => Mix(Click(aRandom, 0.3f, 50f, 0.6f), Ring(0.3f, 12f, 0.8f, 880f, 1410f, 2190f), Drop(0.3f, 180f, 90f, 18f, 0.6f)),
                 Sfx.Parry => Mix(Ring(0.7f, 4.5f, 0.8f, 2637f, 3951f, 5274f), Click(aRandom, 0.7f, 80f, 0.5f), Whoosh(aRandom, 0.25f, 0.9f, false)),
                 _ => new float[1],
