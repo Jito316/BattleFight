@@ -246,7 +246,7 @@ namespace BattleFight
         /// <summary>
         /// 遊んで確かめる用。ブラウザのコンソールから
         /// unityInstance.SendMessage('GameDirector', 'PlaytestCommand', '1 4') で第1幕のウェーブ4から、
-        /// 'god' でプレイヤーが倒れなくなる
+        /// 'god' でプレイヤーが倒れなくなる。'room 2' で探索の 2 番目の部屋へ、'attack 0' でいちばん近い敵が 0 番目の攻撃を出す
         /// </summary>
         public void PlaytestCommand(string iCommand)
         {
@@ -254,6 +254,25 @@ namespace BattleFight
             if (aWords[0] == "god")
             {
                 mPlaytestGod = true;
+                return;
+            }
+            // 探索で、N 番目の部屋へ移る
+            if (aWords[0] == "room" && aWords.Length > 1 && int.TryParse(aWords[1], out int aRoom))
+            {
+                if (ExplorationRegion.Active != null) Debug.Log($"[Playtest] room {aRoom}: {ExplorationRegion.Active.WarpToRoom(aRoom)} / {ExplorationRegion.Active.RoomCount}");
+                return;
+            }
+            // いちばん近い敵に、N 番目の攻撃をすぐ出させる(パリィやジャスト回避の見え方を確かめる)
+            if (aWords[0] == "attack" && aWords.Length > 1 && int.TryParse(aWords[1], out int aAttack))
+            {
+                EnemyController aNearest = null;
+                foreach (var aEnemy in mAlive)
+                {
+                    if (aEnemy == null || aEnemy.IsDead) continue;
+                    if (aNearest == null || (aEnemy.transform.position - mPlayer.position).sqrMagnitude < (aNearest.transform.position - mPlayer.position).sqrMagnitude) aNearest = aEnemy;
+                }
+                if (aNearest != null && aNearest.ForceAttack(aAttack))
+                    Debug.Log($"[Playtest] attack {aNearest.Profile.DisplayName} {aNearest.CurrentAttack.Name} windup {aNearest.CurrentAttack.Windup}");
                 return;
             }
             if (!int.TryParse(aWords[0], out int aStage)) return;

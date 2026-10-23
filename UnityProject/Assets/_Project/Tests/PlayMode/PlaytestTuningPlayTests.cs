@@ -407,6 +407,33 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator PlaytestCommands_WarpToARoom_AndMakeAnEnemyAttack()
+        {
+            yield return LoadEmptyArena();
+            // いちばん近い敵が、言われた攻撃をすぐ出す
+            var aEnemy = SpawnAhead();
+            yield return null;
+            mDirector.PlaytestCommand("attack 0");
+            Assert.IsTrue(aEnemy.IsTelegraphing, "attack で敵が攻撃を始めない");
+
+            // 探索で、言われた部屋へ移る
+            int aExplore = -1;
+            for (int aIndex = 0; aIndex < mDirector.Stages.Count; aIndex++)
+            {
+                if (mDirector.Stages[aIndex] != null && mDirector.Stages[aIndex].Kind == StageKind.Exploration) aExplore = aIndex;
+            }
+            Assert.GreaterOrEqual(aExplore, 0, "探索のステージがない");
+            mDirector.StartStage(aExplore);
+            yield return WaitUntil(() => ExplorationRegion.Active != null && ExplorationRegion.Active.Player != null, 5f);
+            var aRegion = ExplorationRegion.Active;
+            Assert.Greater(aRegion.RoomCount, 2);
+            string aName = aRegion.WarpToRoom(2);
+            yield return null;
+            yield return null;
+            Assert.AreEqual(aName, aRegion.CurrentRoomName(), "room で、その部屋へ移らない");
+        }
+
+        [UnityTest]
         public IEnumerator ClosedGuide_StaysClosedNextTime()
         {
             GameSettings.ShowGuide = true;
