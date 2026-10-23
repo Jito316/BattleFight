@@ -134,3 +134,8 @@ UnityProject/Assets/Resources/PerformanceTestRun*
 # Unity のパッケージ一覧は共有する(上の NuGet 用の Packages 除外に巻き込まれないように)
 !UnityProject/Packages/manifest.json
 !UnityProject/Packages/packages-lock.json
+
+# 手元の確かめ(Tools/check.ps1)の結果
+/TestResults/
+# 手元だけのレポート
+/Docs/Reports/

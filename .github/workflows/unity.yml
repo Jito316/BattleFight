@@ -1,0 +1,86 @@
+# BattleFight: プルリクエストと main への push のたびに、テストと WebGL ビルドを回す
+# 使う前に、リポジトリの Settings → Secrets and variables → Actions に次の 3 つを入れる(docs/README の「CI」を参照):
+#   UNITY_LICENSE  … Unity のライセンスファイル(.ulf)の中身
+#   UNITY_EMAIL    … Unity ID のメールアドレス
+#   UNITY_PASSWORD … Unity ID のパスワード
+name: Unity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同じブランチで新しく push したら、古い実行は止める
+concurrency:
+  group: unity-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  test:
+    name: テスト(EditMode・PlayMode)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Library を残しておくと、2 回目から読み込みが速い
+      - uses: actions/cache@v4
+        with:
+          path: UnityProject/Library
+          key: library-test-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
+          restore-keys: library-test-
+
+      - name: テストを回す
+        uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: UnityProject
+          testMode: all
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity のテスト結果
+
+      - name: テスト結果を残す
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: artifacts
+
+  build:
+    name: WebGL ビルド
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        with:
+          path: UnityProject/Library
+          key: library-webgl-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
+          restore-keys: library-webgl-
+
+      - name: WebGL でビルドする
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: UnityProject
+          targetPlatform: WebGL
+          buildMethod: BattleFight.EditorTools.WebGLBuilder.BuildFromCommandLine
+
+      - name: ビルドを残す
+        uses: actions/upload-artifact@v4
+        with:
+          name: webgl
+          path: UnityProject/Builds/WebGL
