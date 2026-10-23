@@ -713,6 +713,24 @@ namespace BattleFight
             transform.rotation = Quaternion.RotateTowards(transform.rotation, aRotation, mProfile.TurnSpeed * iDeltaTime);
         }
 
+        /// <summary>
+        /// 攻撃をガード・パリィで受け止められた。iDirection は敵からプレイヤーへの向き。
+        /// ガード: 軽く弾かれる / パリィ: 大きく弾かれてよろける(攻撃は中断)
+        /// </summary>
+        public void Rebound(Vector3 iDirection, bool iParried)
+        {
+            if (IsDead) return;
+            Vector3 aBack = -iDirection;
+            aBack.y = 0f;
+            if (aBack.sqrMagnitude > 1e-4f) mKnockback += aBack.normalized * (iParried ? 7f : 3f);
+            React(aBack, iParried ? 1.8f : 0.8f);
+            Freeze(iParried ? 0.16f : 0.05f);
+            if (iParried) EnterStagger(mProfile.IsBoss ? GuardRules.ParryStagger * 0.5f : GuardRules.ParryStagger);
+        }
+
+        /// <summary>よろけているか(テスト用)</summary>
+        public bool IsStaggered => mState == State.Stagger;
+
         /// <summary>ヒットストップ: しばらくこの敵だけ止める(ほかの敵・弾は動き続ける)</summary>
         public void Freeze(float iDuration)
         {

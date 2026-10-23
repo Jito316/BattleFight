@@ -27,6 +27,10 @@ namespace BattleFight
         Evaded,
         /// <summary>カウンターで受け止められた</summary>
         Countered,
+        /// <summary>ガードで受け止められた(ダメージは少しだけ通る。ひるまない)</summary>
+        Guarded,
+        /// <summary>パリィで弾き返された(ダメージなし)</summary>
+        Parried,
         /// <summary>アーマーで受けた(ひるまない)</summary>
         Armored,
         ArmorBroken,
@@ -64,6 +68,8 @@ namespace BattleFight
 
         /// <summary>true を返すと、その攻撃をカウンターとして無効化する</summary>
         public Func<HitInfo, bool> CounterHandler { get; set; }
+        /// <summary>ガード: Guarded(少しだけ受ける)・Parried(弾き返す)・それ以外(ふつうに受ける)を返す</summary>
+        public Func<HitInfo, HitOutcome> GuardHandler { get; set; }
 
         public event Action<HitInfo, HitOutcome> Damaged;
         public event Action<HitInfo> Evaded;
@@ -127,6 +133,22 @@ namespace BattleFight
                 return HitOutcome.Evaded;
             }
             if (CounterHandler != null && CounterHandler(iHit)) return HitOutcome.Countered;
+            if (GuardHandler != null)
+            {
+                var aGuard = GuardHandler(iHit);
+                if (aGuard == HitOutcome.Parried)
+                {
+                    LastDamage = 0f;
+                    return HitOutcome.Parried;
+                }
+                if (aGuard == HitOutcome.Guarded)
+                {
+                    // ガードで受けたダメージでは倒れない(ひるみもしないので Damaged は出さない)
+                    LastDamage = GuardRules.ChipDamage(iHit.Damage, Health);
+                    Health -= LastDamage;
+                    return HitOutcome.Guarded;
+                }
+            }
 
             float aDamage = iHit.Damage;
             var aOutcome = HitOutcome.Hit;

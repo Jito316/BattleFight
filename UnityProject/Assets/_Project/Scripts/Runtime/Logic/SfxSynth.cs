@@ -23,6 +23,10 @@ namespace BattleFight
         Shot,
         /// <summary>敵の攻撃の予備動作(だんだん高くなる音で、攻撃が来ることを知らせる)</summary>
         EnemyWindup,
+        /// <summary>ガードで受け止めた音(金属がぶつかる重い音)</summary>
+        Guard,
+        /// <summary>パリィ・カウンター(高く澄んで長く響く音)</summary>
+        Parry,
     }
 
     /// <summary>
@@ -54,6 +58,8 @@ namespace BattleFight
                 Sfx.Hurt => Saturate(Drop(0.25f, 220f, 120f, 10f, 1f), 3f),
                 Sfx.Swap => Mix(Ring(0.08f, 60f, 0.6f, 1800f), Ring(0.08f, 80f, 0.4f, 2400f)),
                 Sfx.EnemyWindup => Rise(0.3f, 260f, 620f, 0.8f),
+                Sfx.Guard => Mix(Click(aRandom, 0.3f, 50f, 0.6f), Ring(0.3f, 12f, 0.8f, 880f, 1410f, 2190f), Drop(0.3f, 180f, 90f, 18f, 0.6f)),
+                Sfx.Parry => Mix(Ring(0.7f, 4.5f, 0.8f, 2637f, 3951f, 5274f), Click(aRandom, 0.7f, 80f, 0.5f), Whoosh(aRandom, 0.25f, 0.9f, false)),
                 _ => new float[1],
             };
             return Normalize(aSamples);

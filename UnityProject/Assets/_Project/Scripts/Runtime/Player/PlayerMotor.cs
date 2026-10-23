@@ -30,6 +30,8 @@ namespace BattleFight
         public bool LocomotionEnabled { get; set; } = true;
         /// <summary>ヒットストップ中: 動きを止める(速さは覚えておき、止まり終わったら続きから動く)</summary>
         public bool Frozen { get; set; }
+        /// <summary>歩く速さの倍率(ガード中は遅くなる)</summary>
+        public float SpeedScale { get; set; } = 1f;
         public float GravityScale { get; set; } = 1f;
         public bool IsGrounded { get; private set; }
         public float VerticalVelocity => mVerticalVelocity;
@@ -70,7 +72,7 @@ namespace BattleFight
 
             Vector3 aDesired = DesiredDirection;
             aDesired.y = 0f;
-            Vector3 aTargetVelocity = LocomotionEnabled ? Vector3.ClampMagnitude(aDesired, 1f) * mMoveSpeed : Vector3.zero;
+            Vector3 aTargetVelocity = LocomotionEnabled ? Vector3.ClampMagnitude(aDesired, 1f) * (mMoveSpeed * SpeedScale) : Vector3.zero;
             float aAccel = !LocomotionEnabled ? mAcceleration * 2f : IsGrounded ? mAcceleration : mAirAcceleration;
             mPlanarVelocity = Vector3.MoveTowards(mPlanarVelocity, aTargetVelocity, aAccel * aDeltaTime);
 

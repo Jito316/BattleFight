@@ -122,6 +122,7 @@ namespace BattleFight
         int mSwapCancelStreak;
         float mLastSwapCancelTime = -99f;
         float mFrozenUntil = -1f;
+        PlayerGuard mGuard;
         /// <summary>この段で、当てたときの踏み込みをもう入れたか(1段に1回だけ)</summary>
         bool mLungedThisStep;
 
@@ -194,8 +195,16 @@ namespace BattleFight
             }
             else if (!aFrozen)
             {
-                if (mCurrent == null) TryStartFromInput();
-                else TickSkill(Time.deltaTime);
+                // ガード中は技を出さない(放したらすぐ出せる。パリィからの反撃)
+                if (mGuard == null) mGuard = GetComponent<PlayerGuard>();
+                if (mCurrent == null)
+                {
+                    if (mGuard == null || !mGuard.IsGuarding) TryStartFromInput();
+                }
+                else
+                {
+                    TickSkill(Time.deltaTime);
+                }
                 mMotor.LocomotionEnabled = mCurrent == null;
             }
 
@@ -815,6 +824,7 @@ namespace BattleFight
             var aFeel = WeaponFeel.For(aSkill.Weapon);
             bool aAnyHeavy = false;
             bool aAnyArmorBroken = false;
+            bool aAnyDeflected = false;
             // コンボが続くほど、当たりを大きく見せる。技の締めの一撃はさらに大きく
             float aComboScale = HitEmphasis.ComboScale(Combo.Count);
             bool aFinale = aSkill == mCurrent && iContext.StepIndex == mStepIndex && HitEmphasis.IsFinale(aSkill, iContext.StepIndex, mIsFinisher);
@@ -904,6 +914,7 @@ namespace BattleFight
                     CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, aSparks, aFeel.SparkSpeed * (aHeavy ? 1.25f : 1f));
                     CombatFeedback.Instance.SpawnImpact(aFeel.Style, aHitPoint, aTarget.transform.position, aDirection, aSparkColor, aHeavy || aFinale);
                     if (aHeavy) CombatFeedback.Instance.Shake(0.22f * aFeel.ShakeScale);
+                    if (aOutcome == HitOutcome.Armored) aAnyDeflected = true;
                     // アーマーが砕けた: 灰色の大きな欠片が飛び散る
                     if (aOutcome == HitOutcome.ArmorBroken) CombatFeedback.Instance.SpawnShards(aHitPoint, new Color(0.55f, 0.56f, 0.62f), 10, 0.28f);
                 }
@@ -957,6 +968,13 @@ namespace BattleFight
             SoundPlayer.Play(SfxSynth.HitFor(aSkill.Weapon), aAnyHeavy ? 1f : 0.8f, aAnyHeavy ? 0.9f : 1f);
             if (aAnyWeak) SoundPlayer.Play(Sfx.Weak, 0.5f);
             if (aAnyArmorBroken) SoundPlayer.Play(Sfx.ArmorBreak, 0.9f);
+            // アーマーに弾かれた(割れていない): 金属音がして、近接ならプレイヤーが少し押し戻される
+            if (aAnyDeflected && !aAnyArmorBroken)
+            {
+                SoundPlayer.Play(Sfx.Guard, 0.7f, 0.8f);
+                if (aMelee) mMotor.AddImpulse(-transform.forward * 1.5f);
+                if (CombatFeedback.Instance != null) CombatFeedback.Instance.Kick(-aKickDirection, 0.05f);
+            }
         }
 
         static bool IsMelee(SkillData iSkill) =>
@@ -1083,6 +1101,20 @@ namespace BattleFight
         {
             if (mCurrent == null || mPhase != Phase.Charging) return false;
             ReleaseCharge(true);
+            // カウンター: 受け止めた瞬間に止まって光り、殴った敵が弾かれる
+            Freeze(0.14f);
+            var aEnemy = !iHit.Ranged && iHit.Source != null ? iHit.Source.GetComponent<EnemyController>() : null;
+            if (aEnemy != null) aEnemy.Rebound(iHit.Direction, false);
+            SoundPlayer.Play(Sfx.Parry, 0.9f, 0.85f);
+            Rumble.Play(0.6f, 0.8f, 0.16f);
+            if (CombatFeedback.Instance != null)
+            {
+                var aColor = new Color(1f, 0.4f, 0.4f);
+                CombatFeedback.Instance.Flash(0.45f);
+                CombatFeedback.Instance.Punch(4f);
+                CombatFeedback.Instance.Vignette(aColor, 0.6f);
+                CombatFeedback.Instance.SpawnSparks(transform.position + Vector3.up * 1.1f - iHit.Direction * 0.6f, aColor, 14, 9f);
+            }
             return true;
         }
 
