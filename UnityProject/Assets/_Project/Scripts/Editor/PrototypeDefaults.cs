@@ -240,8 +240,39 @@ namespace BattleFight.EditorTools
                     Radius = 1.2f, Offset = new Vector3(0, 1, 1.1f), Knockback = 8f },
                 new EnemyAttack { Name = "薙ぎ払い", Range = 2.8f, Windup = 0.8f, Active = 0.2f, Recovery = 1.0f, Damage = 14f,
                     Radius = 1.8f, Offset = new Vector3(0, 1, 0.4f), Knockback = 7f },
+                QuakeAttack(),
             };
         }
+
+        // ---------- 逃げるしかない攻撃(ガード・パリィ・回避の無敵が効かない。移動スキルで範囲の外へ) ----------
+
+        /// <summary>重装兵の「地割れ」: 自分の周り半径 5(体の大きさで約 6.5)</summary>
+        public static EnemyAttack QuakeAttack() => new EnemyAttack
+        {
+            Name = "地割れ", Unblockable = true, Range = 4f, Windup = 1.3f, Active = 0.15f, Recovery = 1.4f, Damage = 22f,
+            Radius = 5f, Offset = new Vector3(0, 1, 0), Knockback = 12f, Weight = 0.6f,
+        };
+
+        /// <summary>鉄獣の「大地震」: 自分の周り半径 4(体の大きさで約 8.8)</summary>
+        public static EnemyAttack BigQuakeAttack() => new EnemyAttack
+        {
+            Name = "大地震", Unblockable = true, Range = 6f, Windup = 1.4f, Active = 0.15f, Recovery = 1.6f, Damage = 30f,
+            Radius = 4f, Offset = new Vector3(0, 1, 0), Knockback = 16f, Weight = 0.7f,
+        };
+
+        /// <summary>魔導機の「隕石」: プレイヤーの足元に半径 4.5 の落下(1.2 秒後)</summary>
+        public static EnemyAttack MeteorAttack() => new EnemyAttack
+        {
+            Name = "隕石", Unblockable = true, TargetedStrike = true, Range = 25f, Windup = 0.8f, Active = 0.1f, Recovery = 1.2f,
+            Damage = 26f, Radius = 4.5f, StrikeDelay = 1.2f, Knockback = 12f, Weight = 0.6f,
+        };
+
+        /// <summary>影刃の「影爆」: 自分の周り半径 5</summary>
+        public static EnemyAttack ShadowBurstAttack() => new EnemyAttack
+        {
+            Name = "影爆", Unblockable = true, Range = 5f, Windup = 1.2f, Active = 0.15f, Recovery = 1.2f, Damage = 24f,
+            Radius = 5f, Offset = new Vector3(0, 1, 0), Knockback = 12f, Weight = 0.6f,
+        };
 
         public static void Boss(EnemyProfile iProfile)
         {
@@ -268,6 +299,7 @@ namespace BattleFight.EditorTools
                     Radius = 0.9f, Offset = new Vector3(0, 0.6f, 0.6f), Knockback = 12f, Lunge = 9f },
                 new EnemyAttack { Name = "跳躍叩きつけ", Range = 13f, Windup = 1.1f, Active = 0.12f, Recovery = 1.3f, Damage = 25f,
                     Radius = 2.0f, Offset = Vector3.zero, Knockback = 14f, JumpSlam = true, Weight = 0.8f },
+                BigQuakeAttack(),
             };
         }
     }

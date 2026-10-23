@@ -81,7 +81,7 @@ namespace BattleFight.EditorTools
             iProfile.ShardValue = 0.8f;
             iProfile.Attacks = new List<EnemyAttack>
             {
-                new EnemyAttack { Name = "自爆", SelfDestruct = true, Range = 2.2f, Windup = 0.9f, Active = 0.1f, Recovery = 0.1f,
+                new EnemyAttack { Name = "自爆", SelfDestruct = true, Unblockable = true, Range = 2.2f, Windup = 0.9f, Active = 0.1f, Recovery = 0.1f,
                     Damage = 24f, Radius = 2.6f, Offset = new Vector3(0, 1, 0), Knockback = 12f },
             };
         }

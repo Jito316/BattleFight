@@ -39,6 +39,8 @@ namespace BattleFight
         [FormerlySerializedAs("strikeDelay")] public float StrikeDelay = 0.8f;
         [Tooltip("攻撃すると自分も倒れる(爆弾兵)")]
         [FormerlySerializedAs("selfDestruct")] public bool SelfDestruct;
+        [Tooltip("ガード・パリィ・カウンター・回避の無敵が効かない。範囲の外へ逃げるしかない(移動スキルの出番)")]
+        public bool Unblockable;
         [Tooltip("手下を呼ぶ")]
         [FormerlySerializedAs("summon")] public EnemyProfile Summon;
         [Min(0)] [FormerlySerializedAs("summonCount")] public int SummonCount;

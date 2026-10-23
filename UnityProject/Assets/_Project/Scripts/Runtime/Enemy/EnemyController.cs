@@ -341,8 +341,12 @@ namespace BattleFight
         {
             mState = State.Windup;
             mStateTime = 0f;
+            // 逃げるしかない攻撃: 予備動作の始まりに範囲の中にいたかを覚えておく(逃げ切ったら褒める)
+            mTargetInDangerAtStart = mAttack.Unblockable && IsTargetInAttackArea();
             // 攻撃が来ることを音でも知らせる(重い攻撃ほど低い)
-            SoundPlayer.Play(Sfx.EnemyWindup, mProfile.IsBoss ? 0.5f : 0.3f, mAttack.Damage >= 20f || mAttack.JumpSlam ? 0.75f : 1.1f);
+            // 逃げるしかない攻撃は、低く大きな音で知らせる
+            if (mAttack.Unblockable) SoundPlayer.Play(Sfx.EnemyWindup, 0.7f, 0.5f);
+            else SoundPlayer.Play(Sfx.EnemyWindup, mProfile.IsBoss ? 0.5f : 0.3f, mAttack.Damage >= 20f || mAttack.JumpSlam ? 0.75f : 1.1f);
             mAttackLanded = false;
             mTeleported = false;
             mRepeatsLeft = mAttack.Repeat;
@@ -426,7 +430,8 @@ namespace BattleFight
                 if (mTarget != null)
                 {
                     EnemyProjectile.Spawn(gameObject, mTarget.position + Vector3.up * 0.05f, Vector3.zero, mAttack.Radius, mAttack.Damage,
-                        mAttack.Knockback, mProfile.TelegraphColor, iDelay: mAttack.StrikeDelay);
+                        mAttack.Knockback, mAttack.Unblockable ? EnemyTelegraph.DangerColor : mProfile.TelegraphColor,
+                        iDelay: mAttack.StrikeDelay, iUnblockable: mAttack.Unblockable);
                 }
                 mAttackLanded = true;
             }
@@ -475,6 +480,7 @@ namespace BattleFight
             DoAttackHit();
             if (mAttack.SelfDestruct && !IsDead)
             {
+                CheckEscape();
                 mDamageable.Kill();
                 return Vector3.zero;
             }
@@ -485,6 +491,7 @@ namespace BattleFight
 
             if (mStateTime >= mAttack.Active)
             {
+                CheckEscape();
                 if (mRepeatsLeft > 0 && !IsDead)
                 {
                     EnterRepeatWindup();
@@ -516,6 +523,7 @@ namespace BattleFight
                     Knockback = mAttack.Knockback,
                     Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
                     Source = gameObject,
+                    Unblockable = mAttack.Unblockable,
                 });
                 mAttackLanded = true;
                 return;
@@ -733,6 +741,33 @@ namespace BattleFight
         /// 攻撃をガード・パリィで受け止められた。iDirection は敵からプレイヤーへの向き。
         /// ガード: 軽く弾かれる / パリィ: 大きく弾かれてよろける(攻撃は中断)
         /// </summary>
+        /// <summary>予備動作の始まりに、狙いが範囲の中にいたか</summary>
+        bool mTargetInDangerAtStart;
+
+        /// <summary>狙い(プレイヤー)が、今の攻撃の範囲の中にいるか(地面の上の距離で見る)</summary>
+        bool IsTargetInAttackArea()
+        {
+            if (mTarget == null || mAttack == null || mAttack.Ranged || mAttack.TargetedStrike) return false;
+            Vector3 aCenter = mAttack.JumpSlam ? mSlamDestination : transform.TransformPoint(mAttack.Offset);
+            Vector3 aOffset = mTarget.position - aCenter;
+            aOffset.y = 0f;
+            return aOffset.magnitude <= mAttack.Radius * mProfile.Scale;
+        }
+
+        /// <summary>
+        /// 逃げるしかない攻撃の終わり: 始まりに範囲の中にいたのに当たらなかったら、逃げ切ったことを褒める
+        /// </summary>
+        void CheckEscape()
+        {
+            if (mAttack == null || !mAttack.Unblockable || !mTargetInDangerAtStart || mAttackLanded) return;
+            mTargetInDangerAtStart = false;
+            var aStyle = mTarget != null ? mTarget.GetComponent<StyleRankSystem>() : null;
+            if (aStyle == null) return;
+            aStyle.AddBonus(aStyle.Config.JustDodgeBonus * 0.8f, "ESCAPE!", new Color(1f, 0.55f, 0.5f));
+            SoundPlayer.Play(Sfx.Dodge, 0.7f, 1.2f);
+            Rumble.Play(0.1f, 0.4f, 0.1f);
+        }
+
         public void Rebound(Vector3 iDirection, bool iParried)
         {
             if (IsDead) return;

@@ -17,12 +17,13 @@ namespace BattleFight
         float mKnockback;
         float mLifetime;
         float mDelay;
+        bool mUnblockable;
         float mAge;
         Color mColor;
         Transform mTelegraph;
 
         public static EnemyProjectile Spawn(GameObject iSource, Vector3 iPosition, Vector3 iVelocity, float iRadius, float iDamage,
-            float iKnockback, Color iColor, float iLifetime = 3f, float iDelay = 0f)
+            float iKnockback, Color iColor, float iLifetime = 3f, float iDelay = 0f, bool iUnblockable = false)
         {
             var aObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             aObject.name = "EnemyProjectile";
@@ -43,6 +44,7 @@ namespace BattleFight
             aProjectile.mKnockback = iKnockback;
             aProjectile.mLifetime = Mathf.Max(iLifetime, iDelay);
             aProjectile.mDelay = iDelay;
+            aProjectile.mUnblockable = iUnblockable;
             aProjectile.mColor = iColor;
 
             if (iDelay > 0f)
@@ -121,6 +123,7 @@ namespace BattleFight
                 Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : Vector3.forward,
                 Source = mSource,
                 Ranged = true,
+                Unblockable = mUnblockable,
             });
             Destroy(gameObject);
         }
@@ -142,6 +145,7 @@ namespace BattleFight
                     Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : Vector3.forward,
                     Source = mSource,
                     Ranged = true,
+                    Unblockable = mUnblockable,
                 });
                 break;
             }
