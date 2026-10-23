@@ -164,6 +164,12 @@ namespace BattleFight
             if (mCameraRig != null) mCameraRig.AddKick(iDirection, iAmount);
         }
 
+        /// <summary>倒した瞬間の決め: その敵の方へカメラを寄せてズームする</summary>
+        public void KillCam(Vector3 iPoint, float iDuration)
+        {
+            if (mCameraRig != null) mCameraRig.FocusOn(iPoint, iDuration, 9f);
+        }
+
         /// <summary>カメラを一瞬沈ませる(着地)</summary>
         public void Dip(float iAmount)
         {

@@ -52,5 +52,8 @@ namespace BattleFight
         [FormerlySerializedAs("endlessBosses")] public EnemyProfile[] EndlessBosses;
         [Tooltip("このウェーブごとにボスが出る")]
         [Min(1)] [FormerlySerializedAs("bossEvery")] public int BossEvery = 5;
+
+        [Header("見た目")]
+        public StageTheme Theme = new StageTheme();
     }
 }

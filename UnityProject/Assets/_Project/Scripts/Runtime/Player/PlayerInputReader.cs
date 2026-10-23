@@ -27,6 +27,10 @@ namespace BattleFight
         Drive,
         /// <summary>ガード(押した直後に受けるとパリィ)</summary>
         Guard,
+        /// <summary>ロックオン中: 標的を左の敵へ</summary>
+        LockOnLeft,
+        /// <summary>ロックオン中: 標的を右の敵へ</summary>
+        LockOnRight,
     }
 
     /// <summary>
@@ -80,6 +84,8 @@ namespace BattleFight
             Bind(PlayerAction.OpenLoadout, "<Gamepad>/select", "<Keyboard>/p");
             Bind(PlayerAction.Drive, "<Gamepad>/leftTrigger", "<Keyboard>/v");
             Bind(PlayerAction.Guard, "<Gamepad>/rightTrigger", "<Keyboard>/q");
+            Bind(PlayerAction.LockOnLeft, "<Keyboard>/z");
+            Bind(PlayerAction.LockOnRight, "<Keyboard>/c");
         }
 
         void Bind(PlayerAction iAction, params string[] iPaths)

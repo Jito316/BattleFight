@@ -12,11 +12,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
   m_Name: Stage_10_Explore
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
-  displayName: "\u63A2\u7D22  \u53E4\u57CE"
-  description: "\u5263\u3060\u3051\u3092\u624B\u306B\u57CE\u3092\u5DE1\u308A\u3001\u30B9\u30AD\u30EB\u3092\u96C6\u3081\u3088\u3046\u3002\u624B\u306B\u5165\u308C\u305F\u30B9\u30AD\u30EB\u3067\u3001\u3072\u3073\u5272\u308C\u305F\u58C1\u30FB\u9AD8\u3044\u6BB5\u5DEE\u30FB\u8C37\u3092\u8D8A\u3048\u3089\u308C\u308B\u3002"
-  kind: 3
-  waves: []
-  trainingDummies: []
-  endlessPool: []
-  endlessBosses: []
-  bossEvery: 5
+  DisplayName: "\u63A2\u7D22  \u53E4\u57CE"
+  Description: "\u5263\u3060\u3051\u3092\u624B\u306B\u57CE\u3092\u5DE1\u308A\u3001\u30B9\u30AD\u30EB\u3092\u96C6\u3081\u3088\u3046\u3002\u624B\u306B\u5165\u308C\u305F\u30B9\u30AD\u30EB\u3067\u3001\u3072\u3073\u5272\u308C\u305F\u58C1\u30FB\u9AD8\u3044\u6BB5\u5DEE\u30FB\u8C37\u3092\u8D8A\u3048\u3089\u308C\u308B\u3002"
+  Kind: 3
+  Waves: []
+  TrainingDummies: []
+  EndlessPool: []
+  EndlessBosses: []
+  BossEvery: 5
+  Theme:
+    FloorColor: {r: 0.3529412, g: 0.39607844, b: 0.45882353, a: 1}
+    WallColor: {r: 0.23529412, g: 0.27450982, b: 0.3372549, a: 1}
+    PillarColor: {r: 0.43137255, g: 0.47058824, b: 0.5294118, a: 1}
+    PlatformColor: {r: 0.3372549, g: 0.4392157, b: 0.5411765, a: 1}
+    AccentColor: {r: 0.6117647, g: 0.8784314, b: 0.65882355, a: 1}
+    BackdropColor: {r: 0.22745098, g: 0.2901961, b: 0.2509804, a: 1}
+    SkyColor: {r: 0.49411765, g: 0.5803922, b: 0.53333336, a: 1}
+    FogColor: {r: 0.5411765, g: 0.627451, b: 0.57254905, a: 1}
+    FogStart: 25
+    FogEnd: 120
+    LightColor: {r: 0.9098039, g: 0.9490196, b: 0.8784314, a: 1}
+    LightIntensity: 1.2
+    LightAngle: {x: 45, y: -45}
+    AmbientSky: {r: 0.56078434, g: 0.6509804, b: 0.59607846, a: 1}
+    AmbientEquator: {r: 0.36078432, g: 0.41568628, b: 0.3764706, a: 1}
+    AmbientGround: {r: 0.14901961, g: 0.18039216, b: 0.15686275, a: 1}
+    TintArena: 0
