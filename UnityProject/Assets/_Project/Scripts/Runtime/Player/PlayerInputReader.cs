@@ -25,6 +25,8 @@ namespace BattleFight
         OpenLoadout,
         /// <summary>チェンジドライブ(切り替えの必殺技)</summary>
         Drive,
+        /// <summary>ガード(押した直後に受けるとパリィ)</summary>
+        Guard,
     }
 
     /// <summary>
@@ -77,6 +79,7 @@ namespace BattleFight
             Bind(PlayerAction.Restart, "<Gamepad>/start", "<Keyboard>/r");
             Bind(PlayerAction.OpenLoadout, "<Gamepad>/select", "<Keyboard>/p");
             Bind(PlayerAction.Drive, "<Gamepad>/leftTrigger", "<Keyboard>/v");
+            Bind(PlayerAction.Guard, "<Gamepad>/rightTrigger", "<Keyboard>/q");
         }
 
         void Bind(PlayerAction iAction, params string[] iPaths)
