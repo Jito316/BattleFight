@@ -282,7 +282,33 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
-        public IEnumerator BigEnemyHidingThePlayer_RaisesTheCamera()
+        public IEnumerator CameraRisingOffAWall_DoesNotSinkIntoACeiling()
+        {
+            yield return LoadEmptyArena();
+            var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
+            yield return new WaitForSeconds(0.5f);
+            Vector3 aBack = aRig.transform.position - mPlayer.position;
+            aBack.y = 0f;
+            aBack.Normalize();
+            // すぐ後ろに壁、頭の少し上に天井(壁から上へ逃げると、天井にめり込んでいた)
+            var aWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            aWall.transform.position = mPlayer.position + aBack * 2.2f + Vector3.up * 2f;
+            aWall.transform.rotation = Quaternion.LookRotation(aBack);
+            aWall.transform.localScale = new Vector3(12f, 8f, 0.4f);
+            var aCeiling = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            aCeiling.transform.position = mPlayer.position + aBack * 1f + Vector3.up * 3.6f;
+            aCeiling.transform.rotation = Quaternion.LookRotation(aBack);
+            aCeiling.transform.localScale = new Vector3(12f, 0.4f, 3f);
+            yield return new WaitForSeconds(1f);
+            bool aInside = aCeiling.GetComponent<Collider>().bounds.Contains(aRig.transform.position)
+                           || aWall.GetComponent<Collider>().bounds.Contains(aRig.transform.position);
+            Object.Destroy(aWall);
+            Object.Destroy(aCeiling);
+            Assert.IsFalse(aInside, "壁から上へ逃げたカメラが、天井や壁にめり込んでいる");
+        }
+
+        [UnityTest]
+        public IEnumerator BigEnemyBehindThePlayer_DoesNotHideThePlayer()
         {
             yield return LoadEmptyArena();
             var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
@@ -294,9 +320,7 @@ namespace BattleFight.Tests
             aEnemy.Damageable.Configure(Team.Enemy, 100000f, 0f, 0f);
             aEnemy.enabled = false;
             yield return new WaitForSeconds(1.5f);
-            Assert.Greater(aRig.WallLift, 1f, "大きな敵の体でプレイヤーが隠れても、カメラが上がらない");
-
-            // 上がったあとは、カメラからプレイヤーの頭が見える
+            // カメラからプレイヤーの頭が見える(カメラが敵の手前に回るか、敵の体の中に入る)
             Vector3 aHead = mPlayer.position + Vector3.up * 1.6f;
             Vector3 aFrom = aRig.transform.position;
             bool aHidden = false;
@@ -304,7 +328,7 @@ namespace BattleFight.Tests
             {
                 if (aHit.collider.GetComponentInParent<EnemyController>() == aEnemy) aHidden = true;
             }
-            Assert.IsFalse(aHidden, "カメラを上げても、まだボスの体でプレイヤーが隠れている");
+            Assert.IsFalse(aHidden, "ボスの体でプレイヤーが隠れている");
         }
 
         [UnityTest]
