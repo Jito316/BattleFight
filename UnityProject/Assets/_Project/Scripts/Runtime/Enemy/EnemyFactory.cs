@@ -19,25 +19,29 @@ namespace BattleFight
             aController.radius = 0.5f;
             aController.stepOffset = 0.3f;
 
-            var aBody = CreatePart(iProfile.BodyShape, aRoot.transform, iSurfaceMaterial, iProfile.Color);
+            // 見た目の部品は Visual の下にまとめる(被弾ののけぞり・つぶれを、当たり判定を動かさずに見せるため)
+            var aVisual = new GameObject(EnemyController.VisualName).transform;
+            aVisual.SetParent(aRoot.transform, false);
+
+            var aBody = CreatePart(iProfile.BodyShape, aVisual, iSurfaceMaterial, iProfile.Color);
             aBody.localPosition = new Vector3(0f, 1f, 0f);
             if (iProfile.BodyShape != PrimitiveType.Capsule) aBody.localScale = new Vector3(1.2f, 1.2f, 1.2f);
             if (iProfile.Flying)
             {
                 // 飛ぶ敵には羽を付ける
-                var aWings = CreatePart(PrimitiveType.Cube, aRoot.transform, iSurfaceMaterial, Color.Lerp(iProfile.Color, Color.white, 0.4f));
+                var aWings = CreatePart(PrimitiveType.Cube, aVisual, iSurfaceMaterial, Color.Lerp(iProfile.Color, Color.white, 0.4f));
                 aWings.localPosition = new Vector3(0f, 1.2f, -0.1f);
                 aWings.localScale = new Vector3(2.4f, 0.08f, 0.6f);
             }
 
             // 向きがわかるように顔を付ける
-            var aVisor = CreatePart(PrimitiveType.Cube, aRoot.transform, iSurfaceMaterial, new Color(0.1f, 0.1f, 0.1f));
+            var aVisor = CreatePart(PrimitiveType.Cube, aVisual, iSurfaceMaterial, new Color(0.1f, 0.1f, 0.1f));
             aVisor.localPosition = new Vector3(0f, 1.5f, 0.4f);
             aVisor.localScale = new Vector3(0.6f, 0.18f, 0.25f);
 
             if (iProfile.MaxArmor > 0f)
             {
-                var aPlate = CreatePart(PrimitiveType.Cube, aRoot.transform, iSurfaceMaterial, new Color(0.35f, 0.35f, 0.4f));
+                var aPlate = CreatePart(PrimitiveType.Cube, aVisual, iSurfaceMaterial, new Color(0.35f, 0.35f, 0.4f));
                 aPlate.localPosition = new Vector3(0f, 1.05f, 0.35f);
                 aPlate.localScale = new Vector3(0.9f, 0.7f, 0.25f);
             }
@@ -45,7 +49,7 @@ namespace BattleFight
             // プレイヤーのスキルを使う敵は武器を持つ(色は型ごとに EnemyController が塗る)
             if (iProfile.SkillSets != null && iProfile.SkillSets.Count > 0)
             {
-                var aWeapon = CreatePart(PrimitiveType.Cube, aRoot.transform, iSurfaceMaterial, iProfile.SkillSets[0].Color);
+                var aWeapon = CreatePart(PrimitiveType.Cube, aVisual, iSurfaceMaterial, iProfile.SkillSets[0].Color);
                 aWeapon.name = "Weapon";
                 aWeapon.localPosition = new Vector3(0.62f, 1.05f, 0.45f);
                 aWeapon.localRotation = Quaternion.Euler(20f, 0f, 0f);
@@ -55,7 +59,7 @@ namespace BattleFight
             // エリートは金の冠をかぶる
             if (iProfile.Elite != EliteAffix.None)
             {
-                var aCrown = CreatePart(PrimitiveType.Cube, aRoot.transform, iSurfaceMaterial, new Color(1f, 0.82f, 0.25f));
+                var aCrown = CreatePart(PrimitiveType.Cube, aVisual, iSurfaceMaterial, new Color(1f, 0.82f, 0.25f));
                 aCrown.name = "Crown";
                 aCrown.localPosition = new Vector3(0f, 2.25f, 0f);
                 aCrown.localRotation = Quaternion.Euler(0f, 45f, 0f);

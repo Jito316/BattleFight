@@ -48,6 +48,7 @@ namespace BattleFight
             mExecutor.Interrupt(mHitStun, mInvulnerableAfterHit);
             mMotor.AddImpulse(iHit.Direction * iHit.Knockback);
             mStyle.OnDamaged();
+            SoundPlayer.Play(Sfx.Hurt, 0.8f);
             if (CombatFeedback.Instance != null)
             {
                 CombatFeedback.Instance.Shake(0.3f);
@@ -63,6 +64,7 @@ namespace BattleFight
                 mStyle.AddBonus(mStyle.Config.JustDodgeBonus, "JUST DODGE", new Color(0.6f, 1f, 0.6f));
                 // 見切り: しばらく敵だけが遅くなる。避けてから反撃する時間
                 EnemyTime.Slow();
+                SoundPlayer.Play(Sfx.Dodge, 0.8f);
                 if (CombatFeedback.Instance != null)
                 {
                     CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 3.5f, new Color(0.75f, 0.5f, 1f));

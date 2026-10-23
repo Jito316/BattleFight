@@ -151,6 +151,47 @@ namespace BattleFight
             });
         }
 
+        /// <summary>
+        /// 武器らしい当たりの見た目。剣: 鋭い斬撃の線 / 大槌: 足元の土煙の輪 / 杖: 魔力の輪 / 籠手: 短い衝撃の輪。
+        /// iDirection は攻撃者から敵への水平な向き
+        /// </summary>
+        public void SpawnImpact(ImpactStyle iStyle, Vector3 iHitPoint, Vector3 iGround, Vector3 iDirection, Color iColor, bool iHeavy)
+        {
+            switch (iStyle)
+            {
+                case ImpactStyle.Slash:
+                    SpawnSlash(iHitPoint, iDirection, iColor, iHeavy ? 2.6f : 2f);
+                    break;
+                case ImpactStyle.Lash:
+                    SpawnSlash(iHitPoint, iDirection, iColor, 1.6f);
+                    break;
+                case ImpactStyle.Smash:
+                    SpawnShockwave(iGround, iHeavy ? 3.2f : 2.4f, new Color(0.75f, 0.68f, 0.55f));
+                    SpawnSparks(iGround + Vector3.up * 0.2f, new Color(0.6f, 0.55f, 0.45f), iHeavy ? 10 : 6, 5f);
+                    break;
+                case ImpactStyle.Arcane:
+                    SpawnShockwave(iHitPoint, 1.2f, iColor);
+                    break;
+                case ImpactStyle.Punch:
+                    SpawnShockwave(iHitPoint, iHeavy ? 1.4f : 0.9f, Color.white);
+                    break;
+            }
+        }
+
+        /// <summary>斬撃の線: 当たった場所を横切る細長い板が、一瞬で伸びて細くなって消える</summary>
+        public void SpawnSlash(Vector3 iPosition, Vector3 iDirection, Color iColor, float iLength)
+        {
+            var aObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            aObject.name = "Slash";
+            DestroyImmediate(aObject.GetComponent<Collider>());
+            if (mEffectMaterial != null) aObject.GetComponent<Renderer>().sharedMaterial = mEffectMaterial;
+            Vector3 aForward = iDirection.sqrMagnitude > 1e-4f ? iDirection.normalized : Vector3.forward;
+            // 攻撃の向きに直角な面で、斜めに走る線にする
+            aObject.transform.position = iPosition;
+            aObject.transform.rotation = Quaternion.LookRotation(aForward) * Quaternion.Euler(0f, 0f, Random.Range(-60f, 60f));
+            aObject.AddComponent<SlashFx>().Play(iLength, Color.Lerp(iColor, Color.white, 0.5f));
+        }
+
         public void SpawnShockwave(Vector3 iPosition, float iRadius, Color iColor)
         {
             var aObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -198,6 +239,32 @@ namespace BattleFight
             transform.position += mVelocity * aDeltaTime;
             transform.Rotate(mVelocity * (40f * aDeltaTime), Space.World);
             transform.localScale = Vector3.one * (mSize * Mathf.Clamp01(1.2f - aProgress));
+            if (aProgress >= 1f) Destroy(gameObject);
+        }
+    }
+
+    /// <summary>斬撃の線。はじめに一気に伸び、細くなりながら消える</summary>
+    public class SlashFx : MonoBehaviour
+    {
+        const float mDuration = 0.16f;
+
+        float mLength;
+        float mElapsed;
+
+        public void Play(float iLength, Color iColor)
+        {
+            mLength = iLength;
+            GetComponent<Renderer>().material.color = iColor;
+            transform.localScale = new Vector3(0.01f, 0.08f, 0.01f);
+        }
+
+        void Update()
+        {
+            // ヒットストップ中も見えるよう、止まらない時間で進める
+            mElapsed += Time.unscaledDeltaTime;
+            float aProgress = Mathf.Clamp01(mElapsed / mDuration);
+            float aGrow = Mathf.Min(1f, aProgress * 4f);
+            transform.localScale = new Vector3(mLength * aGrow, 0.09f * (1f - aProgress) + 0.01f, 0.02f);
             if (aProgress >= 1f) Destroy(gameObject);
         }
     }
