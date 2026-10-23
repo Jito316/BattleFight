@@ -135,6 +135,12 @@ namespace BattleFight
         VisualElement mWorldLayer;
         VisualElement mImpactFlash;
         VisualElement mImpactVignette;
+        VisualElement mDangerVignette;
+
+        /// <summary>HP がこの割合より少なくなると、画面の縁が赤く脈打つ</summary>
+        public const float DangerHealthRatio = 0.3f;
+        /// <summary>今の、HP が少ないときの赤い縁の濃さ(テスト用)</summary>
+        public float DangerAmount { get; private set; }
         Texture2D mVignetteTexture;
         Label mResultTitle;
         Label mResultBody;
@@ -213,10 +219,13 @@ namespace BattleFight
             mHud = mRoot.Q("hud");
             mImpactFlash = mRoot.Q("impact-flash");
             mImpactVignette = mRoot.Q("impact-vignette");
-            if (mImpactVignette != null)
+            mDangerVignette = mRoot.Q("danger-vignette");
+            if (mVignetteTexture == null) mVignetteTexture = CreateVignetteTexture();
+            if (mImpactVignette != null) mImpactVignette.style.backgroundImage = new StyleBackground(mVignetteTexture);
+            if (mDangerVignette != null)
             {
-                if (mVignetteTexture == null) mVignetteTexture = CreateVignetteTexture();
-                mImpactVignette.style.backgroundImage = new StyleBackground(mVignetteTexture);
+                mDangerVignette.style.backgroundImage = new StyleBackground(mVignetteTexture);
+                mDangerVignette.style.unityBackgroundImageTintColor = new Color(0.85f, 0.05f, 0.05f);
             }
             mHpValue = mRoot.Q<Label>("hp-value");
             mHpFill = mRoot.Q("hp-fill");
@@ -890,6 +899,14 @@ namespace BattleFight
                 mImpactVignette.style.opacity = aVignette;
                 if (aVignette > 0f) mImpactVignette.style.unityBackgroundImageTintColor = aFeedback.VignetteColor;
             }
+
+            // HP が少ないとき: 画面の縁が、心臓の鼓動のように赤く脈打つ
+            float aHealthRatio = mPlayer != null && mPlayer.MaxHealth > 0f ? mPlayer.Health / mPlayer.MaxHealth : 1f;
+            bool aInBattle = mDirector != null && (mDirector.State == ArenaDirector.GameState.Fighting || mDirector.State == ArenaDirector.GameState.Intermission);
+            bool aDanger = aInBattle && mPlayer != null && !mPlayer.IsDead && aHealthRatio < DangerHealthRatio;
+            float aBeat = Mathf.Pow(Mathf.Abs(Mathf.Sin(Time.unscaledTime * 3.2f)), 6f);
+            DangerAmount = aDanger ? (0.25f + 0.35f * (1f - aHealthRatio / DangerHealthRatio)) * (0.55f + 0.45f * aBeat) : 0f;
+            if (mDangerVignette != null) mDangerVignette.style.opacity = DangerAmount;
         }
 
         EnemyTag EnemyTagAt(int iIndex)
