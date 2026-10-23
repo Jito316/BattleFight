@@ -307,6 +307,24 @@ namespace BattleFight.Tests
             Assert.IsFalse(aHidden, "カメラを上げても、まだボスの体でプレイヤーが隠れている");
         }
 
+        [UnityTest]
+        public IEnumerator BigEnemyRightBehind_DoesNotPushTheCameraIntoThePlayer()
+        {
+            yield return LoadEmptyArena();
+            var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
+            yield return new WaitForSeconds(0.5f);
+            Vector3 aBack = aRig.transform.position - mPlayer.position;
+            aBack.y = 0f;
+            // ボスがすぐ後ろにいると、カメラがプレイヤーの頭に張り付いて、頭で画面がふさがっていた
+            var aEnemy = mDirector.SpawnExtra(FindBoss(), mPlayer.position + aBack.normalized * 1.8f);
+            aEnemy.Damageable.Configure(Team.Enemy, 100000f, 0f, 0f);
+            aEnemy.enabled = false;
+            yield return new WaitForSeconds(1.5f);
+            Vector3 aOffset = aRig.transform.position - mPlayer.position;
+            aOffset.y = 0f;
+            Assert.Greater(aOffset.magnitude, 2.2f, "大きな敵がすぐ後ろにいると、カメラがプレイヤーに近づきすぎる");
+        }
+
         EnemyProfile FindBoss()
         {
             foreach (var aStage in mDirector.Stages)
