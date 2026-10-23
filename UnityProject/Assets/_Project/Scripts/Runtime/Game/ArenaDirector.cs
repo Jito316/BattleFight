@@ -147,6 +147,9 @@ namespace BattleFight
             ElapsedTime = 0f;
             WaveNumber = 0;
 
+            // ステージの見た目(色・光・霧)
+            StageThemeApplier.Apply(CurrentStage.Theme, mArenaRoot != null ? mArenaRoot.transform : null, Sun(), Camera.main);
+
             // 探索のステージだけ探索マップを出し、アリーナの地形は隠す
             bool aExploring = IsExploring && mExploration != null;
             if (mArenaRoot != null) mArenaRoot.SetActive(!aExploring);
@@ -156,6 +159,21 @@ namespace BattleFight
             ThirdPersonCamera.SetCursorLocked(true);
 #endif
             StartCoroutine(Run());
+        }
+
+        Light mSun;
+
+        /// <summary>シーンの太陽(向きの光)</summary>
+        Light Sun()
+        {
+            if (mSun != null) return mSun;
+            foreach (var aLight in FindObjectsByType<Light>(FindObjectsSortMode.None))
+            {
+                if (aLight.type != LightType.Directional) continue;
+                mSun = aLight;
+                break;
+            }
+            return mSun;
         }
 
         IEnumerator Run()
@@ -314,12 +332,15 @@ namespace BattleFight
                 }
             }
 
-            // ウェーブ最後の1体を倒した瞬間はスローモーション
+            // ウェーブ最後の1体・ボスを倒した瞬間はスローモーションにして、カメラをその敵へ寄せる
             bool aWaveStage = CurrentStage != null && (CurrentStage.Kind == StageKind.Waves || CurrentStage.Kind == StageKind.Endless);
-            if (aWaveStage && State == GameState.Fighting && mAlive.Count == 0 && CombatFeedback.Instance != null)
+            bool aLastOfWave = aWaveStage && State == GameState.Fighting && mAlive.Count == 0;
+            bool aBoss = iProfile != null && iProfile.IsBoss;
+            if ((aLastOfWave || aBoss) && CombatFeedback.Instance != null)
             {
                 CombatFeedback.Instance.SlowMotion(0.25f, 0.9f);
                 CombatFeedback.Instance.Shake(0.35f);
+                if (iEnemy != null) CombatFeedback.Instance.KillCam(iEnemy.CenterPoint, aBoss ? 1.2f : 0.9f);
             }
 
             if (CurrentStage != null && CurrentStage.Kind == StageKind.Training && State == GameState.Fighting)

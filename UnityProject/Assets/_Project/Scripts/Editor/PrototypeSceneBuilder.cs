@@ -194,6 +194,7 @@ namespace BattleFight.EditorTools
                     iStage => PrototypeDefaults.Endless(iStage, aGrunt, aDasher, aShooter, aBomber, aFlyer, aArmored, aBoss, aMagus)),
                 Asset<StageData>("Stages/Stage_10_Explore", iResetData, PrototypeDefaults.ExplorationStage),
             };
+            EnsureStageThemes(System.Linq.Enumerable.OfType<StageData>(aStages));
             // 既にあるエンドレスにも、新しいボスを加える
             var aEndless = (StageData)aStages[aStages.Length - 2];
             EnsureEndlessBoss(aEndless, aShadow);
@@ -209,6 +210,12 @@ namespace BattleFight.EditorTools
             RenderSettings.ambientSkyColor = new Color(0.55f, 0.6f, 0.7f);
             RenderSettings.ambientEquatorColor = new Color(0.4f, 0.4f, 0.45f);
             RenderSettings.ambientGroundColor = new Color(0.2f, 0.2f, 0.22f);
+            // 霧はステージごとに色と距離を変える。ビルドで霧のシェーダーが削られないよう、シーンでも使っておく
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = new Color(0.55f, 0.62f, 0.72f);
+            RenderSettings.fogStartDistance = 45f;
+            RenderSettings.fogEndDistance = 150f;
 
             var aLightObject = new GameObject("Directional Light");
             var aLight = aLightObject.AddComponent<Light>();
@@ -218,6 +225,7 @@ namespace BattleFight.EditorTools
             aLightObject.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
             var aArenaRoot = BuildArena();
+            BuildArenaDecor(aArenaRoot);
 
             // 探索マップ(アリーナとは離れた場所に作る。探索のステージでだけ出す)
             var aExplorationSkills = new ExplorationSkills
@@ -266,6 +274,8 @@ namespace BattleFight.EditorTools
             var aCameraObject = new GameObject("Main Camera") { tag = "MainCamera" };
             var aCamera = aCameraObject.AddComponent<Camera>();
             aCamera.fieldOfView = 55f;
+            aCamera.clearFlags = CameraClearFlags.SolidColor;
+            aCamera.backgroundColor = new Color(0.55f, 0.65f, 0.78f);
             aCamera.nearClipPlane = 0.1f;
             aCameraObject.AddComponent<AudioListener>();
             var aCameraRig = aCameraObject.AddComponent<ThirdPersonCamera>();

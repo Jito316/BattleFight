@@ -12,31 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
   m_Name: Stage_1_Beast
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
-  displayName: "\u7B2C1\u5E55  \u9244\u7363"
-  description: "\u96D1\u5175\u3068\u91CD\u88C5\u5175\u3092\u9000\u3051\u3001\u9244\u306E\u7363\u3092\u5012\u305B\u3002\u30A2\u30FC\u30DE\u30FC\u306F\u5927\u69CC\u3084\u91CD\u3044\u6280\u3067\u524A\u308D\u3046\u3002"
-  kind: 0
-  waves:
-  - label: WAVE
-    enemies:
+  DisplayName: "\u7B2C1\u5E55  \u9244\u7363"
+  Description: "\u96D1\u5175\u3068\u91CD\u88C5\u5175\u3092\u9000\u3051\u3001\u9244\u306E\u7363\u3092\u5012\u305B\u3002\u30A2\u30FC\u30DE\u30FC\u306F\u5927\u69CC\u3084\u91CD\u3044\u6280\u3067\u524A\u308D\u3046\u3002"
+  Kind: 0
+  Waves:
+  - Label: WAVE
+    Enemies:
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
-  - label: WAVE
-    enemies:
+  - Label: WAVE
+    Enemies:
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
     - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
-  - label: WAVE
-    enemies:
+  - Label: WAVE
+    Enemies:
     - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
     - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
     - {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
-  - label: BOSS
-    enemies:
+  - Label: BOSS
+    Enemies:
     - {fileID: 11400000, guid: 64ab056a54ee0464aaf7cd0d861aa694, type: 2}
-  trainingDummies: []
-  endlessPool: []
-  endlessBosses: []
-  bossEvery: 5
+  TrainingDummies: []
+  EndlessPool: []
+  EndlessBosses: []
+  BossEvery: 5
+  Theme:
+    FloorColor: {r: 0.35686275, g: 0.2901961, b: 0.24313726, a: 1}
+    WallColor: {r: 0.24705882, g: 0.18431373, b: 0.15294118, a: 1}
+    PillarColor: {r: 0.47843137, g: 0.3529412, b: 0.2627451, a: 1}
+    PlatformColor: {r: 0.41960785, g: 0.32156864, b: 0.2509804, a: 1}
+    AccentColor: {r: 1, g: 0.5411765, b: 0.23921569, a: 1}
+    BackdropColor: {r: 0.2901961, g: 0.19607843, b: 0.14901961, a: 1}
+    SkyColor: {r: 0.8509804, g: 0.57254905, b: 0.3529412, a: 1}
+    FogColor: {r: 0.7882353, g: 0.5411765, b: 0.36078432, a: 1}
+    FogStart: 35
+    FogEnd: 130
+    LightColor: {r: 1, g: 0.76862746, b: 0.5411765, a: 1}
+    LightIntensity: 1.4
+    LightAngle: {x: 28, y: -60}
+    AmbientSky: {r: 0.8509804, g: 0.63529414, b: 0.47843137, a: 1}
+    AmbientEquator: {r: 0.47843137, g: 0.3529412, b: 0.27058825, a: 1}
+    AmbientGround: {r: 0.22745098, g: 0.16470589, b: 0.13333334, a: 1}
+    TintArena: 1

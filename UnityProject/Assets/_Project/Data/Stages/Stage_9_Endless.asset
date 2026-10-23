@@ -12,41 +12,59 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
   m_Name: Stage_9_Endless
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
-  displayName: "\u30A8\u30F3\u30C9\u30EC\u30B9"
-  description: "\u6575\u304C\u969B\u9650\u306A\u304F\u62BC\u3057\u5BC4\u305B\u308B\u30025\u30A6\u30A7\u30FC\u30D6\u3054\u3068\u306B\u30DC\u30B9\u304C\u51FA\u308B\u3002\u3069\u3053\u307E\u3067\u884C\u3051\u308B\u304B\u3002"
-  kind: 2
-  waves: []
-  trainingDummies: []
-  endlessPool:
-  - profile: {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
-    cost: 1
-    minWave: 1
-  - profile: {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
-    cost: 1.5
-    minWave: 2
-  - profile: {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
-    cost: 2
-    minWave: 2
-  - profile: {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
-    cost: 1.5
-    minWave: 3
-  - profile: {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
-    cost: 2
-    minWave: 3
-  - profile: {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
-    cost: 3
-    minWave: 4
-  - profile: {fileID: 11400000, guid: 21fefb01ae6576441808ef12665a9216, type: 2}
-    cost: 3
-    minWave: 4
-  - profile: {fileID: 11400000, guid: def89b69de17a054597ec0f40e75e35c, type: 2}
-    cost: 3
-    minWave: 5
-  - profile: {fileID: 11400000, guid: 8b43be6c0e72f784f972ff815f8b68f0, type: 2}
-    cost: 3
-    minWave: 6
-  endlessBosses:
+  DisplayName: "\u30A8\u30F3\u30C9\u30EC\u30B9"
+  Description: "\u6575\u304C\u969B\u9650\u306A\u304F\u62BC\u3057\u5BC4\u305B\u308B\u30025\u30A6\u30A7\u30FC\u30D6\u3054\u3068\u306B\u30DC\u30B9\u304C\u51FA\u308B\u3002\u3069\u3053\u307E\u3067\u884C\u3051\u308B\u304B\u3002"
+  Kind: 2
+  Waves: []
+  TrainingDummies: []
+  EndlessPool:
+  - Profile: {fileID: 11400000, guid: f59da9c4f4726bb4c834fc456887f576, type: 2}
+    Cost: 1
+    MinWave: 1
+  - Profile: {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
+    Cost: 1.5
+    MinWave: 2
+  - Profile: {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
+    Cost: 2
+    MinWave: 2
+  - Profile: {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
+    Cost: 1.5
+    MinWave: 3
+  - Profile: {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
+    Cost: 2
+    MinWave: 3
+  - Profile: {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
+    Cost: 3
+    MinWave: 4
+  - Profile: {fileID: 11400000, guid: 21fefb01ae6576441808ef12665a9216, type: 2}
+    Cost: 3
+    MinWave: 4
+  - Profile: {fileID: 11400000, guid: def89b69de17a054597ec0f40e75e35c, type: 2}
+    Cost: 3
+    MinWave: 5
+  - Profile: {fileID: 11400000, guid: 8b43be6c0e72f784f972ff815f8b68f0, type: 2}
+    Cost: 3
+    MinWave: 6
+  EndlessBosses:
   - {fileID: 11400000, guid: 64ab056a54ee0464aaf7cd0d861aa694, type: 2}
   - {fileID: 11400000, guid: 8609d7d905b0e424f837190f4eb5abed, type: 2}
   - {fileID: 11400000, guid: 6da8d7d4d0acb324085dbf79ff3a14aa, type: 2}
-  bossEvery: 5
+  BossEvery: 5
+  Theme:
+    FloorColor: {r: 0.22745098, g: 0.16470589, b: 0.24313726, a: 1}
+    WallColor: {r: 0.16470589, g: 0.10980392, b: 0.1882353, a: 1}
+    PillarColor: {r: 0.29803923, g: 0.2, b: 0.32156864, a: 1}
+    PlatformColor: {r: 0.2901961, g: 0.18039216, b: 0.2901961, a: 1}
+    AccentColor: {r: 1, g: 0.23921569, b: 0.43137255, a: 1}
+    BackdropColor: {r: 0.17254902, g: 0.08235294, b: 0.1882353, a: 1}
+    SkyColor: {r: 0.36078432, g: 0.14117648, b: 0.28235295, a: 1}
+    FogColor: {r: 0.41568628, g: 0.17254902, b: 0.32156864, a: 1}
+    FogStart: 25
+    FogEnd: 115
+    LightColor: {r: 1, g: 0.627451, b: 0.78431374, a: 1}
+    LightIntensity: 1.15
+    LightAngle: {x: 18, y: -100}
+    AmbientSky: {r: 0.6901961, g: 0.3137255, b: 0.47843137, a: 1}
+    AmbientEquator: {r: 0.3529412, g: 0.17254902, b: 0.3137255, a: 1}
+    AmbientGround: {r: 0.11764706, g: 0.05490196, b: 0.11764706, a: 1}
+    TintArena: 1

@@ -84,6 +84,22 @@ namespace BattleFight
             mKick = Vector3.ClampMagnitude(mKick + iDirection.normalized * iAmount, 0.6f);
         }
 
+        Vector3 mFocusPoint;
+        float mFocusStart = -99f;
+        float mFocusDuration;
+
+        /// <summary>倒した瞬間などに、その場所へカメラを寄せている途中か</summary>
+        public bool IsFocusing => Time.unscaledTime - mFocusStart < mFocusDuration;
+
+        /// <summary>しばらく iPoint の方へカメラを寄せ、ズームする(ボス・ウェーブ最後の 1 体を倒した瞬間)</summary>
+        public void FocusOn(Vector3 iPoint, float iDuration, float iZoom)
+        {
+            mFocusPoint = iPoint;
+            mFocusStart = Time.unscaledTime;
+            mFocusDuration = Mathf.Max(0.05f, iDuration);
+            AddZoom(iZoom);
+        }
+
         /// <summary>カメラを一瞬沈ませる(着地の重さ)</summary>
         public void AddDip(float iAmount) => mKick = Vector3.ClampMagnitude(mKick + Vector3.down * iAmount, 0.6f);
 
@@ -142,6 +158,15 @@ namespace BattleFight
 
             Vector3 aDesiredFocus = mTarget.position + Vector3.up * mFocusHeight;
             if (aLockTarget != null) aDesiredFocus = Vector3.Lerp(aDesiredFocus, aLockTarget.CenterPoint, 0.25f);
+            if (IsFocusing)
+            {
+                // 寄って、また戻る(山なり)
+                float aProgress = (Time.unscaledTime - mFocusStart) / mFocusDuration;
+                float aWeight = 0.55f * Mathf.Sin(Mathf.Clamp01(aProgress) * Mathf.PI);
+                aDesiredFocus = Vector3.Lerp(aDesiredFocus, mFocusPoint, Mathf.Clamp01(aWeight));
+                // 寄せている間はズームを保つ
+                mZoom = Mathf.Max(mZoom, 7f * (1f - aProgress));
+            }
             mFocus = Vector3.Lerp(mFocus, aDesiredFocus, 1f - Mathf.Exp(-mFollowSharpness * aDeltaTime));
 
             Quaternion aRotation = Quaternion.Euler(mPitch, mYaw, 0f);

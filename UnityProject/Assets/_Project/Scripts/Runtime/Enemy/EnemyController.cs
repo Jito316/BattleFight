@@ -114,6 +114,17 @@ namespace BattleFight
 
         /// <summary>予備動作中・攻撃中の攻撃(それ以外は null)</summary>
         public EnemyAttack CurrentAttack => mState == State.Windup || mState == State.Attack ? mAttack : null;
+        /// <summary>予備動作の進み具合(0 〜 1)</summary>
+        public float WindupProgress => mState == State.Windup && mAttack != null && mAttack.Windup > 0f ? Mathf.Clamp01(mStateTime / mAttack.Windup) : 0f;
+        /// <summary>攻撃が出るまでの残り(実際の秒。見切りで敵が遅いときは長くなる)</summary>
+        public float WindupRealTimeLeft => mState == State.Windup && mAttack != null
+            ? Mathf.Max(0f, mAttack.Windup - mStateTime) / Mathf.Max(0.01f, EnemyTime.Scale) : 0f;
+        /// <summary>飛びかかりの着地点</summary>
+        public Vector3 SlamDestination => mSlamDestination;
+        /// <summary>狙っている相手(プレイヤー)</summary>
+        public Transform Target => mTarget;
+        /// <summary>予備動作を見せるコンポーネント(テスト用)</summary>
+        public EnemyTelegraph Telegraph { get; private set; }
 
         /// <summary>今の弱点。型が弱点を持っていればそれ、なければ敵の弱点</summary>
         public WeaponType[] Weaknesses
@@ -163,6 +174,11 @@ namespace BattleFight
             mProfile = iNewProfile;
             mTarget = iPlayer;
             mVisual = transform.Find(VisualName);
+            if (Telegraph == null)
+            {
+                Telegraph = gameObject.AddComponent<EnemyTelegraph>();
+                Telegraph.Setup(this, CombatFeedback.Instance != null ? CombatFeedback.Instance.EffectMaterial : null);
+            }
             mRenderers = GetComponentsInChildren<Renderer>();
             mBaseColors = new Color[mRenderers.Length];
             for (int aRendererIndex = 0; aRendererIndex < mRenderers.Length; aRendererIndex++) mBaseColors[aRendererIndex] = mRenderers[aRendererIndex].material.color;

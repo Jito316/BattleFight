@@ -12,34 +12,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a95589fd8e50214cb0cb2c65502c518, type: 3}
   m_Name: Stage_4_Shadow
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.StageData
-  displayName: "\u7B2C4\u5E55  \u5F71\u306E\u5263\u8056"
-  description: "\u7D20\u65E9\u3044\u6575\u304C\u7D9A\u304D\u3001\u6700\u5F8C\u306F\u80CC\u5F8C\u306B\u56DE\u308A\u8FBC\u3080\u5263\u58EB\u300C\u5F71\u5203\u300D\u3002\u4F53\u529B\u304C\u534A\u5206\u3092\u5207\u308B\u3068\u7B2C\u4E8C\u5F62\u614B\u306B\u306A\u308B\u3002\u5F31\u70B9\u306F\u9396\u3068\u6756\u3002"
-  kind: 0
-  waves:
-  - label: WAVE
-    enemies:
+  DisplayName: "\u7B2C4\u5E55  \u5F71\u306E\u5263\u8056"
+  Description: "\u7D20\u65E9\u3044\u6575\u304C\u7D9A\u304D\u3001\u6700\u5F8C\u306F\u80CC\u5F8C\u306B\u56DE\u308A\u8FBC\u3080\u5263\u58EB\u300C\u5F71\u5203\u300D\u3002\u4F53\u529B\u304C\u534A\u5206\u3092\u5207\u308B\u3068\u7B2C\u4E8C\u5F62\u614B\u306B\u306A\u308B\u3002\u5F31\u70B9\u306F\u9396\u3068\u6756\u3002"
+  Kind: 0
+  Waves:
+  - Label: WAVE
+    Enemies:
     - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
     - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
     - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
     - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
-  - label: WAVE
-    enemies:
+  - Label: WAVE
+    Enemies:
     - {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
     - {fileID: 11400000, guid: 8402f45de50155246832130d2d2004d9, type: 2}
     - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
     - {fileID: 11400000, guid: 2e54df59ca054c94292e846998b1e549, type: 2}
     - {fileID: 11400000, guid: 10f75c97f2a0fe4488a642f9f7b95f0c, type: 2}
-  - label: WAVE
-    enemies:
+  - Label: WAVE
+    Enemies:
     - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
     - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
     - {fileID: 11400000, guid: f8ef1b09cae50f14398f5bbc31d04b48, type: 2}
     - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
     - {fileID: 11400000, guid: 6fc4f55a43ae7c0498e5175541fdeba8, type: 2}
-  - label: BOSS
-    enemies:
+  - Label: BOSS
+    Enemies:
     - {fileID: 11400000, guid: 6da8d7d4d0acb324085dbf79ff3a14aa, type: 2}
-  trainingDummies: []
-  endlessPool: []
-  endlessBosses: []
-  bossEvery: 5
+  TrainingDummies: []
+  EndlessPool: []
+  EndlessBosses: []
+  BossEvery: 5
+  Theme:
+    FloorColor: {r: 0.14901961, g: 0.17254902, b: 0.23921569, a: 1}
+    WallColor: {r: 0.09803922, g: 0.11372549, b: 0.16862746, a: 1}
+    PillarColor: {r: 0.1882353, g: 0.21568628, b: 0.3019608, a: 1}
+    PlatformColor: {r: 0.16470589, g: 0.2, b: 0.3137255, a: 1}
+    AccentColor: {r: 0.6117647, g: 0.48235294, b: 1, a: 1}
+    BackdropColor: {r: 0.08235294, g: 0.101960786, b: 0.17254902, a: 1}
+    SkyColor: {r: 0.050980393, g: 0.07058824, b: 0.13333334, a: 1}
+    FogColor: {r: 0.101960786, g: 0.12941177, b: 0.2509804, a: 1}
+    FogStart: 20
+    FogEnd: 95
+    LightColor: {r: 0.6862745, g: 0.7764706, b: 1, a: 1}
+    LightIntensity: 0.9
+    LightAngle: {x: 60, y: 150}
+    AmbientSky: {r: 0.2901961, g: 0.3529412, b: 0.54901963, a: 1}
+    AmbientEquator: {r: 0.16470589, g: 0.2, b: 0.32156864, a: 1}
+    AmbientGround: {r: 0.050980393, g: 0.0627451, b: 0.09411765, a: 1}
+    TintArena: 1
