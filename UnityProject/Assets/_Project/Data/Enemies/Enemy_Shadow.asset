@@ -12,179 +12,213 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
   m_Name: Enemy_Shadow
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
-  displayName: "\u5F71\u5203"
-  isBoss: 1
-  heavy: 1
-  weaknesses: 0200000003000000
-  maxHealth: 1100
-  maxArmor: 100
-  armorRegenDelay: 8
-  staggerThreshold: 55
-  staggerDuration: 0.5
-  armorBreakStagger: 2.2
-  moveSpeed: 5.5
-  turnSpeed: 540
-  preferredDistance: 0
-  flying: 0
-  hoverHeight: 3.5
-  attackCooldown: 0.9
-  attacks:
-  - name: "\u4E09\u9023\u65AC"
-    range: 3.2
-    windup: 0.55
-    active: 0.15
-    recovery: 0.9
-    damage: 10
-    radius: 1
-    offset: {x: 0, y: 0.8, z: 0.9}
-    knockback: 4
-    lunge: 1.5
-    jumpSlam: 0
-    weight: 2
-    ranged: 0
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 16
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-    teleportBehind: 0
-    repeat: 2
-    repeatWindup: 0.3
-    sourceSkill: {fileID: 0}
-  - name: "\u5F71\u8D70\u308A"
-    range: 12
-    windup: 0.7
-    active: 0.3
-    recovery: 1
-    damage: 14
-    radius: 0.8
-    offset: {x: 0, y: 0.6, z: 0.5}
-    knockback: 9
-    lunge: 11
-    jumpSlam: 0
-    weight: 1
-    ranged: 0
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 16
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-    teleportBehind: 0
-    repeat: 0
-    repeatWindup: 0.3
-    sourceSkill: {fileID: 0}
-  - name: "\u80CC\u5F8C\u53D6\u308A"
-    range: 20
-    windup: 1.1
-    active: 0.15
-    recovery: 1
-    damage: 18
-    radius: 1
-    offset: {x: 0, y: 0.7, z: 0.8}
-    knockback: 10
-    lunge: 0
-    jumpSlam: 0
-    weight: 0.8
-    ranged: 0
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 16
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-    teleportBehind: 1
-    repeat: 0
-    repeatWindup: 0.3
-    sourceSkill: {fileID: 0}
-  skillSets:
-  - name: "\u5263\u306E\u578B"
-    weapon: 0
-    color: {r: 0.45, g: 0.8, b: 1, a: 1}
-    skills:
+  DisplayName: "\u5F71\u5203"
+  IsBoss: 1
+  Heavy: 1
+  Weaknesses: 0200000003000000
+  MaxHealth: 1100
+  MaxArmor: 100
+  ArmorRegenDelay: 8
+  StaggerThreshold: 55
+  StaggerDuration: 0.5
+  ArmorBreakStagger: 2.2
+  MoveSpeed: 5.5
+  TurnSpeed: 540
+  PreferredDistance: 0
+  Flying: 0
+  HoverHeight: 3.5
+  AttackCooldown: 0.9
+  Attacks:
+  - Name: "\u4E09\u9023\u65AC"
+    Range: 3.2
+    Windup: 0.55
+    Active: 0.15
+    Recovery: 0.9
+    Damage: 10
+    Radius: 1
+    Offset: {x: 0, y: 0.8, z: 0.9}
+    Knockback: 4
+    Lunge: 1.5
+    JumpSlam: 0
+    Weight: 2
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 2
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  - Name: "\u5F71\u8D70\u308A"
+    Range: 12
+    Windup: 0.7
+    Active: 0.3
+    Recovery: 1
+    Damage: 14
+    Radius: 0.8
+    Offset: {x: 0, y: 0.6, z: 0.5}
+    Knockback: 9
+    Lunge: 11
+    JumpSlam: 0
+    Weight: 1
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  - Name: "\u80CC\u5F8C\u53D6\u308A"
+    Range: 20
+    Windup: 1.1
+    Active: 0.15
+    Recovery: 1
+    Damage: 18
+    Radius: 1
+    Offset: {x: 0, y: 0.7, z: 0.8}
+    Knockback: 10
+    Lunge: 0
+    JumpSlam: 0
+    Weight: 0.8
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 1
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  - Name: "\u5F71\u7206"
+    Range: 5
+    Windup: 1.2
+    Active: 0.15
+    Recovery: 1.2
+    Damage: 24
+    Radius: 5
+    Offset: {x: 0, y: 1, z: 0}
+    Knockback: 12
+    Lunge: 0
+    JumpSlam: 0
+    Weight: 0.6
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 1
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  SkillSets:
+  - Name: "\u5263\u306E\u578B"
+    Weapon: 0
+    Color: {r: 0.45, g: 0.8, b: 1, a: 1}
+    Skills:
     - {fileID: 11400000, guid: a31bbe219dadd034ea7df6b5827a1ce1, type: 2}
     - {fileID: 11400000, guid: 98098865a4719414282c09ccd534ea39, type: 2}
     - {fileID: 11400000, guid: 726aebcee9e2d5c49b592348af1312de, type: 2}
-    weaknesses: 
-  - name: "\u9396\u306E\u578B"
-    weapon: 2
-    color: {r: 0.75, g: 0.5, b: 1, a: 1}
-    skills:
+    Weaknesses: 
+  - Name: "\u9396\u306E\u578B"
+    Weapon: 2
+    Color: {r: 0.75, g: 0.5, b: 1, a: 1}
+    Skills:
     - {fileID: 11400000, guid: fe3cc2a2be865904ebd7d2a4737cd71c, type: 2}
     - {fileID: 11400000, guid: 5cf53f9e7625375489c3bf4ceb62b6d0, type: 2}
-    weaknesses: 
-  skillSwapInterval: 8
-  skillDamageScale: 0.5
-  skillWindupScale: 2.2
-  phase2HealthRatio: 0.5
-  phase2SpeedMultiplier: 1.3
-  phase2CooldownMultiplier: 0.6
-  phase2Attacks:
-  - name: "\u65CB\u98A8\u5203"
-    range: 4
-    windup: 0.7
-    active: 0.2
-    recovery: 1
-    damage: 16
-    radius: 1.5
-    offset: {x: 0, y: 0.7, z: 0}
-    knockback: 12
-    lunge: 0
-    jumpSlam: 0
-    weight: 1
-    ranged: 0
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 16
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-    teleportBehind: 0
-    repeat: 0
-    repeatWindup: 0.3
-    sourceSkill: {fileID: 0}
-  - name: "\u98DB\u5203"
-    range: 16
-    windup: 0.8
-    active: 0.1
-    recovery: 1.1
-    damage: 8
-    radius: 1.2
-    offset: {x: 0, y: 1, z: 1.2}
-    knockback: 4
-    lunge: 0
-    jumpSlam: 0
-    weight: 1
-    ranged: 1
-    projectileCount: 5
-    projectileSpread: 60
-    projectileSpeed: 20
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-    teleportBehind: 0
-    repeat: 0
-    repeatWindup: 0.3
-    sourceSkill: {fileID: 0}
-  phase2Message: "\u5F71\u304C\u3055\u3089\u306B\u901F\u304F\u306A\u308B\u2026\u2026!"
-  bodyShape: 1
-  scale: 1.5
-  color: {r: 0.15, g: 0.15, b: 0.22, a: 1}
-  telegraphColor: {r: 0.8, g: 0.3, b: 1, a: 1}
-  shardValue: 30
+    Weaknesses: 
+  SkillSwapInterval: 8
+  SkillDamageScale: 0.5
+  SkillWindupScale: 2.2
+  Phase2HealthRatio: 0.5
+  Phase2SpeedMultiplier: 1.3
+  Phase2CooldownMultiplier: 0.6
+  Phase2Attacks:
+  - Name: "\u65CB\u98A8\u5203"
+    Range: 4
+    Windup: 0.7
+    Active: 0.2
+    Recovery: 1
+    Damage: 16
+    Radius: 1.5
+    Offset: {x: 0, y: 0.7, z: 0}
+    Knockback: 12
+    Lunge: 0
+    JumpSlam: 0
+    Weight: 1
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  - Name: "\u98DB\u5203"
+    Range: 16
+    Windup: 0.8
+    Active: 0.1
+    Recovery: 1.1
+    Damage: 8
+    Radius: 1.2
+    Offset: {x: 0, y: 1, z: 1.2}
+    Knockback: 4
+    Lunge: 0
+    JumpSlam: 0
+    Weight: 1
+    Ranged: 1
+    ProjectileCount: 5
+    ProjectileSpread: 60
+    ProjectileSpeed: 20
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  Phase2Message: "\u5F71\u304C\u3055\u3089\u306B\u901F\u304F\u306A\u308B\u2026\u2026!"
+  Elite: 0
+  EliteSource: {fileID: 0}
+  BodyShape: 1
+  Scale: 1.5
+  Color: {r: 0.15, g: 0.15, b: 0.22, a: 1}
+  TelegraphColor: {r: 0.8, g: 0.3, b: 1, a: 1}
+  ShardValue: 30

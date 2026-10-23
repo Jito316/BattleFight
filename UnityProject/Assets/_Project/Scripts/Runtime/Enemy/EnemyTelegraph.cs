@@ -12,6 +12,8 @@ namespace BattleFight
     {
         /// <summary>攻撃が出る何秒前に白く光らせるか(パリィの受付と同じくらい)</summary>
         public const float GlintTime = 0.2f;
+        /// <summary>ガードできない(逃げるしかない)攻撃の色</summary>
+        public static readonly Color DangerColor = new Color(1f, 0.12f, 0.15f);
         const float mAimLength = 14f;
 
         EnemyController mEnemy;
@@ -31,6 +33,8 @@ namespace BattleFight
         public float FillAmount { get; private set; }
         /// <summary>攻撃直前の白い光を出しているか(テスト用)</summary>
         public bool IsGlinting { get; private set; }
+        /// <summary>今出している予告が、逃げるしかない攻撃か(テスト用)</summary>
+        public bool IsDanger { get; private set; }
 
         public void Setup(EnemyController iEnemy, Material iMaterial)
         {
@@ -73,6 +77,7 @@ namespace BattleFight
             if (mAim != null) mAim.gameObject.SetActive(false);
             FillAmount = 0f;
             IsGlinting = false;
+            IsDanger = false;
         }
 
         void LateUpdate()
@@ -94,9 +99,11 @@ namespace BattleFight
                 if (CombatFeedback.Instance != null) CombatFeedback.Instance.SpawnSparks(mEnemy.CenterPoint + Vector3.up * 0.6f, Color.white, 6, 4f);
             }
 
-            var aColor = mEnemy.Profile.TelegraphColor;
-            // 白く光る間は点滅させる
-            float aBlink = IsGlinting ? 0.6f + 0.4f * Mathf.Sin(Time.unscaledTime * 60f) : 0f;
+            IsDanger = aAttack.Unblockable;
+            var aColor = IsDanger ? DangerColor : mEnemy.Profile.TelegraphColor;
+            // 白く光る間は点滅させる。逃げるしかない攻撃は、はじめから赤く速く脈打つ
+            float aBlink = IsGlinting ? 0.6f + 0.4f * Mathf.Sin(Time.unscaledTime * 60f)
+                : IsDanger ? 0.25f + 0.25f * Mathf.Sin(Time.unscaledTime * 18f) : 0f;
             var aBright = Color.Lerp(aColor, Color.white, aBlink);
 
             if (aAttack.Ranged)

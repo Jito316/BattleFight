@@ -71,7 +71,7 @@ namespace BattleFight
             for (int aIndex = 0; aIndex < mActionCount; aIndex++) mPressedAt[aIndex] = float.NegativeInfinity;
 
             Bind(PlayerAction.AttackA, "<Gamepad>/buttonWest", "<Mouse>/leftButton", "<Keyboard>/j");
-            Bind(PlayerAction.AttackB, "<Gamepad>/buttonNorth", "<Mouse>/rightButton", "<Keyboard>/k");
+            Bind(PlayerAction.AttackB, "<Gamepad>/buttonNorth", "<Mouse>/rightButton", "<Keyboard>/e", "<Keyboard>/k");
             Bind(PlayerAction.Movement, "<Gamepad>/buttonEast", "<Keyboard>/leftShift", "<Keyboard>/l");
             Bind(PlayerAction.Jump, "<Gamepad>/buttonSouth", "<Keyboard>/space");
             Bind(PlayerAction.LockOn, "<Gamepad>/leftShoulder", "<Keyboard>/tab", "<Mouse>/middleButton");

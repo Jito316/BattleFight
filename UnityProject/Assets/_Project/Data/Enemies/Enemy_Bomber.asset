@@ -12,47 +12,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
   m_Name: Enemy_Bomber
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
-  displayName: "\u7206\u5F3E\u5175"
-  isBoss: 0
-  heavy: 0
-  weaknesses: 0400000002000000
-  maxHealth: 40
-  maxArmor: 0
-  armorRegenDelay: 6
-  staggerThreshold: 3
-  staggerDuration: 0.45
-  armorBreakStagger: 1.4
-  moveSpeed: 5.2
-  turnSpeed: 360
-  preferredDistance: 0
-  flying: 0
-  hoverHeight: 3.5
-  attackCooldown: 0.3
-  attacks:
-  - name: "\u81EA\u7206"
-    range: 2.2
-    windup: 0.9
-    active: 0.1
-    recovery: 0.1
-    damage: 24
-    radius: 2.6
-    offset: {x: 0, y: 1, z: 0}
-    knockback: 12
-    lunge: 0
-    jumpSlam: 0
-    weight: 1
-    ranged: 0
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 16
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 1
-    summon: {fileID: 0}
-    summonCount: 0
-  bodyShape: 0
-  scale: 0.9
-  color: {r: 0.95, g: 0.5, b: 0.15, a: 1}
-  telegraphColor: {r: 1, g: 0.95, b: 0.2, a: 1}
-  shardValue: 0.8
+  DisplayName: "\u7206\u5F3E\u5175"
+  IsBoss: 0
+  Heavy: 0
+  Weaknesses: 0400000002000000
+  MaxHealth: 40
+  MaxArmor: 0
+  ArmorRegenDelay: 6
+  StaggerThreshold: 3
+  StaggerDuration: 0.45
+  ArmorBreakStagger: 1.4
+  MoveSpeed: 5.2
+  TurnSpeed: 360
+  PreferredDistance: 0
+  Flying: 0
+  HoverHeight: 3.5
+  AttackCooldown: 0.3
+  Attacks:
+  - Name: "\u81EA\u7206"
+    Range: 2.2
+    Windup: 0.9
+    Active: 0.1
+    Recovery: 0.1
+    Damage: 24
+    Radius: 2.6
+    Offset: {x: 0, y: 1, z: 0}
+    Knockback: 12
+    Lunge: 0
+    JumpSlam: 0
+    Weight: 1
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 1
+    Unblockable: 1
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  SkillSets: []
+  SkillSwapInterval: 7
+  SkillDamageScale: 0.5
+  SkillWindupScale: 2.2
+  Phase2HealthRatio: 0
+  Phase2SpeedMultiplier: 1.3
+  Phase2CooldownMultiplier: 0.6
+  Phase2Attacks: []
+  Phase2Message: "\u672C\u6C17\u306B\u306A\u3063\u305F!"
+  Elite: 0
+  EliteSource: {fileID: 0}
+  BodyShape: 0
+  Scale: 0.9
+  Color: {r: 0.95, g: 0.5, b: 0.15, a: 1}
+  TelegraphColor: {r: 1, g: 0.95, b: 0.2, a: 1}
+  ShardValue: 0.8

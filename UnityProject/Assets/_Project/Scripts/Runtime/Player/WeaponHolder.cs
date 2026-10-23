@@ -150,7 +150,7 @@ namespace BattleFight
         public void SetSwing(float iNormalized, bool iOverhead, float iSide)
         {
             mHandAnchor.localRotation = iOverhead
-                ? Quaternion.Euler(Mathf.Lerp(-100f, 60f, (iNormalized + 1f) * 0.5f), 0f, 0f)
+                ? Quaternion.Euler(Mathf.LerpUnclamped(-100f, 60f, (iNormalized + 1f) * 0.5f), 0f, 0f)
                 : Quaternion.Euler(10f, iNormalized * 80f * iSide, 0f);
         }
 

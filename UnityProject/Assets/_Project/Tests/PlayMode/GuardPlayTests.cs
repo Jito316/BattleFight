@@ -178,5 +178,18 @@ namespace BattleFight.Tests
             Release(mKeyboard.kKey);
             yield return null;
         }
+
+        [UnityTest]
+        public IEnumerator AttackB_CanBeUsedWithTheEKey()
+        {
+            yield return LoadEmptyArena();
+            Press(mKeyboard.eKey);
+            yield return null;
+            yield return null;
+            Assert.IsTrue(mExecutor.IsBusy, "E キーで攻撃B が出ない");
+            Assert.AreEqual("Skill_Sword_Iai", mExecutor.Current.name, "E キーで出たのが攻撃B(居合)ではない");
+            Release(mKeyboard.eKey);
+            yield return null;
+        }
     }
 }

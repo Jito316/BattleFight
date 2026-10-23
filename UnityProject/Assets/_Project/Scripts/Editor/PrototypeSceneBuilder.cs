@@ -148,6 +148,12 @@ namespace BattleFight.EditorTools
             var aShadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", iResetData, PrototypeDefaults.Shadow);
 
             // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
+            // 逃げるしかない攻撃(移動スキルの出番)
+            EnsureAttack(aArmored, PrototypeDefaults.QuakeAttack());
+            EnsureAttack(aBoss, PrototypeDefaults.BigQuakeAttack());
+            EnsureAttack(aMagus, PrototypeDefaults.MeteorAttack());
+            EnsureAttack(aShadow, PrototypeDefaults.ShadowBurstAttack());
+            EnsureUnblockable(aBomber, "自爆");
             EnsureWeaknesses(aGrunt, WeaponType.Sword, WeaponType.Gauntlet);
             EnsureWeaknesses(aArmored, WeaponType.Hammer, WeaponType.Gauntlet);
             EnsureWeaknesses(aShooter, WeaponType.Chain, WeaponType.Sword);
@@ -542,6 +548,23 @@ namespace BattleFight.EditorTools
             if (iEndless == null || iProfile == null || iEndless.EndlessPool.Exists(iEntry => iEntry.Profile == iProfile)) return;
             iEndless.EndlessPool.Add(new EndlessEntry { Profile = iProfile, Cost = iCost, MinWave = iMinWave });
             EditorUtility.SetDirty(iEndless);
+        }
+
+        /// <summary>同じ名前の攻撃がなければ足す(すでにある敵のデータにも、新しい攻撃を入れるため)</summary>
+        static void EnsureAttack(EnemyProfile iProfile, EnemyAttack iAttack)
+        {
+            if (iProfile == null || iProfile.Attacks.Exists(iExisting => iExisting.Name == iAttack.Name)) return;
+            iProfile.Attacks.Add(iAttack);
+            EditorUtility.SetDirty(iProfile);
+        }
+
+        /// <summary>自爆はガードできない(逃げるしかない)</summary>
+        static void EnsureUnblockable(EnemyProfile iProfile, string iAttackName)
+        {
+            var aAttack = iProfile != null ? iProfile.Attacks.Find(iExisting => iExisting.Name == iAttackName) : null;
+            if (aAttack == null || aAttack.Unblockable) return;
+            aAttack.Unblockable = true;
+            EditorUtility.SetDirty(iProfile);
         }
 
         static void EnsureWeaknesses(EnemyProfile iProfile, params WeaponType[] iWeaknesses)

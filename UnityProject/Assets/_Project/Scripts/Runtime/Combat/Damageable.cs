@@ -18,6 +18,8 @@ namespace BattleFight
         public float Reaction;
         /// <summary>弾・爆発による攻撃か(撃った敵はヒットストップで止めない)</summary>
         public bool Ranged;
+        /// <summary>ガード・パリィ・カウンター・回避の無敵が効かない攻撃</summary>
+        public bool Unblockable;
     }
 
     public enum HitOutcome
@@ -127,13 +129,13 @@ namespace BattleFight
         public HitOutcome ApplyHit(HitInfo iHit)
         {
             if (IsDead) return HitOutcome.Ignored;
-            if (Invulnerable)
+            if (Invulnerable && !iHit.Unblockable)
             {
                 Evaded?.Invoke(iHit);
                 return HitOutcome.Evaded;
             }
-            if (CounterHandler != null && CounterHandler(iHit)) return HitOutcome.Countered;
-            if (GuardHandler != null)
+            if (!iHit.Unblockable && CounterHandler != null && CounterHandler(iHit)) return HitOutcome.Countered;
+            if (!iHit.Unblockable && GuardHandler != null)
             {
                 var aGuard = GuardHandler(iHit);
                 if (aGuard == HitOutcome.Parried)

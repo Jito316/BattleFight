@@ -98,5 +98,28 @@ namespace BattleFight.Tests
             Assert.AreEqual(1f, PlayerJumpFeel.LandStrength(50f), 1e-5f);
             Assert.Greater(PlayerJumpFeel.LandStrength(15f), PlayerJumpFeel.LandStrength(8f));
         }
+
+        [Test]
+        public void Swing_PullsBackSnapsThroughAndHoldsBeforeReturning()
+        {
+            Assert.AreEqual(0f, SwingCurve.Startup(0f), 1e-5f);
+            Assert.AreEqual(-SwingCurve.WindupDepth, SwingCurve.Startup(1f), 1e-5f, "振りかぶりが深くない");
+            Assert.AreEqual(-SwingCurve.WindupDepth, SwingCurve.Active(0f), 1e-5f, "振りかぶりから振り始めていない");
+            Assert.AreEqual(SwingCurve.FollowThrough, SwingCurve.Active(1f), 1e-5f);
+            // 等速なら 3 割の時点はまだ振りかぶり側(-0.43)。前半で一気に振り抜けていれば、もう振り抜き側にある
+            Assert.Greater(SwingCurve.Active(0.3f), 0.3f, "振り抜きが速くない(前半で大きく進んでいない)");
+            Assert.AreEqual(SwingCurve.FollowThrough, SwingCurve.Recovery(0.2f), 1e-5f, "振り抜いた形をすぐに崩している");
+            Assert.AreEqual(0f, SwingCurve.Recovery(1f), 1e-5f, "元の構えに戻らない");
+        }
+
+        [Test]
+        public void EachWeapon_HasItsOwnSwingSound()
+        {
+            Assert.AreEqual(Sfx.SwingSword, SfxSynth.SwingFor(WeaponType.Sword));
+            Assert.AreEqual(Sfx.SwingHeavy, SfxSynth.SwingFor(WeaponType.Hammer));
+            Assert.AreEqual(Sfx.SwingChain, SfxSynth.SwingFor(WeaponType.Chain));
+            Assert.AreEqual(Sfx.SwingStaff, SfxSynth.SwingFor(WeaponType.Staff));
+            Assert.AreEqual(Sfx.SwingFist, SfxSynth.SwingFor(WeaponType.Gauntlet));
+        }
     }
 }
