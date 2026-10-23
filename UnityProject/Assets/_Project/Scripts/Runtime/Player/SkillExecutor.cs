@@ -124,16 +124,6 @@ namespace BattleFight
 
         public SkillData Current => mCurrent;
         public bool IsBusy => mCurrent != null;
-        /// <summary>技の何段目か(0 から)</summary>
-        public int StepIndex => mStepIndex;
-        /// <summary>段が始まるたびに 1 増える(見た目のモーションを切り替えるのに使う)</summary>
-        public int StepSerial { get; private set; }
-        /// <summary>技を出すたびに 1 増える</summary>
-        public int SkillSerial { get; private set; }
-        /// <summary>段に入る前(溜め中・ワイヤーで移動中・引き寄せ待ち)</summary>
-        public bool IsBeforeFirstStep => mPhase is Phase.Charging or Phase.Travel or Phase.PullWait;
-        /// <summary>段の出始め(攻撃判定が出る前)</summary>
-        public bool IsInStartup => mPhase == Phase.Startup;
         public bool IsFinisherActive => mCurrent != null && mIsFinisher;
         public bool IsStunned => Time.time < mStunnedUntil;
         public bool SwapStrikeReady => Time.time <= mSwapStrikeUntil;
@@ -500,7 +490,6 @@ namespace BattleFight
         void StartSkill(SkillData iSkill, bool iFinisher)
         {
             mCurrent = iSkill;
-            SkillSerial++;
             mIsFinisher = iFinisher;
             mSkillTime = 0f;
             mDamageMultiplier = 1f;
@@ -562,7 +551,6 @@ namespace BattleFight
         void BeginStep(int iIndex)
         {
             mStepIndex = iIndex;
-            StepSerial++;
             mPhase = Phase.Startup;
             mPhaseTime = 0f;
             mChainQueued = false;
