@@ -119,6 +119,21 @@ namespace BattleFight
             MessageTime = Time.unscaledTime;
         }
 
+        public int RoomCount => mRooms.Count;
+
+        /// <summary>部屋の床へプレイヤーを移す(遊んで確かめる用)。部屋の名前を返す(なければ空)</summary>
+        public string WarpToRoom(int iIndex)
+        {
+            if (Player == null || iIndex < 0 || iIndex >= mRooms.Count) return "";
+            var aRoom = mRooms[iIndex];
+            Vector3 aTop = transform.TransformPoint(aRoom.Center + Vector3.up * (aRoom.Size.y * 0.5f - 0.5f));
+            Vector3 aPosition = Physics.Raycast(aTop, Vector3.down, out var aHit, aRoom.Size.y + 20f, ~0, QueryTriggerInteraction.Ignore)
+                ? aHit.point
+                : transform.TransformPoint(aRoom.Center);
+            Teleport(aPosition);
+            return aRoom.Name;
+        }
+
         /// <summary>プレイヤーが今いる部屋の名前(どこにもいなければ空)</summary>
         public string CurrentRoomName()
         {
