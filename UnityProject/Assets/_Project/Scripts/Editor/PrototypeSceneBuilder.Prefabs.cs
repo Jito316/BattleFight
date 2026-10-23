@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 
 namespace BattleFight.EditorTools
@@ -105,6 +106,21 @@ namespace BattleFight.EditorTools
             foreach (EffectCue aCue in Enum.GetValues(typeof(EffectCue))) aAdded |= aLibrary.EnsureEntry(aCue);
             if (aAdded) EditorUtility.SetDirty(aLibrary);
             return aLibrary;
+        }
+
+        public const string InputActionsPath = mRoot + "/Input/BattleFight.inputactions";
+
+        /// <summary>操作の割り当て(.inputactions)。なければ初期の割り当てから作る。あれば手を付けない(プランナーが直した割り当てを消さない)</summary>
+        static InputActionAsset EnsureInputActions()
+        {
+            var aAsset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
+            if (aAsset != null) return aAsset;
+            EnsureFolder(mRoot, "Input");
+            var aDefault = PlayerInputBindings.CreateDefault();
+            System.IO.File.WriteAllText(InputActionsPath, aDefault.ToJson());
+            Object.DestroyImmediate(aDefault);
+            AssetDatabase.ImportAsset(InputActionsPath);
+            return AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
         }
 
         /// <summary>音の差し替え表。すべての音の種類(Sfx)の行を用意する(ファイルは空のまま。入っている行には手を付けない)</summary>
