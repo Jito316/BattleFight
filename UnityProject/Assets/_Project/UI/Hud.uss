@@ -184,6 +184,10 @@
     font-size: 18px;
     color: var(--bf-gold);
     margin-top: 2px;
+    /* 探索の進み具合など。タイトルと同じく、明るい背景でも読めるよう下地を敷く */
+    background-color: rgba(8, 10, 16, 0.35);
+    padding: 1px 14px;
+    border-radius: 10px;
 }
 
 .boss {
