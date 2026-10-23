@@ -236,7 +236,8 @@ namespace BattleFight
 
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(iPosition, mExplosionRadius, mColor);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.ProjectileBurst, iPosition, mExplosionRadius, mColor))
+                    CombatFeedback.Instance.SpawnShockwave(iPosition, mExplosionRadius, mColor);
                 CombatFeedback.Instance.Shake(0.1f);
             }
             if (mOwner != null && mHits.Count > 0) mOwner.ResolveHits(mContext, mHits, iPosition);

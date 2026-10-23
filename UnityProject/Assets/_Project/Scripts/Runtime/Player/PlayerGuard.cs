@@ -20,6 +20,7 @@ namespace BattleFight
         PlayerMotor mMotor;
         Damageable mSelf;
         StyleRankSystem mStyle;
+        CharacterAnimation mAnimation;
         Transform mShield;
         Renderer mShieldRenderer;
         float mGuardStartTime = -99f;
@@ -65,6 +66,11 @@ namespace BattleFight
 
         void SetGuarding(bool iOn)
         {
+            if (IsGuarding != iOn)
+            {
+                if (mAnimation == null) mAnimation = GetComponent<CharacterAnimation>();
+                if (mAnimation != null) mAnimation.SetGuard(iOn);
+            }
             IsGuarding = iOn;
             if (mMotor != null) mMotor.SpeedScale = iOn ? GuardRules.MoveSpeedScale : 1f;
         }
@@ -82,6 +88,7 @@ namespace BattleFight
             if (aParry)
             {
                 ParryCount++;
+                if (mAnimation != null) mAnimation.Play(CharacterAnimation.ParryTrigger);
                 // パリィ: 長めに止まり、画面が光り、殴った敵が大きくよろける
                 mExecutor.Freeze(0.16f);
                 if (aEnemy != null) aEnemy.Rebound(iHit.Direction, true);
@@ -97,8 +104,11 @@ namespace BattleFight
                     aFeedback.Vignette(mParryColor, 0.7f);
                     aFeedback.Shake(0.18f);
                     aFeedback.Kick(-iHit.Direction, 0.12f);
-                    aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 2.6f, mParryColor);
-                    aFeedback.SpawnSparks(aContact, mParryColor, 16, 10f);
+                    if (!aFeedback.PlayCue(EffectCue.Parry, aContact, transform.rotation, 1f, mParryColor))
+                    {
+                        aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 2.6f, mParryColor);
+                        aFeedback.SpawnSparks(aContact, mParryColor, 16, 10f);
+                    }
                 }
                 return HitOutcome.Parried;
             }
@@ -113,7 +123,7 @@ namespace BattleFight
             {
                 aFeedback.Shake(0.08f);
                 aFeedback.Kick(iHit.Direction, 0.06f);
-                aFeedback.SpawnSparks(aContact, mGuardColor, 8, 7f);
+                if (!aFeedback.PlayCue(EffectCue.Guard, aContact, transform.rotation, 1f, mGuardColor)) aFeedback.SpawnSparks(aContact, mGuardColor, 8, 7f);
                 aFeedback.SpawnDamageNumber(transform.position + Vector3.up * 2.2f, GuardRules.ChipDamage(iHit.Damage, mSelf.Health),
                     new Color(0.7f, 0.75f, 0.85f), 0.9f);
             }

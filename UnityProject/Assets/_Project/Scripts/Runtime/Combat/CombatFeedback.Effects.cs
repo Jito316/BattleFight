@@ -30,6 +30,33 @@ namespace BattleFight
             return aObject;
         }
 
+        /// <summary>演出の差し替え表(テストで差し替えられるように公開)</summary>
+        public EffectLibrary Effects
+        {
+            get => mEffects;
+            set => mEffects = value;
+        }
+
+        /// <summary>
+        /// 場面 iCue の演出が差し替えられていれば出して true を返す(呼び出し側は、いつもの演出を出さない)。
+        /// iSize は場面の大きさ(衝撃波の半径など)、iColor は場面の色
+        /// </summary>
+        public bool PlayCue(EffectCue iCue, Vector3 iPosition, Quaternion iRotation, float iSize, Color iColor)
+        {
+            var aEntry = mEffects != null ? mEffects.Find(iCue) : null;
+            if (aEntry == null) return false;
+            var aObject = EffectPool.Get($"Cue_{iCue}_{aEntry.Prefab.GetInstanceID()}", () => Instantiate(aEntry.Prefab));
+            aObject.SetActive(true);
+            aObject.transform.SetPositionAndRotation(iPosition, iRotation);
+            aObject.transform.localScale = Vector3.one * (aEntry.Scale * (aEntry.ScaleWithSize ? Mathf.Max(0.01f, iSize) : 1f));
+            Fx<CueEffect>(aObject).Play(iColor, aEntry.UseColor, aEntry.Lifetime);
+            return true;
+        }
+
+        /// <summary>向きのない場面(衝撃波・火花など)の PlayCue</summary>
+        public bool PlayCue(EffectCue iCue, Vector3 iPosition, float iSize, Color iColor) =>
+            PlayCue(iCue, iPosition, Quaternion.identity, iSize, iColor);
+
         /// <summary>種類ごとの部品(なければ足す)</summary>
         static T Fx<T>(GameObject iObject) where T : Component
         {
@@ -60,10 +87,10 @@ namespace BattleFight
             }
         }
 
-        /// <summary>倒した敵が砕け散り、刻片がプレイヤーへ飛んでくる</summary>
-        public void SpawnDefeatBurst(Vector3 iCenter, Color iBodyColor, float iSize, Transform iCollector, int iShards)
+        /// <summary>倒した敵が砕け散り、刻片がプレイヤーへ飛んでくる。iBurst を外すと、刻片だけ出す(砕け散る演出を差し替えたとき)</summary>
+        public void SpawnDefeatBurst(Vector3 iCenter, Color iBodyColor, float iSize, Transform iCollector, int iShards, bool iBurst = true)
         {
-            for (int aIndex = 0; aIndex < 10; aIndex++)
+            for (int aIndex = 0; iBurst && aIndex < 10; aIndex++)
             {
                 var aVelocity = (Random.onUnitSphere + Vector3.up).normalized * Random.Range(4f, 9f);
                 SpawnDebris(iCenter, aVelocity, iBodyColor, Random.Range(0.18f, 0.32f) * iSize, Random.Range(0.5f, 0.8f), null);
@@ -74,7 +101,7 @@ namespace BattleFight
                 var aVelocity = (Random.onUnitSphere + Vector3.up * 1.5f).normalized * Random.Range(3f, 6f);
                 SpawnDebris(iCenter, aVelocity, aShardColor, 0.14f, 0.9f, iCollector);
             }
-            SpawnShockwave(new Vector3(iCenter.x, iCenter.y - iSize * 0.8f, iCenter.z), 1.5f * iSize, iBodyColor);
+            if (iBurst) SpawnShockwave(new Vector3(iCenter.x, iCenter.y - iSize * 0.8f, iCenter.z), 1.5f * iSize, iBodyColor);
         }
 
         void SpawnDebris(Vector3 iPosition, Vector3 iVelocity, Color iColor, float iSize, float iLifetime, Transform iHoming)
@@ -100,7 +127,8 @@ namespace BattleFight
         }
 
         /// <summary>
-        /// 残像: iRoot の下の見た目(メッシュ)を、その場に写し取って残し、縮みながら消す(回避の速さを見せる)
+        /// 残像: iRoot の下の見た目(メッシュ)を、その場に写し取って残し、縮みながら消す(回避の速さを見せる)。
+        /// 骨で動くモデル(SkinnedMeshRenderer)は、その瞬間の形を焼き付けて写す
         /// </summary>
         public void SpawnAfterimage(Transform iRoot, Color iColor, float iLife)
         {
@@ -115,6 +143,19 @@ namespace BattleFight
                 aObject.GetComponent<MeshFilter>().sharedMesh = aFilter.sharedMesh;
                 aObject.GetComponent<MeshRenderer>().material.color = iColor;
                 Fx<AfterimageFx>(aObject).Play(iLife);
+            }
+            foreach (var aSkinned in iRoot.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (!aSkinned.enabled || aSkinned.sharedMesh == null) continue;
+                var aObject = EffectPool.Get("Afterimage", CreateMeshHolder);
+                var aAfterimage = Fx<AfterimageFx>(aObject);
+                // 大きさも焼き付けるので、入れ物の大きさは 1 にする
+                aSkinned.BakeMesh(aAfterimage.BakedMesh, true);
+                aObject.transform.SetPositionAndRotation(aSkinned.transform.position, aSkinned.transform.rotation);
+                aObject.transform.localScale = Vector3.one;
+                aObject.GetComponent<MeshFilter>().sharedMesh = aAfterimage.BakedMesh;
+                aObject.GetComponent<MeshRenderer>().material.color = iColor;
+                aAfterimage.Play(iLife);
             }
         }
 

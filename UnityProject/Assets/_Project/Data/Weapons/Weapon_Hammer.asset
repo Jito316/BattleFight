@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98abc8104acedb24f96ca276fb71eca3, type: 3}
   m_Name: Weapon_Hammer
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.WeaponTypeData
-  weapon: 1
-  displayName: "\u5927\u69CC"
-  color: {r: 1, g: 0.55, b: 0.2, a: 1}
-  headShape: 3
-  headScale: {x: 0.45, y: 0.45, z: 0.7}
-  headOffset: {x: 0, y: 0, z: 1.25}
-  headRotation: {x: 0, y: 0, z: 0}
-  handleLength: 1
-  masteryFinisher: {fileID: 11400000, guid: 61e8943a44f4c2746b036c0b05f1590f, type: 2}
-  synergyStaggerBonus: 0.15
+  Weapon: 1
+  DisplayName: "\u5927\u69CC"
+  Color: {r: 1, g: 0.55, b: 0.2, a: 1}
+  Prefab: {fileID: 2609736498393604043, guid: 0b698bd3b1c09064ba94cd9b3907c1b7, type: 3}
+  HeadShape: 3
+  HeadScale: {x: 0.45, y: 0.45, z: 0.7}
+  HeadOffset: {x: 0, y: 0, z: 1.25}
+  HeadRotation: {x: 0, y: 0, z: 0}
+  HandleLength: 1
+  MasteryFinisher: {fileID: 11400000, guid: 61e8943a44f4c2746b036c0b05f1590f, type: 2}
+  SynergyStaggerBonus: 0.15

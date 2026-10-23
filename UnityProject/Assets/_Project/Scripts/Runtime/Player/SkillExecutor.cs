@@ -124,6 +124,7 @@ namespace BattleFight
         float mFrozenUntil = -1f;
         PlayerGuard mGuard;
         PlayerHitReaction mBodyPose;
+        CharacterAnimation mAnimation;
         float mNextAfterimageTime;
         Transform mBody;
         /// <summary>回避の残像の色</summary>

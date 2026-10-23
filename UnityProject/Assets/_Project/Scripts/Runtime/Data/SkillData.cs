@@ -46,6 +46,9 @@ namespace BattleFight
         [FormerlySerializedAs("weapon")] public WeaponType Weapon;
         [FormerlySerializedAs("behavior")] public SkillBehavior Behavior = SkillBehavior.Standard;
 
+        [Tooltip("技の段が始まったときに切り替える Animator のステート名(空なら Attack / Dodge の合図だけ出す)")]
+        public string AnimationState;
+
         [Header("共通")]
         [FormerlySerializedAs("usableInAir")] public bool UsableInAir = true;
         [Tooltip("段が自動で進む(フィニッシャー用)")]

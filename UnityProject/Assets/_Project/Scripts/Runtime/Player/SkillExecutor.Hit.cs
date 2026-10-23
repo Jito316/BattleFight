@@ -129,12 +129,19 @@ namespace BattleFight
                     var aSparkColor = aWeak || aSwapStrike ? aColor : aWeaponData != null ? Color.Lerp(aWeaponData.Color, Color.white, 0.4f) : Color.white;
                     var aHitPoint = Vector3.Lerp(aTarget.transform.position + Vector3.up * 1.1f, iSourcePosition + Vector3.up * 1.1f, 0.25f);
                     int aSparks = Mathf.RoundToInt(((aHeavy || aWeak ? 9 : 5) + aFeel.ExtraSparks) * aComboScale * aFinaleScale);
-                    CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, aSparks, aFeel.SparkSpeed * (aHeavy ? 1.25f : 1f));
-                    CombatFeedback.Instance.SpawnImpact(aFeel.Style, aHitPoint, aTarget.transform.position, aDirection, aSparkColor, aHeavy || aFinale);
+                    var aFeedback = CombatFeedback.Instance;
+                    float aHitSize = aHeavy || aFinale ? 1.4f : 1f;
+                    if (!aFeedback.PlayCue(EffectCue.HitSpark, aHitPoint, aHitSize, aSparkColor))
+                        aFeedback.SpawnSparks(aHitPoint, aSparkColor, aSparks, aFeel.SparkSpeed * (aHeavy ? 1.25f : 1f));
+                    var aImpactRotation = aDirection.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(aDirection) : transform.rotation;
+                    if (!aFeedback.PlayCue(EffectCue.HitImpact, aHitPoint, aImpactRotation, aHitSize, aSparkColor))
+                        aFeedback.SpawnImpact(aFeel.Style, aHitPoint, aTarget.transform.position, aDirection, aSparkColor, aHeavy || aFinale);
                     if (aHeavy) CombatFeedback.Instance.Shake(0.22f * aFeel.ShakeScale);
                     if (aOutcome == HitOutcome.Armored) aAnyDeflected = true;
                     // アーマーが砕けた: 灰色の大きな欠片が飛び散る
-                    if (aOutcome == HitOutcome.ArmorBroken) CombatFeedback.Instance.SpawnShards(aHitPoint, new Color(0.55f, 0.56f, 0.62f), 10, 0.28f);
+                    var aShardColor = new Color(0.55f, 0.56f, 0.62f);
+                    if (aOutcome == HitOutcome.ArmorBroken && !aFeedback.PlayCue(EffectCue.ArmorBreak, aHitPoint, 1f, aShardColor))
+                        aFeedback.SpawnShards(aHitPoint, aShardColor, 10, 0.28f);
                 }
             }
 

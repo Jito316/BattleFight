@@ -64,6 +64,7 @@ namespace BattleFight
             Quaternion aRotation = aShape.Vertical
                 ? transform.rotation * Quaternion.Euler(0f, 0f, 90f)
                 : transform.rotation * Quaternion.Euler(0f, 0f, aShape.Tilt * aSide);
+            if (CombatFeedback.Instance.PlayCue(EffectCue.SwingArc, aCenter, aRotation, aRadius, aColor)) return;
             CombatFeedback.Instance.SpawnSwingArc(aCenter, aRotation, aRadius, aShape.Arc, aShape.Thickness, aSide, aColor);
         }
 
@@ -72,7 +73,11 @@ namespace BattleFight
         {
             bool aDodging = mCurrent != null && mCurrent.Slot == SlotType.Movement && mSelf.Invulnerable;
             if (!aDodging || CombatFeedback.Instance == null || Time.unscaledTime < mNextAfterimageTime) return;
-            if (mBody == null) mBody = transform.Find("Body");
+            if (mBody == null)
+            {
+                var aVisual = CharacterVisual.Of(this);
+                mBody = aVisual != null ? aVisual.Body : transform;
+            }
             mNextAfterimageTime = Time.unscaledTime + mAfterimageInterval;
             CombatFeedback.Instance.SpawnAfterimage(mBody, mAfterimageColor, 0.22f);
         }

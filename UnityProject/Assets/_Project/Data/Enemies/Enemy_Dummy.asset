@@ -12,25 +12,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
   m_Name: Enemy_Dummy
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
-  displayName: "\u8A13\u7DF4\u7528\u4EBA\u5F62"
-  isBoss: 0
-  heavy: 0
-  weaknesses: 00000000
-  maxHealth: 300
-  maxArmor: 0
-  armorRegenDelay: 6
-  staggerThreshold: 1
-  staggerDuration: 0.45
-  armorBreakStagger: 1.4
-  moveSpeed: 0
-  turnSpeed: 360
-  preferredDistance: 0
-  flying: 0
-  hoverHeight: 3.5
-  attackCooldown: 1.2
-  attacks: []
-  bodyShape: 1
-  scale: 1
-  color: {r: 0.75, g: 0.7, b: 0.55, a: 1}
-  telegraphColor: {r: 1, g: 0.62, b: 0.1, a: 1}
-  shardValue: 0
+  DisplayName: "\u8A13\u7DF4\u7528\u4EBA\u5F62"
+  IsBoss: 0
+  Heavy: 0
+  Weaknesses: 00000000
+  MaxHealth: 300
+  MaxArmor: 0
+  ArmorRegenDelay: 6
+  StaggerThreshold: 1
+  StaggerDuration: 0.45
+  ArmorBreakStagger: 1.4
+  MoveSpeed: 0
+  TurnSpeed: 360
+  PreferredDistance: 0
+  Flying: 0
+  HoverHeight: 3.5
+  AttackCooldown: 1.2
+  Attacks: []
+  SkillSets: []
+  SkillSwapInterval: 7
+  SkillDamageScale: 0.5
+  SkillWindupScale: 2.2
+  Phase2HealthRatio: 0
+  Phase2SpeedMultiplier: 1.3
+  Phase2CooldownMultiplier: 0.6
+  Phase2Attacks: []
+  Phase2Message: "\u672C\u6C17\u306B\u306A\u3063\u305F!"
+  Elite: 0
+  EliteSource: {fileID: 0}
+  Prefab: {fileID: 598776038834775698, guid: 62a2dc2504a6fb14c85d2589a9e8b8a6, type: 3}
+  BodyShape: 1
+  Scale: 1
+  Color: {r: 0.75, g: 0.7, b: 0.55, a: 1}
+  TelegraphColor: {r: 1, g: 0.62, b: 0.1, a: 1}
+  ShardValue: 0

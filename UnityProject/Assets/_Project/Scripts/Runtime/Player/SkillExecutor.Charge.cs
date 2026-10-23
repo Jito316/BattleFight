@@ -21,7 +21,9 @@ namespace BattleFight
                 CombatFeedback.Instance.Flash(0.45f);
                 CombatFeedback.Instance.Punch(4f);
                 CombatFeedback.Instance.Vignette(aColor, 0.6f);
-                CombatFeedback.Instance.SpawnSparks(transform.position + Vector3.up * 1.1f - iHit.Direction * 0.6f, aColor, 14, 9f);
+                var aContact = transform.position + Vector3.up * 1.1f - iHit.Direction * 0.6f;
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.Counter, aContact, 1f, aColor))
+                    CombatFeedback.Instance.SpawnSparks(aContact, aColor, 14, 9f);
             }
             return true;
         }

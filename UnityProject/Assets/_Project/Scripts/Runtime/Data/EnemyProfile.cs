@@ -9,6 +9,8 @@ namespace BattleFight
     public class EnemyAttack
     {
         [FormerlySerializedAs("name")] public string Name = "攻撃";
+        [Tooltip("予備動作の始まりに切り替える Animator のステート名(空なら Attack の合図だけ出す)")]
+        public string AnimationState;
         [Tooltip("この距離以内で攻撃を始める")]
         [FormerlySerializedAs("range")] public float Range = 2f;
         [FormerlySerializedAs("windup")] public float Windup = 0.7f;
@@ -138,6 +140,9 @@ namespace BattleFight
         [FormerlySerializedAs("eliteSource")] public EnemyProfile EliteSource;
 
         [Header("見た目・報酬")]
+        [Tooltip("敵のプレハブ(Enemy_Base のバリアント)。見た目は中の Visual を差し替える。空ならコードで仮モデルを組み立てる")]
+        public GameObject Prefab;
+        [Tooltip("仮モデルの体の形(プレハブがないとき・プレハブを最初に作るときに使う)")]
         [FormerlySerializedAs("bodyShape")] public PrimitiveType BodyShape = PrimitiveType.Capsule;
         [FormerlySerializedAs("scale")] public float Scale = 1f;
         [FormerlySerializedAs("color")] public Color Color = new Color(0.45f, 0.5f, 0.6f);

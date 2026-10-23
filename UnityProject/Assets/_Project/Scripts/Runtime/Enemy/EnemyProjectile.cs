@@ -151,7 +151,8 @@ namespace BattleFight
             }
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position, mRadius, mColor);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.EnemyProjectileBurst, transform.position, mRadius, mColor))
+                    CombatFeedback.Instance.SpawnShockwave(transform.position, mRadius, mColor);
                 CombatFeedback.Instance.Shake(0.15f);
             }
             Destroy(gameObject);

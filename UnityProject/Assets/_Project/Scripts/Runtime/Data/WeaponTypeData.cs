@@ -11,7 +11,11 @@ namespace BattleFight
         [FormerlySerializedAs("displayName")] public string DisplayName;
         [FormerlySerializedAs("color")] public Color Color = Color.white;
 
-        [Header("見た目(仮モデル)")]
+        [Header("見た目")]
+        [Tooltip("武器のプレハブ(いちばん上に WeaponVisual)。空なら下の仮モデルをコードで組み立てる")]
+        public GameObject Prefab;
+
+        [Header("仮モデル(プレハブがないとき・プレハブを最初に作るときに使う)")]
         [FormerlySerializedAs("headShape")] public PrimitiveType HeadShape = PrimitiveType.Cube;
         [FormerlySerializedAs("headScale")] public Vector3 HeadScale = new Vector3(0.08f, 0.08f, 1.2f);
         [FormerlySerializedAs("headOffset")] public Vector3 HeadOffset = new Vector3(0f, 0f, 0.7f);

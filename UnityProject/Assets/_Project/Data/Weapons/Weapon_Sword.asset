@@ -12,13 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98abc8104acedb24f96ca276fb71eca3, type: 3}
   m_Name: Weapon_Sword
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.WeaponTypeData
-  weapon: 0
-  displayName: "\u5263"
-  color: {r: 0.45, g: 0.8, b: 1, a: 1}
-  headShape: 3
-  headScale: {x: 0.08, y: 0.14, z: 1.3}
-  headOffset: {x: 0, y: 0, z: 0.8}
-  headRotation: {x: 0, y: 0, z: 0}
-  handleLength: 0.2
-  masteryFinisher: {fileID: 11400000, guid: 88d09347a909fe546a514f3b0cae1f4a, type: 2}
-  synergyStaggerBonus: 0.1
+  Weapon: 0
+  DisplayName: "\u5263"
+  Color: {r: 0.45, g: 0.8, b: 1, a: 1}
+  Prefab: {fileID: 6437202671461487557, guid: 73d9c53c07f9bb34e818567678901ff0, type: 3}
+  HeadShape: 3
+  HeadScale: {x: 0.08, y: 0.14, z: 1.3}
+  HeadOffset: {x: 0, y: 0, z: 0.8}
+  HeadRotation: {x: 0, y: 0, z: 0}
+  HandleLength: 0.2
+  MasteryFinisher: {fileID: 11400000, guid: 88d09347a909fe546a514f3b0cae1f4a, type: 2}
+  SynergyStaggerBonus: 0.1

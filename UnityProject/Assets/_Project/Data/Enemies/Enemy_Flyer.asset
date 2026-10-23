@@ -12,69 +12,93 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e449ca68ef820e4f920e4999bab6b69, type: 3}
   m_Name: Enemy_Flyer
   m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.EnemyProfile
-  displayName: "\u98DB\u87F2"
-  isBoss: 0
-  heavy: 0
-  weaknesses: 0400000003000000
-  maxHealth: 55
-  maxArmor: 0
-  armorRegenDelay: 6
-  staggerThreshold: 4
-  staggerDuration: 0.45
-  armorBreakStagger: 1.4
-  moveSpeed: 5
-  turnSpeed: 360
-  preferredDistance: 0
-  flying: 1
-  hoverHeight: 3.5
-  attackCooldown: 1.3
-  attacks:
-  - name: "\u6025\u964D\u4E0B"
-    range: 9
-    windup: 0.7
-    active: 0.4
-    recovery: 1
-    damage: 10
-    radius: 1
-    offset: {x: 0, y: 1, z: 0.6}
-    knockback: 6
-    lunge: 10
-    jumpSlam: 0
-    weight: 2
-    ranged: 0
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 16
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-  - name: "\u6BD2\u6DB2"
-    range: 12
-    windup: 0.7
-    active: 0.1
-    recovery: 1.1
-    damage: 7
-    radius: 1.2
-    offset: {x: 0, y: 1, z: 1.2}
-    knockback: 3
-    lunge: 0
-    jumpSlam: 0
-    weight: 1
-    ranged: 1
-    projectileCount: 1
-    projectileSpread: 0
-    projectileSpeed: 14
-    projectileRadius: 0.35
-    targetedStrike: 0
-    strikeDelay: 0.8
-    selfDestruct: 0
-    summon: {fileID: 0}
-    summonCount: 0
-  bodyShape: 0
-  scale: 0.85
-  color: {r: 0.6, g: 0.35, b: 0.8, a: 1}
-  telegraphColor: {r: 1, g: 0.62, b: 0.1, a: 1}
-  shardValue: 1.5
+  DisplayName: "\u98DB\u87F2"
+  IsBoss: 0
+  Heavy: 0
+  Weaknesses: 0400000003000000
+  MaxHealth: 55
+  MaxArmor: 0
+  ArmorRegenDelay: 6
+  StaggerThreshold: 4
+  StaggerDuration: 0.45
+  ArmorBreakStagger: 1.4
+  MoveSpeed: 5
+  TurnSpeed: 360
+  PreferredDistance: 0
+  Flying: 1
+  HoverHeight: 3.5
+  AttackCooldown: 1.3
+  Attacks:
+  - Name: "\u6025\u964D\u4E0B"
+    AnimationState: 
+    Range: 9
+    Windup: 0.7
+    Active: 0.4
+    Recovery: 1
+    Damage: 10
+    Radius: 1
+    Offset: {x: 0, y: 1, z: 0.6}
+    Knockback: 6
+    Lunge: 10
+    JumpSlam: 0
+    Weight: 2
+    Ranged: 0
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 16
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  - Name: "\u6BD2\u6DB2"
+    AnimationState: 
+    Range: 12
+    Windup: 0.7
+    Active: 0.1
+    Recovery: 1.1
+    Damage: 7
+    Radius: 1.2
+    Offset: {x: 0, y: 1, z: 1.2}
+    Knockback: 3
+    Lunge: 0
+    JumpSlam: 0
+    Weight: 1
+    Ranged: 1
+    ProjectileCount: 1
+    ProjectileSpread: 0
+    ProjectileSpeed: 14
+    ProjectileRadius: 0.35
+    TargetedStrike: 0
+    StrikeDelay: 0.8
+    SelfDestruct: 0
+    Unblockable: 0
+    Summon: {fileID: 0}
+    SummonCount: 0
+    TeleportBehind: 0
+    Repeat: 0
+    RepeatWindup: 0.3
+    SourceSkill: {fileID: 0}
+  SkillSets: []
+  SkillSwapInterval: 7
+  SkillDamageScale: 0.5
+  SkillWindupScale: 2.2
+  Phase2HealthRatio: 0
+  Phase2SpeedMultiplier: 1.3
+  Phase2CooldownMultiplier: 0.6
+  Phase2Attacks: []
+  Phase2Message: "\u672C\u6C17\u306B\u306A\u3063\u305F!"
+  Elite: 0
+  EliteSource: {fileID: 0}
+  Prefab: {fileID: 8057619795838538613, guid: 0f67088be417250479ffe8d0100883b3, type: 3}
+  BodyShape: 0
+  Scale: 0.85
+  Color: {r: 0.6, g: 0.35, b: 0.8, a: 1}
+  TelegraphColor: {r: 1, g: 0.62, b: 0.1, a: 1}
+  ShardValue: 1.5

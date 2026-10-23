@@ -52,7 +52,8 @@ namespace BattleFight
             Rumble.Play(0.05f, 0.2f, 0.05f);
             if (CombatFeedback.Instance != null)
             {
-                CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 0.9f, mDustColor);
+                if (!CombatFeedback.Instance.PlayCue(EffectCue.Jump, transform.position, 0.9f, mDustColor))
+                    CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, 0.9f, mDustColor);
             }
         }
 
@@ -67,12 +68,14 @@ namespace BattleFight
             Rumble.Play(0.1f + 0.6f * aStrength, 0.15f + 0.3f * aStrength, 0.05f + 0.12f * aStrength);
             var aFeedback = CombatFeedback.Instance;
             if (aFeedback == null) return;
-            aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 0.8f + 1.8f * aStrength, mDustColor);
+            // 差し替えた演出は、大きさ(0.8 〜 2.6)で着地の重さを表す
+            bool aReplaced = aFeedback.PlayCue(EffectCue.Land, transform.position, 0.8f + 1.8f * aStrength, mDustColor);
+            if (!aReplaced) aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 0.8f + 1.8f * aStrength, mDustColor);
             aFeedback.Dip(0.05f + 0.25f * aStrength);
             if (aStrength > 0.5f)
             {
                 aFeedback.Shake(0.1f + 0.2f * aStrength);
-                aFeedback.SpawnSparks(transform.position + Vector3.up * 0.2f, mDustColor, Mathf.RoundToInt(4 + 8 * aStrength), 5f);
+                if (!aReplaced) aFeedback.SpawnSparks(transform.position + Vector3.up * 0.2f, mDustColor, Mathf.RoundToInt(4 + 8 * aStrength), 5f);
             }
         }
     }

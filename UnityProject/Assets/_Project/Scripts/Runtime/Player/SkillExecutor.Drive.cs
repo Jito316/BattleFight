@@ -37,7 +37,8 @@ namespace BattleFight
                 mWeapons.SetMainWeapon(aSkill.Weapon);
                 var aData = mSlots.GetWeaponData(aSkill.Weapon);
                 var aColor = aData != null ? aData.Color : Color.white;
-                if (CombatFeedback.Instance != null)
+                if (CombatFeedback.Instance != null
+                    && !CombatFeedback.Instance.PlayCue(EffectCue.ChangeDrive, transform.position, transform.rotation, mDriveRadius, aColor))
                 {
                     CombatFeedback.Instance.SpawnShockwave(transform.position + Vector3.up * 0.05f, mDriveRadius, aColor);
                     CombatFeedback.Instance.SpawnSparks(transform.position + Vector3.up, aColor, 14, 11f);

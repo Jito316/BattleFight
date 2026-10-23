@@ -24,6 +24,7 @@ namespace BattleFight
             if (mReaction == null) mReaction = gameObject.AddComponent<PlayerHitReaction>();
             if (GetComponent<PlayerGuard>() == null) gameObject.AddComponent<PlayerGuard>();
             if (GetComponent<PlayerJumpFeel>() == null) gameObject.AddComponent<PlayerJumpFeel>();
+            if (GetComponent<CharacterAnimation>() == null) gameObject.AddComponent<CharacterAnimation>();
         }
 
         void OnEnable()
@@ -92,8 +93,10 @@ namespace BattleFight
                     aFeedback.Flash(0.35f);
                     aFeedback.Punch(3f);
                 }
-                aFeedback.SpawnSparks(transform.position + Vector3.up * 1.1f - iHit.Direction * 0.3f, new Color(1f, 0.35f, 0.3f),
-                    aHeavy ? 10 : 6, 7f);
+                var aHurtPoint = transform.position + Vector3.up * 1.1f - iHit.Direction * 0.3f;
+                var aHurtColor = new Color(1f, 0.35f, 0.3f);
+                if (!aFeedback.PlayCue(EffectCue.PlayerHurt, aHurtPoint, aHeavy ? 1.4f : 1f, aHurtColor))
+                    aFeedback.SpawnSparks(aHurtPoint, aHurtColor, aHeavy ? 10 : 6, 7f);
                 aFeedback.SpawnDamageNumber(transform.position + Vector3.up * 2.2f, mDamageable.LastDamage,
                     new Color(1f, 0.3f, 0.3f), aHeavy ? 1.5f : 1.2f);
             }
@@ -120,11 +123,13 @@ namespace BattleFight
                 {
                     var aFeedback = CombatFeedback.Instance;
                     var aColor = new Color(0.75f, 0.5f, 1f);
-                    aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 3.5f, aColor);
+                    if (!aFeedback.PlayCue(EffectCue.JustDodge, transform.position, transform.rotation, 3.5f, aColor))
+                        aFeedback.SpawnShockwave(transform.position + Vector3.up * 0.05f, 3.5f, aColor);
                     aFeedback.Shake(0.15f);
                     aFeedback.Punch(3f);
                     aFeedback.Vignette(aColor, 0.7f);
-                    aFeedback.SpawnAfterimage(transform.Find("Body"), aColor, 0.45f);
+                    var aVisual = CharacterVisual.Of(this);
+                    aFeedback.SpawnAfterimage(aVisual != null ? aVisual.Body : transform, aColor, 0.45f);
                 }
             }
         }

@@ -30,6 +30,7 @@ MonoBehaviour:
   AttackCooldown: 0.9
   Attacks:
   - Name: "\u4E09\u9023\u65AC"
+    AnimationState: 
     Range: 3.2
     Windup: 0.55
     Active: 0.15
@@ -57,6 +58,7 @@ MonoBehaviour:
     RepeatWindup: 0.3
     SourceSkill: {fileID: 0}
   - Name: "\u5F71\u8D70\u308A"
+    AnimationState: 
     Range: 12
     Windup: 0.7
     Active: 0.3
@@ -84,6 +86,7 @@ MonoBehaviour:
     RepeatWindup: 0.3
     SourceSkill: {fileID: 0}
   - Name: "\u80CC\u5F8C\u53D6\u308A"
+    AnimationState: 
     Range: 20
     Windup: 1.1
     Active: 0.15
@@ -111,6 +114,7 @@ MonoBehaviour:
     RepeatWindup: 0.3
     SourceSkill: {fileID: 0}
   - Name: "\u5F71\u7206"
+    AnimationState: 
     Range: 5
     Windup: 1.2
     Active: 0.15
@@ -161,6 +165,7 @@ MonoBehaviour:
   Phase2CooldownMultiplier: 0.6
   Phase2Attacks:
   - Name: "\u65CB\u98A8\u5203"
+    AnimationState: 
     Range: 4
     Windup: 0.7
     Active: 0.2
@@ -188,6 +193,7 @@ MonoBehaviour:
     RepeatWindup: 0.3
     SourceSkill: {fileID: 0}
   - Name: "\u98DB\u5203"
+    AnimationState: 
     Range: 16
     Windup: 0.8
     Active: 0.1
@@ -217,6 +223,7 @@ MonoBehaviour:
   Phase2Message: "\u5F71\u304C\u3055\u3089\u306B\u901F\u304F\u306A\u308B\u2026\u2026!"
   Elite: 0
   EliteSource: {fileID: 0}
+  Prefab: {fileID: 5256794039189035197, guid: 3482bac164c65d942989fbf2fb542cc1, type: 3}
   BodyShape: 1
   Scale: 1.5
   Color: {r: 0.15, g: 0.15, b: 0.22, a: 1}
