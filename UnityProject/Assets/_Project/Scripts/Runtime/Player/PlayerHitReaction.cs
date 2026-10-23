@@ -23,11 +23,24 @@ namespace BattleFight
         /// <summary>縦のつぶれ(+)・伸び(-)。ばねで 0 へ戻る</summary>
         float mSquash;
         float mSquashVelocity;
+        /// <summary>体のひねり(度。+ で右回り)。ばねで 0 へ戻る</summary>
+        float mTwist;
+        float mTwistVelocity;
 
         /// <summary>のけぞりの途中か(テスト用)</summary>
         public bool IsReacting => mStrength > 0f;
         /// <summary>つぶれ・伸びの途中か(テスト用)</summary>
         public bool IsSquashing => Mathf.Abs(mSquash) > 0.01f || Mathf.Abs(mSquashVelocity) > 0.05f;
+
+        /// <summary>ひねりの途中か(テスト用)</summary>
+        public bool IsTwisting => Mathf.Abs(mTwist) > 0.5f || Mathf.Abs(mTwistVelocity) > 5f;
+
+        /// <summary>体をひねる(振りかぶり・振り抜き)。iDegrees は + で右回り。ばねで戻る</summary>
+        public void Twist(float iDegrees)
+        {
+            mTwist = Mathf.Clamp(iDegrees, -50f, 50f);
+            mTwistVelocity = 0f;
+        }
 
         /// <summary>縦につぶす(+: 着地)・伸ばす(-: 踏み切り)。iAmount は 0.3 で大きめ</summary>
         public void Squash(float iAmount)
@@ -71,6 +84,14 @@ namespace BattleFight
                     mSquash = 0f;
                     mSquashVelocity = 0f;
                 }
+                // ひねりは少し硬めのばね(すぐ戻って、軽く行き過ぎる)
+                mTwistVelocity += (-mTwist * 320f - mTwistVelocity * 20f) * aDeltaTime;
+                mTwist += mTwistVelocity * aDeltaTime;
+                if (Mathf.Abs(mTwist) < 0.05f && Mathf.Abs(mTwistVelocity) < 0.5f)
+                {
+                    mTwist = 0f;
+                    mTwistVelocity = 0f;
+                }
             }
 
             if (mStrength <= 0f)
@@ -94,7 +115,7 @@ namespace BattleFight
         /// <summary>のけぞり(iAmount)と、縦のつぶれ・伸び(mSquash)を合わせて、体の形を決める</summary>
         void ApplyPose(float iAmount, bool iFrozen)
         {
-            if (iAmount == 0f && mSquash == 0f)
+            if (iAmount == 0f && mSquash == 0f && mTwist == 0f)
             {
                 mBody.localPosition = mBasePosition;
                 mBody.localScale = mBaseScale;
@@ -111,7 +132,7 @@ namespace BattleFight
             Vector3 aFromFeet = new Vector3(0f, mBasePosition.y * aSquash, 0f);
             Vector3 aShake = iFrozen ? mDirection * (Random.Range(-1f, 1f) * 0.07f * mStrength) : Vector3.zero;
             mBody.localPosition = new Vector3(mBasePosition.x, 0f, mBasePosition.z) + aLean * aFromFeet + aShake;
-            mBody.localRotation = aLean * mBaseRotation;
+            mBody.localRotation = aLean * Quaternion.Euler(0f, mTwist, 0f) * mBaseRotation;
         }
     }
 }

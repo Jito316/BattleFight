@@ -31,6 +31,16 @@ namespace BattleFight
         Jump,
         /// <summary>着地(低いドッという音と土の擦れ)</summary>
         Land,
+        /// <summary>剣の振り: 短く鋭い「ヒュッ」</summary>
+        SwingSword,
+        /// <summary>大槌の振り: 低く重い「ブォン」</summary>
+        SwingHeavy,
+        /// <summary>鎖の振り: 風切りに金属のこすれ「ジャラッ」</summary>
+        SwingChain,
+        /// <summary>杖の振り: 風切りに、きらめく高い音</summary>
+        SwingStaff,
+        /// <summary>籠手の振り: 短く詰まった「シュッ」</summary>
+        SwingFist,
     }
 
     /// <summary>
@@ -62,6 +72,11 @@ namespace BattleFight
                 Sfx.Hurt => Saturate(Drop(0.25f, 220f, 120f, 10f, 1f), 3f),
                 Sfx.Swap => Mix(Ring(0.08f, 60f, 0.6f, 1800f), Ring(0.08f, 80f, 0.4f, 2400f)),
                 Sfx.EnemyWindup => Rise(0.3f, 260f, 620f, 0.8f),
+                Sfx.SwingSword => Mix(Whoosh(aRandom, 0.13f, 1f, false), Hiss(aRandom, 0.13f, 30f, 0.25f, 0.92f)),
+                Sfx.SwingHeavy => Mix(Whoosh(aRandom, 0.32f, 0.25f, false), Drop(0.32f, 90f, 55f, 7f, 0.6f)),
+                Sfx.SwingChain => Mix(Whoosh(aRandom, 0.22f, 0.55f, false), Rattle(aRandom, 0.22f, 0.35f)),
+                Sfx.SwingStaff => Mix(Whoosh(aRandom, 0.18f, 0.5f, false), Ring(0.18f, 18f, 0.25f, 1760f, 2637f)),
+                Sfx.SwingFist => Mix(Whoosh(aRandom, 0.09f, 0.7f, false), Click(aRandom, 0.09f, 90f, 0.2f)),
                 Sfx.Jump => Mix(Whoosh(aRandom, 0.16f, 0.6f, false), Rise(0.12f, 300f, 700f, 0.25f)),
                 Sfx.Land => Mix(Rumble(aRandom, 0.25f, 14f, 0.8f, 0.12f), Drop(0.25f, 120f, 60f, 16f, 0.8f)),
                 Sfx.Guard => Mix(Click(aRandom, 0.3f, 50f, 0.6f), Ring(0.3f, 12f, 0.8f, 880f, 1410f, 2190f), Drop(0.3f, 180f, 90f, 18f, 0.6f)),
@@ -222,6 +237,41 @@ namespace BattleFight
         }
 
         static float Noise(Random iRandom) => (float)(iRandom.NextDouble() * 2.0 - 1.0);
+
+        /// <summary>金属が細かくこすれる音(鎖)</summary>
+        static float[] Rattle(Random iRandom, float iSeconds, float iGain)
+        {
+            var aOut = new float[Length(iSeconds)];
+            int aNext = 0;
+            for (int aIndex = 0; aIndex < aOut.Length; aIndex++)
+            {
+                // 不規則な間隔で、小さな金属音を重ねる
+                if (aIndex >= aNext)
+                {
+                    float aFrequency = 2400f + (float)iRandom.NextDouble() * 1800f;
+                    int aLength = Length(0.025f);
+                    for (int aStep = 0; aStep < aLength && aIndex + aStep < aOut.Length; aStep++)
+                    {
+                        float aTime = Time(aStep);
+                        aOut[aIndex + aStep] += (float)Math.Sin(2 * Math.PI * aFrequency * aTime) * (float)Math.Exp(-aTime * 140f);
+                    }
+                    aNext = aIndex + Length(0.015f + (float)iRandom.NextDouble() * 0.03f);
+                }
+                float aProgress = aIndex / (float)aOut.Length;
+                aOut[aIndex] *= (1f - aProgress) * iGain;
+            }
+            return aOut;
+        }
+
+        /// <summary>武器を振ったときの音</summary>
+        public static Sfx SwingFor(WeaponType iWeapon) => iWeapon switch
+        {
+            WeaponType.Hammer => Sfx.SwingHeavy,
+            WeaponType.Chain => Sfx.SwingChain,
+            WeaponType.Staff => Sfx.SwingStaff,
+            WeaponType.Gauntlet => Sfx.SwingFist,
+            _ => Sfx.SwingSword,
+        };
 
         /// <summary>武器で当てたときの音</summary>
         public static Sfx HitFor(WeaponType iWeapon) => iWeapon switch

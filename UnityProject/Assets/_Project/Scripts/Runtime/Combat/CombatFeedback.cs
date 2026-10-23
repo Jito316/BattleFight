@@ -231,6 +231,22 @@ namespace BattleFight
             }
         }
 
+        /// <summary>
+        /// 斬撃の弧: iRotation の向き(+Z が正面)に、三日月形の光を出す。iDirection で振る向き(+1: 右から左)
+        /// </summary>
+        public SwingArcFx SpawnSwingArc(Vector3 iCenter, Quaternion iRotation, float iRadius, float iArcDegrees, float iThickness,
+            float iDirection, Color iColor)
+        {
+            var aObject = new GameObject("SwingArc");
+            aObject.transform.SetPositionAndRotation(iCenter, iRotation);
+            aObject.AddComponent<MeshFilter>();
+            var aRenderer = aObject.AddComponent<MeshRenderer>();
+            if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
+            var aArc = aObject.AddComponent<SwingArcFx>();
+            aArc.Play(iRadius, iArcDegrees, iThickness, iDirection, iColor);
+            return aArc;
+        }
+
         /// <summary>アーマーが砕けた欠片: 大きめの破片が勢いよく飛び散る</summary>
         public void SpawnShards(Vector3 iPosition, Color iColor, int iCount, float iSize)
         {
