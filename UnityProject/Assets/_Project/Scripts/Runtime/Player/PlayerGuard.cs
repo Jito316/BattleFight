@@ -10,6 +10,8 @@ namespace BattleFight
     public class PlayerGuard : MonoBehaviour
     {
         const float mShieldPopDuration = 0.18f;
+        /// <summary>盾の直径。体(直径 約1m)より大きくして、後ろのカメラからも体の周りに縁が見えるようにする</summary>
+        public const float ShieldSize = 1.8f;
         static readonly Color mGuardColor = new Color(0.55f, 0.8f, 1f);
         static readonly Color mParryColor = new Color(1f, 0.85f, 0.3f);
 
@@ -129,7 +131,7 @@ namespace BattleFight
                 Destroy(aObject.GetComponent<Collider>());
                 mShield = aObject.transform;
                 mShield.SetParent(transform, false);
-                mShield.localPosition = new Vector3(0f, 1.1f, 0.65f);
+                mShield.localPosition = new Vector3(0f, 1.0f, 0.7f);
                 mShield.localRotation = Quaternion.Euler(90f, 0f, 0f);
                 mShieldRenderer = aObject.GetComponent<Renderer>();
                 if (CombatFeedback.Instance.EffectMaterial != null) mShieldRenderer.sharedMaterial = CombatFeedback.Instance.EffectMaterial;
@@ -140,7 +142,7 @@ namespace BattleFight
             bool aVisible = IsGuarding || aPop > 0f;
             if (mShield.gameObject.activeSelf != aVisible) mShield.gameObject.SetActive(aVisible);
             if (!aVisible) return;
-            float aSize = 1.1f * (1f + (mParryPop ? 0.6f : 0.3f) * aPop);
+            float aSize = ShieldSize * (1f + (mParryPop ? 0.6f : 0.3f) * aPop);
             mShield.localScale = new Vector3(aSize, 0.03f, aSize);
             var aColor = Color.Lerp(mGuardColor, mParryPop ? mParryColor : Color.white, aPop);
             mShieldRenderer.material.color = aColor;
