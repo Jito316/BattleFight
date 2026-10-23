@@ -261,6 +261,60 @@ namespace BattleFight.Tests
         }
 
         [UnityTest]
+        public IEnumerator CameraPushedByAWall_RisesAndLooksDown()
+        {
+            yield return LoadEmptyArena();
+            var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
+            yield return new WaitForSeconds(0.5f);
+            Assert.Less(aRig.WallLift, 0.2f, "(前提)壁がないのに上がっている");
+
+            // カメラとプレイヤーの間、プレイヤーのすぐ後ろに壁を立てる
+            Vector3 aBack = aRig.transform.position - mPlayer.position;
+            aBack.y = 0f;
+            var aWall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            aWall.transform.position = mPlayer.position + aBack.normalized * 1.8f + Vector3.up * 2f;
+            aWall.transform.rotation = Quaternion.LookRotation(aBack.normalized);
+            aWall.transform.localScale = new Vector3(12f, 8f, 0.4f);
+            yield return new WaitForSeconds(1f);
+            float aLift = aRig.WallLift;
+            Object.Destroy(aWall);
+            Assert.Greater(aLift, 1f, "壁に押されても、カメラが上へ逃げない");
+        }
+
+        [UnityTest]
+        public IEnumerator BigEnemyHidingThePlayer_RaisesTheCamera()
+        {
+            yield return LoadEmptyArena();
+            var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
+            yield return new WaitForSeconds(0.5f);
+            Vector3 aBack = aRig.transform.position - mPlayer.position;
+            aBack.y = 0f;
+            var aBoss = FindBoss();
+            var aEnemy = mDirector.SpawnExtra(aBoss, mPlayer.position + aBack.normalized * 3f);
+            aEnemy.Damageable.Configure(Team.Enemy, 100000f, 0f, 0f);
+            aEnemy.enabled = false;
+            yield return new WaitForSeconds(1.5f);
+            Assert.Greater(aRig.WallLift, 1f, "大きな敵の体でプレイヤーが隠れても、カメラが上がらない");
+        }
+
+        EnemyProfile FindBoss()
+        {
+            foreach (var aStage in mDirector.Stages)
+            {
+                if (aStage == null || aStage.Waves == null) continue;
+                foreach (var aWave in aStage.Waves)
+                {
+                    foreach (var aProfile in aWave.Enemies)
+                    {
+                        if (aProfile != null && aProfile.IsBoss) return aProfile;
+                    }
+                }
+            }
+            Assert.Fail("ボスがいない");
+            return null;
+        }
+
+        [UnityTest]
         public IEnumerator ClosedGuide_StaysClosedNextTime()
         {
             GameSettings.ShowGuide = true;

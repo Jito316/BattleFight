@@ -77,6 +77,9 @@ namespace BattleFight
 
         /// <summary>次に始めるステージを、このウェーブから始める(遊んで確かめる用。0 なら最初から)</summary>
         int mStartWaveIndex;
+        /// <summary>プレイヤーが倒れない(遊んで確かめる用。ステージを始め直しても続く)</summary>
+        bool mPlaytestGod;
+        const float PlaytestGodHealth = 100000f;
 
         public IReadOnlyList<StageData> Stages => mStages;
         public StageData CurrentStage { get; private set; }
@@ -250,7 +253,7 @@ namespace BattleFight
             var aWords = (iCommand ?? "").Trim().Split(' ');
             if (aWords[0] == "god")
             {
-                mPlayerDamageable.Configure(Team.Player, 100000f, 0f, 0f);
+                mPlaytestGod = true;
                 return;
             }
             if (!int.TryParse(aWords[0], out int aStage)) return;
@@ -415,6 +418,7 @@ namespace BattleFight
 
         void Update()
         {
+            if (mPlaytestGod && mPlayerDamageable.MaxHealth < PlaytestGodHealth) mPlayerDamageable.Configure(Team.Player, PlaytestGodHealth, 0f, 0f);
             if (GamePause.IsPaused) return;
             if (State == GameState.Fighting || State == GameState.Intermission) ElapsedTime += Time.deltaTime;
             if (State == GameState.StageSelect) return;
