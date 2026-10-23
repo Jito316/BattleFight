@@ -90,5 +90,13 @@ namespace BattleFight.Tests
             Assert.Greater(WeaponFeel.For(WeaponType.Gauntlet).Lunge, WeaponFeel.For(WeaponType.Sword).Lunge);
             Assert.Greater(WeaponFeel.For(WeaponType.Hammer).KnockbackScale, WeaponFeel.For(WeaponType.Sword).KnockbackScale);
         }
+
+        [Test]
+        public void LandingStrength_GrowsWithFallSpeed()
+        {
+            Assert.AreEqual(0f, PlayerJumpFeel.LandStrength(1f), "ふわっとした着地が重くなっている");
+            Assert.AreEqual(1f, PlayerJumpFeel.LandStrength(50f), 1e-5f);
+            Assert.Greater(PlayerJumpFeel.LandStrength(15f), PlayerJumpFeel.LandStrength(8f));
+        }
     }
 }

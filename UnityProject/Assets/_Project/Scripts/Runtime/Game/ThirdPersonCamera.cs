@@ -84,6 +84,12 @@ namespace BattleFight
             mKick = Vector3.ClampMagnitude(mKick + iDirection.normalized * iAmount, 0.6f);
         }
 
+        /// <summary>カメラを一瞬沈ませる(着地の重さ)</summary>
+        public void AddDip(float iAmount) => mKick = Vector3.ClampMagnitude(mKick + Vector3.down * iAmount, 0.6f);
+
+        /// <summary>今のカメラの押され方(テスト用)</summary>
+        public Vector3 KickOffset => mKick;
+
         /// <summary>一瞬だけズームする(重い一撃・技の締め)。iDegrees は画角を狭める角度</summary>
         public void AddZoom(float iDegrees) => mZoom = Mathf.Min(12f, Mathf.Max(mZoom, iDegrees));
 

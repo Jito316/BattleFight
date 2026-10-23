@@ -20,9 +20,21 @@ namespace BattleFight
         float mStrength;
         float mTime;
         float mFrozenUntil = -1f;
+        /// <summary>縦のつぶれ(+)・伸び(-)。ばねで 0 へ戻る</summary>
+        float mSquash;
+        float mSquashVelocity;
 
         /// <summary>のけぞりの途中か(テスト用)</summary>
         public bool IsReacting => mStrength > 0f;
+        /// <summary>つぶれ・伸びの途中か(テスト用)</summary>
+        public bool IsSquashing => Mathf.Abs(mSquash) > 0.01f || Mathf.Abs(mSquashVelocity) > 0.05f;
+
+        /// <summary>縦につぶす(+: 着地)・伸ばす(-: 踏み切り)。iAmount は 0.3 で大きめ</summary>
+        public void Squash(float iAmount)
+        {
+            mSquash = Mathf.Clamp(iAmount, -0.5f, 0.6f);
+            mSquashVelocity = 0f;
+        }
 
         void Awake()
         {
@@ -47,29 +59,57 @@ namespace BattleFight
 
         void LateUpdate()
         {
-            if (mBody == null || mStrength <= 0f) return;
+            if (mBody == null) return;
+            // つぶれ・伸び: ばね(少し行き過ぎてから止まる)
+            float aDeltaTime = Time.deltaTime;
+            if (aDeltaTime > 0f)
+            {
+                mSquashVelocity += (-mSquash * 260f - mSquashVelocity * 16f) * aDeltaTime;
+                mSquash += mSquashVelocity * aDeltaTime;
+                if (Mathf.Abs(mSquash) < 0.002f && Mathf.Abs(mSquashVelocity) < 0.02f)
+                {
+                    mSquash = 0f;
+                    mSquashVelocity = 0f;
+                }
+            }
+
+            if (mStrength <= 0f)
+            {
+                ApplyPose(0f, false);
+                return;
+            }
             bool aFrozen = Time.unscaledTime < mFrozenUntil;
             if (!aFrozen) mTime += Time.deltaTime;
             if (mTime >= mDuration)
             {
                 mStrength = 0f;
+                ApplyPose(0f, false);
+                return;
+            }
+
+            float aCurve = Mathf.Exp(-mTime * 11f) * Mathf.Cos(mTime * 26f);
+            ApplyPose(mStrength * aCurve, aFrozen);
+        }
+
+        /// <summary>のけぞり(iAmount)と、縦のつぶれ・伸び(mSquash)を合わせて、体の形を決める</summary>
+        void ApplyPose(float iAmount, bool iFrozen)
+        {
+            if (iAmount == 0f && mSquash == 0f)
+            {
                 mBody.localPosition = mBasePosition;
                 mBody.localScale = mBaseScale;
                 mBody.localRotation = mBaseRotation;
                 return;
             }
-
-            float aCurve = Mathf.Exp(-mTime * 11f) * Mathf.Cos(mTime * 26f);
-            float aAmount = mStrength * aCurve;
-            float aSquash = 1f - 0.18f * aAmount;
-            float aStretch = 1f + 0.14f * aAmount;
+            float aSquash = (1f - 0.18f * iAmount) * (1f - mSquash);
+            float aStretch = (1f + 0.14f * iAmount) * (1f + mSquash * 0.6f);
             mBody.localScale = new Vector3(mBaseScale.x * aStretch, mBaseScale.y * aSquash, mBaseScale.z * aStretch);
 
             // 足元を支点に傾ける(体の中心は、足元から体の高さの半分のところ)
             Vector3 aAxis = Vector3.Cross(Vector3.up, mDirection);
-            var aLean = Quaternion.AngleAxis(22f * aAmount, aAxis);
+            var aLean = Quaternion.AngleAxis(22f * iAmount, aAxis);
             Vector3 aFromFeet = new Vector3(0f, mBasePosition.y * aSquash, 0f);
-            Vector3 aShake = aFrozen ? mDirection * (Random.Range(-1f, 1f) * 0.07f * mStrength) : Vector3.zero;
+            Vector3 aShake = iFrozen ? mDirection * (Random.Range(-1f, 1f) * 0.07f * mStrength) : Vector3.zero;
             mBody.localPosition = new Vector3(mBasePosition.x, 0f, mBasePosition.z) + aLean * aFromFeet + aShake;
             mBody.localRotation = aLean * mBaseRotation;
         }

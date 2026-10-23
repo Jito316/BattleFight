@@ -23,6 +23,7 @@ namespace BattleFight
             mReaction = GetComponent<PlayerHitReaction>();
             if (mReaction == null) mReaction = gameObject.AddComponent<PlayerHitReaction>();
             if (GetComponent<PlayerGuard>() == null) gameObject.AddComponent<PlayerGuard>();
+            if (GetComponent<PlayerJumpFeel>() == null) gameObject.AddComponent<PlayerJumpFeel>();
         }
 
         void OnEnable()
