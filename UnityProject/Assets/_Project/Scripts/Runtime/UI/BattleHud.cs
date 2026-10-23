@@ -133,6 +133,9 @@ namespace BattleFight
         VisualElement mToastWrap;
         VisualElement mResult;
         VisualElement mWorldLayer;
+        VisualElement mImpactFlash;
+        VisualElement mImpactVignette;
+        Texture2D mVignetteTexture;
         Label mResultTitle;
         Label mResultBody;
         Button mResultNext;
@@ -208,6 +211,13 @@ namespace BattleFight
         void Bind()
         {
             mHud = mRoot.Q("hud");
+            mImpactFlash = mRoot.Q("impact-flash");
+            mImpactVignette = mRoot.Q("impact-vignette");
+            if (mImpactVignette != null)
+            {
+                if (mVignetteTexture == null) mVignetteTexture = CreateVignetteTexture();
+                mImpactVignette.style.backgroundImage = new StyleBackground(mVignetteTexture);
+            }
             mHpValue = mRoot.Q<Label>("hp-value");
             mHpFill = mRoot.Q("hp-fill");
             mHpBar = mHpFill.parent;
@@ -863,9 +873,23 @@ namespace BattleFight
                     var aColor = aNumber.Color;
                     aColor.a = 1f - aAge / CombatFeedback.DamageNumberLifetime;
                     aLabel.style.color = aColor;
+                    // 大きい当たりほど大きく。出た瞬間に大きく弾んで、すぐ元の大きさへ
+                    float aScale = aNumber.Scale > 0f ? aNumber.Scale : 1f;
+                    float aPop = 1f + 0.5f * Mathf.Clamp01(1f - aAge / 0.12f) * aScale;
+                    aLabel.style.fontSize = mDamageFontSize * aScale * aPop;
                 }
             }
             for (int aDamageLabelIndex = aUsed; aDamageLabelIndex < mDamageLabels.Count; aDamageLabelIndex++) Show(mDamageLabels[aDamageLabelIndex], false);
+
+            // インパクトフレームと、画面の縁の光
+            var aFeedback = CombatFeedback.Instance;
+            if (mImpactFlash != null) mImpactFlash.style.opacity = aFeedback != null ? aFeedback.FlashAmount * 0.85f : 0f;
+            if (mImpactVignette != null)
+            {
+                float aVignette = aFeedback != null ? aFeedback.VignetteAmount : 0f;
+                mImpactVignette.style.opacity = aVignette;
+                if (aVignette > 0f) mImpactVignette.style.unityBackgroundImageTintColor = aFeedback.VignetteColor;
+            }
         }
 
         EnemyTag EnemyTagAt(int iIndex)
@@ -893,6 +917,31 @@ namespace BattleFight
                 mEnemyTags.Add(aTag);
             }
             return mEnemyTags[iIndex];
+        }
+
+        /// <summary>ダメージの数字のふつうの大きさ(Hud.uss の .damage と同じ)</summary>
+        const float mDamageFontSize = 26f;
+
+        /// <summary>画面の縁ほど濃くなる、白い丸いぼかし(色は tint で付ける)</summary>
+        static Texture2D CreateVignetteTexture()
+        {
+            const int aSize = 64;
+            var aTexture = new Texture2D(aSize, aSize, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var aPixels = new Color32[aSize * aSize];
+            for (int aY = 0; aY < aSize; aY++)
+            {
+                for (int aX = 0; aX < aSize; aX++)
+                {
+                    float aU = (aX + 0.5f) / aSize * 2f - 1f;
+                    float aV = (aY + 0.5f) / aSize * 2f - 1f;
+                    float aDistance = Mathf.Sqrt(aU * aU + aV * aV) / Mathf.Sqrt(2f);
+                    float aAlpha = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.45f, 1f, aDistance));
+                    aPixels[aY * aSize + aX] = new Color32(255, 255, 255, (byte)(aAlpha * 255f));
+                }
+            }
+            aTexture.SetPixels32(aPixels);
+            aTexture.Apply();
+            return aTexture;
         }
 
         Label PooledLabel(List<Label> iPool, int iIndex, string iClassName)

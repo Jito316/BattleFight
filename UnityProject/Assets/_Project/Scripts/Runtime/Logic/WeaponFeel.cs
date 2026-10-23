@@ -30,10 +30,14 @@ namespace BattleFight
         public readonly float SparkSpeed;
         /// <summary>撃った・振ったときに、プレイヤーが後ろへ押される強さ(銃の反動)</summary>
         public readonly float Recoil;
+        /// <summary>近接で当てたときに、プレイヤーが前へ踏み込む強さ</summary>
+        public readonly float Lunge;
+        /// <summary>敵が押し飛ばされる強さの倍率</summary>
+        public readonly float KnockbackScale;
         public readonly ImpactStyle Style;
 
         public WeaponFeel(float iHitstopScale, float iShakeScale, float iReactionScale, int iExtraSparks, float iSparkSpeed, float iRecoil,
-            ImpactStyle iStyle)
+            float iLunge, float iKnockbackScale, ImpactStyle iStyle)
         {
             HitstopScale = iHitstopScale;
             ShakeScale = iShakeScale;
@@ -41,6 +45,8 @@ namespace BattleFight
             ExtraSparks = iExtraSparks;
             SparkSpeed = iSparkSpeed;
             Recoil = iRecoil;
+            Lunge = iLunge;
+            KnockbackScale = iKnockbackScale;
             Style = iStyle;
         }
 
@@ -49,13 +55,13 @@ namespace BattleFight
 
         public static WeaponFeel For(WeaponType iWeapon) => iWeapon switch
         {
-            WeaponType.Sword => new WeaponFeel(0.8f, 0.8f, 0.8f, 0, 9f, 0f, ImpactStyle.Slash),
-            WeaponType.Hammer => new WeaponFeel(1.8f, 2f, 1.6f, 4, 6f, 0f, ImpactStyle.Smash),
-            WeaponType.Chain => new WeaponFeel(1f, 1f, 1f, 1, 8f, 0f, ImpactStyle.Lash),
-            WeaponType.Staff => new WeaponFeel(0.9f, 0.9f, 1f, 2, 7f, 0f, ImpactStyle.Arcane),
-            WeaponType.Gun => new WeaponFeel(0.5f, 0.6f, 0.6f, 0, 10f, 1.6f, ImpactStyle.Shot),
-            WeaponType.Gauntlet => new WeaponFeel(0.7f, 1.3f, 1.1f, 1, 8f, 0f, ImpactStyle.Punch),
-            _ => new WeaponFeel(1f, 1f, 1f, 0, 7f, 0f, ImpactStyle.Slash),
+            WeaponType.Sword => new WeaponFeel(0.8f, 0.8f, 0.8f, 0, 9f, 0f, 0.8f, 1f, ImpactStyle.Slash),
+            WeaponType.Hammer => new WeaponFeel(1.8f, 2f, 1.6f, 4, 6f, 0f, 0.3f, 1.5f, ImpactStyle.Smash),
+            WeaponType.Chain => new WeaponFeel(1f, 1f, 1f, 1, 8f, 0f, 0.4f, 0.9f, ImpactStyle.Lash),
+            WeaponType.Staff => new WeaponFeel(0.9f, 0.9f, 1f, 2, 7f, 0f, 0.4f, 1f, ImpactStyle.Arcane),
+            WeaponType.Gun => new WeaponFeel(0.5f, 0.6f, 0.6f, 0, 10f, 1.6f, 0f, 0.6f, ImpactStyle.Shot),
+            WeaponType.Gauntlet => new WeaponFeel(0.7f, 1.3f, 1.1f, 1, 8f, 0f, 1.4f, 1.2f, ImpactStyle.Punch),
+            _ => new WeaponFeel(1f, 1f, 1f, 0, 7f, 0f, 0.5f, 1f, ImpactStyle.Slash),
         };
 
         /// <summary>この武器で当てたときのヒットストップ(秒)</summary>

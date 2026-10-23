@@ -11,6 +11,8 @@ namespace BattleFight
     public class WeaponHolder : MonoBehaviour
     {
         const float mPopDuration = 0.12f;
+        /// <summary>軌跡が消えるまでの時間</summary>
+        const float mTrailTime = 0.12f;
 
         [SerializeField, FormerlySerializedAs("handAnchor")] Transform mHandAnchor;
         [SerializeField, FormerlySerializedAs("weaponDatabase")] WeaponTypeData[] mWeaponDatabase;
@@ -18,6 +20,8 @@ namespace BattleFight
         [SerializeField, Tooltip("武器の仮モデルに使うマテリアル(色は武器種ごとに変える)"), FormerlySerializedAs("surfaceMaterial")] Material mSurfaceMaterial;
 
         readonly Dictionary<WeaponType, GameObject> mVisuals = new Dictionary<WeaponType, GameObject>();
+        readonly Dictionary<WeaponType, TrailRenderer> mTrails = new Dictionary<WeaponType, TrailRenderer>();
+        bool mTrailOn;
         WeaponType mMainWeapon;
         WeaponType? mTemporaryWeapon;
         WeaponType? mShownWeapon;
@@ -67,9 +71,42 @@ namespace BattleFight
             aHead.localRotation = Quaternion.Euler(iData.HeadRotation);
             aHead.localScale = iData.HeadScale;
 
+            // 振ったときの軌跡(武器の先から出す)。攻撃判定が出ている間だけ描く
+            var aTip = new GameObject("Trail").transform;
+            aTip.SetParent(aRoot.transform, false);
+            aTip.localPosition = iData.HeadOffset;
+            var aTrail = aTip.gameObject.AddComponent<TrailRenderer>();
+            aTrail.time = mTrailTime;
+            aTrail.minVertexDistance = 0.05f;
+            aTrail.startWidth = Mathf.Clamp(Mathf.Max(iData.HeadScale.x, iData.HeadScale.y, iData.HeadScale.z) * 0.5f, 0.12f, 0.45f);
+            aTrail.endWidth = 0f;
+            aTrail.emitting = false;
+            aTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            aTrail.receiveShadows = false;
+            if (mSurfaceMaterial != null) aTrail.sharedMaterial = mSurfaceMaterial;
+            aTrail.material.color = Color.Lerp(iData.Color, Color.white, 0.5f);
+            mTrails[iData.Weapon] = aTrail;
+
             aRoot.SetActive(false);
             return aRoot;
         }
+
+        /// <summary>武器の軌跡を描くか(攻撃判定が出ている間だけ true にする)</summary>
+        public void SetTrail(bool iOn)
+        {
+            if (mTrailOn == iOn) return;
+            mTrailOn = iOn;
+            foreach (var aPair in mTrails)
+            {
+                bool aShown = iOn && mShownWeapon.HasValue && aPair.Key == mShownWeapon.Value;
+                // 描きはじめに、前の位置から線が伸びないよう消しておく
+                if (aShown && !aPair.Value.emitting) aPair.Value.Clear();
+                aPair.Value.emitting = aShown;
+            }
+        }
+
+        /// <summary>軌跡を描いているか(テスト用)</summary>
+        public bool IsTrailOn => mTrailOn;
 
         Transform CreatePart(PrimitiveType iShape, Transform iParent, Color iColor)
         {

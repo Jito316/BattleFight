@@ -49,5 +49,46 @@ namespace BattleFight.Tests
             Assert.AreEqual(Sfx.HitHammer, SfxSynth.HitFor(WeaponType.Hammer));
             Assert.AreEqual(Sfx.HitSword, SfxSynth.HitFor(WeaponType.Sword));
         }
+
+        [Test]
+        public void LongerCombos_EmphasizeHitsMore_UpToALimit()
+        {
+            Assert.AreEqual(1f, HitEmphasis.ComboScale(0));
+            Assert.Greater(HitEmphasis.ComboScale(20), HitEmphasis.ComboScale(5));
+            Assert.AreEqual(HitEmphasis.MaxComboScale, HitEmphasis.ComboScale(HitEmphasis.FullComboCount), 1e-5f);
+            Assert.AreEqual(HitEmphasis.MaxComboScale, HitEmphasis.ComboScale(999), 1e-5f, "上限を超えて大きくなる");
+        }
+
+        [Test]
+        public void Finale_IsTheLastStepOfAMultiStepSkill()
+        {
+            var aCombo = UnityEngine.ScriptableObject.CreateInstance<SkillData>();
+            aCombo.Steps = new System.Collections.Generic.List<SkillStep> { new SkillStep(), new SkillStep(), new SkillStep() };
+            var aSingle = UnityEngine.ScriptableObject.CreateInstance<SkillData>();
+            Assert.IsFalse(HitEmphasis.IsFinale(aCombo, 0, false));
+            Assert.IsTrue(HitEmphasis.IsFinale(aCombo, 2, false));
+            Assert.IsFalse(HitEmphasis.IsFinale(aSingle, 0, false), "1段だけの技まで締めになっている");
+            Assert.IsTrue(HitEmphasis.IsFinale(aSingle, 0, true), "1段のフィニッシャーは締め");
+            UnityEngine.Object.DestroyImmediate(aCombo);
+            UnityEngine.Object.DestroyImmediate(aSingle);
+        }
+
+        [Test]
+        public void ImportantHits_ShowBiggerNumbers()
+        {
+            float aNormal = HitEmphasis.DamageNumberScale(false, false, false, false, false);
+            Assert.AreEqual(1f, aNormal);
+            Assert.Greater(HitEmphasis.DamageNumberScale(true, false, false, false, false), aNormal, "弱点が大きくならない");
+            Assert.Greater(HitEmphasis.DamageNumberScale(false, true, false, false, false),
+                HitEmphasis.DamageNumberScale(true, false, false, false, false), "スワップストライクがいちばん大きくない");
+        }
+
+        [Test]
+        public void Lunge_AndKnockback_DependOnTheWeapon()
+        {
+            Assert.AreEqual(0f, WeaponFeel.For(WeaponType.Gun).Lunge, "銃で踏み込んでいる");
+            Assert.Greater(WeaponFeel.For(WeaponType.Gauntlet).Lunge, WeaponFeel.For(WeaponType.Sword).Lunge);
+            Assert.Greater(WeaponFeel.For(WeaponType.Hammer).KnockbackScale, WeaponFeel.For(WeaponType.Sword).KnockbackScale);
+        }
     }
 }

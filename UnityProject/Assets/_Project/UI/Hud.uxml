@@ -152,5 +152,8 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
+        <!-- 当たりの演出: 画面の縁が武器の色に光る / インパクトフレーム(画面が白く光る) -->
+        <ui:VisualElement name="impact-vignette" class="impact-vignette" picking-mode="Ignore" />
+        <ui:VisualElement name="impact-flash" class="impact-flash" picking-mode="Ignore" />
     </ui:VisualElement>
 </ui:UXML>
