@@ -67,7 +67,8 @@ namespace BattleFight
         {
             if (EliteChanceOverride >= 0f) return EliteChanceOverride;
             if (CurrentStage == null) return 0f;
-            if (CurrentStage.Kind == StageKind.Waves) return 0.12f;
+            // 幕が進むほど出やすく(第1幕 約5% → 第5幕 約15%)。各幕の最初のウェーブでは出さない
+            if (CurrentStage.Kind == StageKind.Waves) return WaveNumber <= 1 ? 0f : 0.03f + 0.025f * Mathf.Max(1, StageIndex);
             if (CurrentStage.Kind == StageKind.Endless) return Mathf.Min(0.3f, 0.08f + WaveNumber * 0.01f);
             return 0f;
         }
@@ -243,6 +244,7 @@ namespace BattleFight
             float aBaseAngle = Mathf.Atan2(aFromCenter.x, aFromCenter.z) * Mathf.Rad2Deg + 180f;
             int aCount = iEnemies.Count;
             float aSpread = aCount > 1 ? Mathf.Min(200f, 40f * aCount) : 0f;
+            int aElites = 0;
 
             for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
@@ -250,10 +252,26 @@ namespace BattleFight
                 float aAngle = (aBaseAngle - aSpread * 0.5f + (aCount > 1 ? aSpread * aIndex / (aCount - 1) : 0f)) * Mathf.Deg2Rad;
                 Vector3 aPosition = mArenaCenter + new Vector3(Mathf.Sin(aAngle), 0f, Mathf.Cos(aAngle)) * mSpawnRadius;
                 // ときどきエリート(巨大・俊足・分裂・障壁)になる
-                var aAffix = EliteMaker.Roll(iEnemies[aIndex], EliteChance(), mRandom);
-                if (aAffix != EliteAffix.None) SpawnElite(iEnemies[aIndex], aAffix, aPosition);
-                else SpawnEnemy(iEnemies[aIndex], aPosition);
+                // 1 ウェーブのエリートは上限まで(序盤の幕は 1 体まで)
+                var aAffix = aElites < MaxElitesPerWave() ? EliteMaker.Roll(iEnemies[aIndex], EliteChance(), mRandom) : EliteAffix.None;
+                if (aAffix != EliteAffix.None)
+                {
+                    aElites++;
+                    SpawnElite(iEnemies[aIndex], aAffix, aPosition);
+                }
+                else
+                {
+                    SpawnEnemy(iEnemies[aIndex], aPosition);
+                }
             }
+        }
+
+        /// <summary>1 ウェーブに出るエリートの上限(第1〜2幕は 1 体、そのあとは 2 体。エンドレスは 3 体)</summary>
+        int MaxElitesPerWave()
+        {
+            if (EliteChanceOverride >= 0f) return int.MaxValue;
+            if (CurrentStage != null && CurrentStage.Kind == StageKind.Endless) return 3;
+            return StageIndex <= 2 ? 1 : 2;
         }
 
         /// <summary>ボスの召喚などで、ウェーブの途中に敵を足す(倒すまでウェーブは終わらない)</summary>

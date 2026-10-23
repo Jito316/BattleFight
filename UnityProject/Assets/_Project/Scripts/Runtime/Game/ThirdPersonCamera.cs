@@ -37,6 +37,11 @@ namespace BattleFight
         Camera mCamera;
         /// <summary>右肩へのずれ(0 〜 1)。ロックオンの付け外しで、なめらかに変える</summary>
         float mShoulder;
+        /// <summary>大きな相手を見るために、いつもより引いている距離</summary>
+        float mExtraDistance;
+
+        /// <summary>今のカメラの距離(テスト用)</summary>
+        public float CurrentDistance => mDistance + mExtraDistance;
 
         /// <summary>今のズームの量(テスト用)</summary>
         public float Zoom => mZoom;
@@ -178,7 +183,10 @@ namespace BattleFight
             mShoulder = Mathf.MoveTowards(mShoulder, aLockTarget != null ? 1f : 0f, 3f * aDeltaTime);
             Vector3 aViewFocus = mFocus + aRotation * Vector3.right * (mShoulderOffset * mShoulder);
             Vector3 aBack = -(aRotation * Vector3.forward);
-            Vector3 aPosition = aViewFocus + aBack * ObstructedDistance(aViewFocus, aBack, mDistance);
+            // 大きな相手(ボス・巨大なエリート)にロックオンしたら、全体が入るよう引く
+            float aWantExtra = aLockTarget != null ? Mathf.Clamp((aLockTarget.Radius - 0.5f) * 4f, 0f, 4f) : 0f;
+            mExtraDistance = Mathf.Lerp(mExtraDistance, aWantExtra, 1f - Mathf.Exp(-3f * aDeltaTime));
+            Vector3 aPosition = aViewFocus + aBack * ObstructedDistance(aViewFocus, aBack, mDistance + mExtraDistance);
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
             aPosition += Random.insideUnitSphere * mShake + mKick;
             mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDeltaTime));

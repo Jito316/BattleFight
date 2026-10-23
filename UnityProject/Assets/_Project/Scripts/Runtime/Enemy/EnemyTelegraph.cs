@@ -123,7 +123,7 @@ namespace BattleFight
             mAim.gameObject.SetActive(false);
             Vector3 aCenter = aAttack.JumpSlam ? mEnemy.SlamDestination : mEnemy.transform.TransformPoint(aAttack.Offset);
             float aGround = aAttack.JumpSlam ? mEnemy.SlamDestination.y : mEnemy.transform.position.y;
-            float aRadius = aAttack.Radius * mEnemy.Profile.Scale;
+            float aRadius = mEnemy.AttackRadius(aAttack);
             FillAmount = aProgress;
 
             mArea.gameObject.SetActive(true);

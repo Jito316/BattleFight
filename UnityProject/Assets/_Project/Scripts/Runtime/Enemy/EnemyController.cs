@@ -447,13 +447,13 @@ namespace BattleFight
                 mAttackLanded = true;
             }
 
-            if (mAttack.JumpSlam || mAttack.SelfDestruct || mAttack.Radius * mProfile.Scale >= 3f)
+            if (mAttack.JumpSlam || mAttack.SelfDestruct || AttackRadius(mAttack) >= 3f)
             {
                 var aCenter = transform.TransformPoint(mAttack.Offset);
                 if (CombatFeedback.Instance != null && !mAttack.Ranged && !mAttack.TargetedStrike)
                 {
                     CombatFeedback.Instance.SpawnShockwave(new Vector3(aCenter.x, transform.position.y, aCenter.z),
-                        mAttack.Radius * mProfile.Scale, mProfile.TelegraphColor);
+                        AttackRadius(mAttack), mProfile.TelegraphColor);
                     CombatFeedback.Instance.Shake(0.2f);
                 }
             }
@@ -508,7 +508,7 @@ namespace BattleFight
         {
             if (mAttackLanded) return;
             Vector3 aCenter = transform.TransformPoint(mAttack.Offset);
-            float aRadius = mAttack.Radius * mProfile.Scale;
+            float aRadius = AttackRadius(mAttack);
             int aCount = Physics.OverlapSphereNonAlloc(aCenter, aRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
             for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
@@ -741,6 +741,19 @@ namespace BattleFight
         /// 攻撃をガード・パリィで受け止められた。iDirection は敵からプレイヤーへの向き。
         /// ガード: 軽く弾かれる / パリィ: 大きく弾かれてよろける(攻撃は中断)
         /// </summary>
+        /// <summary>逃げるしかない攻撃の範囲の上限(体が大きくなっても、移動スキルで逃げ切れる大きさに収める)</summary>
+        public const float MaxDangerRadius = 7f;
+        public const float MaxBossDangerRadius = 9f;
+
+        /// <summary>この攻撃の、実際の範囲(体の大きさを掛け、逃げるしかない攻撃は上限で止める)</summary>
+        public float AttackRadius(EnemyAttack iAttack)
+        {
+            if (iAttack == null) return 0f;
+            float aRadius = iAttack.Radius * mProfile.Scale;
+            if (iAttack.Unblockable) aRadius = Mathf.Min(aRadius, mProfile.IsBoss ? MaxBossDangerRadius : MaxDangerRadius);
+            return aRadius;
+        }
+
         /// <summary>予備動作の始まりに、狙いが範囲の中にいたか</summary>
         bool mTargetInDangerAtStart;
 
@@ -751,7 +764,7 @@ namespace BattleFight
             Vector3 aCenter = mAttack.JumpSlam ? mSlamDestination : transform.TransformPoint(mAttack.Offset);
             Vector3 aOffset = mTarget.position - aCenter;
             aOffset.y = 0f;
-            return aOffset.magnitude <= mAttack.Radius * mProfile.Scale;
+            return aOffset.magnitude <= AttackRadius(mAttack);
         }
 
         /// <summary>

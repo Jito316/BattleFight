@@ -134,5 +134,82 @@ namespace BattleFight.Tests
             yield return null;
             Assert.Greater(RenderSettings.reflectionIntensity, 0.4f, "明るいステージまで照り返しが弱い");
         }
+
+        EnemyProfile FindArmored()
+        {
+            foreach (var aStage in mDirector.Stages)
+            {
+                if (aStage == null || aStage.Waves == null) continue;
+                foreach (var aWave in aStage.Waves)
+                {
+                    foreach (var aProfile in aWave.Enemies)
+                    {
+                        if (aProfile != null && aProfile.DisplayName == "重装兵") return aProfile;
+                    }
+                }
+            }
+            Assert.Fail("重装兵がいない");
+            return null;
+        }
+
+        [UnityTest]
+        public IEnumerator FirstWave_HasNoElites()
+        {
+            ArenaDirector.EliteChanceOverride = -1f;
+            LoadoutStorage.Clear();
+            ExplorationSave.Reset();
+            SceneManager.LoadScene(mSceneName);
+            yield return null;
+            yield return null;
+            mDirector = Object.FindFirstObjectByType<ArenaDirector>();
+            mDirector.StartStage(1);
+            yield return WaitUntil(() => EnemyController.Active.Count > 0, 5f);
+            Assert.AreEqual(1, mDirector.WaveNumber);
+            foreach (var aEnemy in EnemyController.Active)
+            {
+                Assert.AreEqual(EliteAffix.None, aEnemy.Profile.Elite, "最初のウェーブにエリートが出た");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator GiantElite_DangerArea_StaysEscapable()
+        {
+            yield return LoadEmptyArena();
+            var aGiant = mDirector.SpawnElite(FindArmored(), EliteAffix.Giant, mPlayer.position + mPlayer.forward * 8f);
+            yield return null;
+            var aQuake = aGiant.Profile.Attacks.Find(iAttack => iAttack.Unblockable);
+            Assert.NotNull(aQuake);
+            Assert.Greater(aQuake.Radius * aGiant.Profile.Scale, EnemyController.MaxDangerRadius, "(前提)巨大になると範囲が上限を超える");
+            Assert.AreEqual(EnemyController.MaxDangerRadius, aGiant.AttackRadius(aQuake), 1e-4f, "逃げるしかない攻撃の範囲が上限で止まらない");
+        }
+
+        [UnityTest]
+        public IEnumerator LockingOnToABigEnemy_PullsTheCameraBack()
+        {
+            yield return LoadEmptyArena();
+            var aRig = Object.FindFirstObjectByType<ThirdPersonCamera>();
+            float aBase = aRig.CurrentDistance;
+            mDirector.SpawnElite(FindArmored(), EliteAffix.Giant, mPlayer.position + mPlayer.forward * 9f);
+            yield return null;
+            yield return Tap(mKeyboard.tabKey);
+            yield return new WaitForSeconds(1.2f);
+            Assert.Greater(aRig.CurrentDistance, aBase + 1f, "大きな敵にロックオンしても、カメラが引かない");
+        }
+
+        [UnityTest]
+        public IEnumerator Announcements_DoNotPileUp()
+        {
+            yield return LoadEmptyArena();
+            var aStyle = mPlayer.GetComponent<StyleRankSystem>();
+            aStyle.Announce("WEAK!", Color.white);
+            aStyle.Announce("CHAIN ×1", Color.white);
+            aStyle.Announce("WEAK!", Color.white);
+            aStyle.Announce("SWAP STRIKE!", Color.white);
+            aStyle.Announce("CHANGE ATTACK", Color.white);
+            aStyle.Announce("WEAK!", Color.white);
+            Assert.LessOrEqual(aStyle.Announcements.Count, StyleRankSystem.MaxAnnouncements, "右側の文字が多すぎる");
+            Assert.AreEqual(1, aStyle.Announcements.FindAll(iAnnouncement => iAnnouncement.Text == "WEAK!").Count, "同じ文字が並んでいる");
+            Assert.AreEqual("WEAK!", aStyle.Announcements[aStyle.Announcements.Count - 1].Text, "最後に出た文字がいちばん新しくない");
+        }
     }
 }
