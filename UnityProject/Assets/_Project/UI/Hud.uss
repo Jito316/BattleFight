@@ -821,3 +821,23 @@
     font-size: 26px;
     translate: -50% -50%;
 }
+
+/* 当たりの演出(BattleHud が毎フレーム opacity を変える) */
+
+.impact-vignette,
+.impact-flash {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
+
+.impact-flash {
+    background-color: rgb(255, 255, 255);
+}
+
+.impact-vignette {
+    -unity-background-scale-mode: stretch-to-fill;
+}

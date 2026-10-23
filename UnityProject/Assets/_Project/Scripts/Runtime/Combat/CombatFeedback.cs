@@ -13,7 +13,14 @@ namespace BattleFight
             public string Text;
             public Color Color;
             public float Time;
+            /// <summary>文字の大きさ(1 = ふつう)。弱点・締め・スワップストライクほど大きい</summary>
+            public float Scale;
         }
+
+        /// <summary>インパクトフレーム(画面が白く光る)が消えるまでの時間</summary>
+        public const float FlashDuration = 0.09f;
+        /// <summary>画面の縁が武器の色に光る演出が消えるまでの時間</summary>
+        public const float VignetteDuration = 0.35f;
 
         public const float DamageNumberLifetime = 0.8f;
 
@@ -25,11 +32,22 @@ namespace BattleFight
         float mHitStopEnd;
         float mSlowMotionEnd;
         float mSlowMotionScale = 1f;
+        float mFlashStrength;
+        float mFlashTime = -99f;
+        float mVignetteStrength;
+        float mVignetteTime = -99f;
 
         public static CombatFeedback Instance { get; private set; }
         /// <summary>実行時に作るエフェクトや弾に使うマテリアル(シェーダーがビルドに残るようシーンから参照)</summary>
         public Material EffectMaterial => mEffectMaterial;
         public List<DamageNumber> DamageNumbers { get; } = new List<DamageNumber>();
+
+        /// <summary>今のインパクトフレームの明るさ(0 〜 1)。HUD が全面に白を重ねる</summary>
+        public float FlashAmount => mFlashStrength * Mathf.Clamp01(1f - (Time.unscaledTime - mFlashTime) / FlashDuration);
+        /// <summary>今の画面の縁の光の強さ(0 〜 1)と色</summary>
+        public float VignetteAmount => mVignetteStrength * Mathf.Clamp01(1f - (Time.unscaledTime - mVignetteTime) / VignetteDuration);
+        public Color VignetteColor { get; private set; } = Color.white;
+        public ThirdPersonCamera CameraRig => mCameraRig;
 
         void Awake()
         {
@@ -140,7 +158,34 @@ namespace BattleFight
             if (mCameraRig != null) mCameraRig.AddShake(iAmount);
         }
 
-        public void SpawnDamageNumber(Vector3 iPosition, float iAmount, Color iColor)
+        /// <summary>当たった向きへカメラを一瞬押す</summary>
+        public void Kick(Vector3 iDirection, float iAmount)
+        {
+            if (mCameraRig != null) mCameraRig.AddKick(iDirection, iAmount);
+        }
+
+        /// <summary>一瞬ズームする(重い一撃・技の締め)</summary>
+        public void Punch(float iDegrees)
+        {
+            if (mCameraRig != null) mCameraRig.AddZoom(iDegrees);
+        }
+
+        /// <summary>インパクトフレーム: 1〜2 コマ、画面を白く光らせる(いちばん強い当たりだけに使う)</summary>
+        public void Flash(float iStrength)
+        {
+            mFlashStrength = Mathf.Max(FlashAmount, Mathf.Clamp01(iStrength));
+            mFlashTime = Time.unscaledTime;
+        }
+
+        /// <summary>画面の縁を、武器の色で一瞬光らせる</summary>
+        public void Vignette(Color iColor, float iStrength)
+        {
+            mVignetteStrength = Mathf.Max(VignetteAmount, Mathf.Clamp01(iStrength));
+            mVignetteTime = Time.unscaledTime;
+            VignetteColor = iColor;
+        }
+
+        public void SpawnDamageNumber(Vector3 iPosition, float iAmount, Color iColor, float iScale = 1f)
         {
             DamageNumbers.Add(new DamageNumber
             {
@@ -148,7 +193,28 @@ namespace BattleFight
                 Text = Mathf.CeilToInt(iAmount).ToString(),
                 Color = iColor,
                 Time = Time.unscaledTime,
+                Scale = iScale,
             });
+        }
+
+        /// <summary>アーマーが砕けた欠片: 大きめの破片が勢いよく飛び散る</summary>
+        public void SpawnShards(Vector3 iPosition, Color iColor, int iCount, float iSize)
+        {
+            for (int aIndex = 0; aIndex < iCount; aIndex++)
+            {
+                var aObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                aObject.name = "ArmorShard";
+                DestroyImmediate(aObject.GetComponent<Collider>());
+                var aRenderer = aObject.GetComponent<Renderer>();
+                if (mEffectMaterial != null) aRenderer.sharedMaterial = mEffectMaterial;
+                aRenderer.material.color = Color.Lerp(iColor, Color.white, Random.Range(0f, 0.3f));
+                aObject.transform.position = iPosition + Random.insideUnitSphere * 0.3f;
+                aObject.transform.rotation = Random.rotation;
+                aObject.transform.localScale = new Vector3(iSize, iSize * 0.4f, iSize * Random.Range(0.6f, 1.2f));
+                Vector3 aVelocity = Random.onUnitSphere * Random.Range(6f, 10f);
+                aVelocity.y = Mathf.Abs(aVelocity.y) + 3f;
+                aObject.AddComponent<DebrisFx>().Play(aVelocity, Random.Range(0.5f, 0.8f), null);
+            }
         }
 
         /// <summary>

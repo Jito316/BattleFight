@@ -28,9 +28,20 @@ namespace BattleFight
         float mPitch = 18f;
         float mShake;
         Vector3 mFocus;
+        /// <summary>当たった向きに押される量(ばねで戻る)</summary>
+        Vector3 mKick;
+        /// <summary>ズームの量(画角を何度狭めるか)</summary>
+        float mZoom;
+        float mBaseFieldOfView;
+        Camera mCamera;
+
+        /// <summary>今のズームの量(テスト用)</summary>
+        public float Zoom => mZoom;
 
         void Start()
         {
+            mCamera = GetComponent<Camera>();
+            if (mCamera != null) mBaseFieldOfView = mCamera.fieldOfView;
             if (mTarget != null)
             {
                 mYaw = mTarget.eulerAngles.y;
@@ -64,6 +75,17 @@ namespace BattleFight
         }
 
         public void AddShake(float iAmount) => mShake = Mathf.Min(0.5f, mShake + iAmount);
+
+        /// <summary>当たった向き(水平)へ、カメラを一瞬押す。ランダムな揺れより「どちらから殴ったか」が伝わる</summary>
+        public void AddKick(Vector3 iDirection, float iAmount)
+        {
+            iDirection.y = 0f;
+            if (iDirection.sqrMagnitude < 1e-4f) return;
+            mKick = Vector3.ClampMagnitude(mKick + iDirection.normalized * iAmount, 0.6f);
+        }
+
+        /// <summary>一瞬だけズームする(重い一撃・技の締め)。iDegrees は画角を狭める角度</summary>
+        public void AddZoom(float iDegrees) => mZoom = Mathf.Min(12f, Mathf.Max(mZoom, iDegrees));
 
         static readonly RaycastHit[] mCameraHits = new RaycastHit[16];
 
@@ -120,8 +142,11 @@ namespace BattleFight
             Vector3 aBack = -(aRotation * Vector3.forward);
             Vector3 aPosition = mFocus + aBack * ObstructedDistance(mFocus, aBack, mDistance);
             aPosition.y = Mathf.Max(aPosition.y, 0.4f);
-            aPosition += Random.insideUnitSphere * mShake;
+            aPosition += Random.insideUnitSphere * mShake + mKick;
             mShake = Mathf.Lerp(mShake, 0f, 1f - Mathf.Exp(-10f * aDeltaTime));
+            mKick = Vector3.Lerp(mKick, Vector3.zero, 1f - Mathf.Exp(-14f * aDeltaTime));
+            mZoom = Mathf.Lerp(mZoom, 0f, 1f - Mathf.Exp(-9f * aDeltaTime));
+            if (mCamera != null && mBaseFieldOfView > 0f) mCamera.fieldOfView = mBaseFieldOfView - mZoom;
 
             transform.SetPositionAndRotation(aPosition, Quaternion.LookRotation(mFocus - aPosition));
         }

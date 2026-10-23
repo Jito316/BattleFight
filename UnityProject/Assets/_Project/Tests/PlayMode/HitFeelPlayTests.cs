@@ -172,5 +172,56 @@ namespace BattleFight.Tests
             Time.captureDeltaTime = 0f;
             Assert.Less(aEnemy.Damageable.Health, aHealth, "速い弾が敵をすり抜けた");
         }
+
+        [UnityTest]
+        public IEnumerator WeaponTrail_IsDrawnOnlyWhileTheAttackIsOut()
+        {
+            yield return LoadEmptyArena();
+            yield return WaitUntil(() => mExecutor.GetComponent<PlayerMotor>().IsGrounded, 3f);
+            var aWeapons = mExecutor.GetComponent<WeaponHolder>();
+            Assert.IsFalse(aWeapons.IsTrailOn);
+
+            yield return Tap(mKeyboard.jKey);
+            yield return WaitUntil(() => aWeapons.IsTrailOn, 1f);
+            yield return WaitUntil(() => !mExecutor.IsBusy, 3f);
+            yield return null;
+            Assert.IsFalse(aWeapons.IsTrailOn, "技が終わっても軌跡が出たまま");
+        }
+
+        [UnityTest]
+        public IEnumerator ArmorBreak_FlashesZoomsShattersAndRumbles()
+        {
+            yield return LoadEmptyArena();
+            var aEnemy = Spawn(mPlayer.forward * 3f);
+            aEnemy.Damageable.Configure(Team.Enemy, 100000f, 1f, 99f);
+            yield return null;
+            var aFeedback = CombatFeedback.Instance;
+
+            Hit("Skill_Hammer_Combo", aEnemy);
+            Assert.Greater(aFeedback.FlashAmount, 0f, "画面が光らない");
+            Assert.Greater(aFeedback.VignetteAmount, 0f, "画面の縁が光らない");
+            Assert.Greater(aFeedback.DamageNumbers[aFeedback.DamageNumbers.Count - 1].Scale, 1.4f, "数字が大きくならない");
+            Assert.AreEqual(0.8f, Rumble.LastStrength, 1e-4f, "強く振動しない");
+            yield return null;
+            Assert.Greater(aFeedback.CameraRig.Zoom, 0f, "ズームしない");
+            int aShards = 0;
+            foreach (var aTransform in Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)) if (aTransform.name == "ArmorShard") aShards++;
+            Assert.Greater(aShards, 0, "アーマーの欠片が出ない");
+
+            yield return new WaitForSecondsRealtime(CombatFeedback.VignetteDuration + 0.05f);
+            Assert.AreEqual(0f, aFeedback.FlashAmount);
+            Assert.AreEqual(0f, aFeedback.VignetteAmount);
+        }
+
+        [UnityTest]
+        public IEnumerator LightHits_DoNotFlashTheScreen()
+        {
+            yield return LoadEmptyArena();
+            var aEnemy = Spawn(mPlayer.forward * 3f);
+            yield return null;
+            Hit("Skill_Gun_Rapid", aEnemy);
+            Assert.AreEqual(0f, CombatFeedback.Instance.FlashAmount, "軽い当たりで画面が光った");
+            Assert.Less(Rumble.LastStrength, 0.5f);
+        }
     }
 }

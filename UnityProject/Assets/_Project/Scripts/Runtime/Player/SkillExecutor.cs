@@ -122,6 +122,8 @@ namespace BattleFight
         int mSwapCancelStreak;
         float mLastSwapCancelTime = -99f;
         float mFrozenUntil = -1f;
+        /// <summary>この段で、当てたときの踏み込みをもう入れたか(1段に1回だけ)</summary>
+        bool mLungedThisStep;
 
         public SkillData Current => mCurrent;
         public bool IsBusy => mCurrent != null;
@@ -563,6 +565,7 @@ namespace BattleFight
             mPhaseTime = 0f;
             mChainQueued = false;
             mStyleRegisteredThisStep = false;
+            mLungedThisStep = false;
             mHitThisStep.Clear();
 
             if (!mMotor.IsGrounded && mCurrent.Behavior != SkillBehavior.HammerJump && mMotor.VerticalVelocity < 0f)
@@ -812,6 +815,11 @@ namespace BattleFight
             var aFeel = WeaponFeel.For(aSkill.Weapon);
             bool aAnyHeavy = false;
             bool aAnyArmorBroken = false;
+            // コンボが続くほど、当たりを大きく見せる。技の締めの一撃はさらに大きく
+            float aComboScale = HitEmphasis.ComboScale(Combo.Count);
+            bool aFinale = aSkill == mCurrent && iContext.StepIndex == mStepIndex && HitEmphasis.IsFinale(aSkill, iContext.StepIndex, mIsFinisher);
+            float aFinaleScale = aFinale ? 1.5f : 1f;
+            Vector3 aKickDirection = transform.forward;
 
             bool aAnyWeak = false;
             int aLanded = 0;
@@ -843,11 +851,11 @@ namespace BattleFight
                     Damage = aDamage,
                     Stagger = aStagger,
                     ArmorBreak = aStep.ArmorBreak * iContext.Multiplier,
-                    Knockback = aStep.Knockback,
+                    Knockback = aStep.Knockback * aFeel.KnockbackScale * aFinaleScale,
                     Launch = aStep.Launch,
                     Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
                     Source = gameObject,
-                    Reaction = aFeel.ReactionScale,
+                    Reaction = aFeel.ReactionScale * (aFinale ? 1.3f : 1f),
                 });
                 if (!aOutcome.Landed()) continue;
 
@@ -856,7 +864,8 @@ namespace BattleFight
                 aLanded++;
                 if (aWeak) aWeakLanded++;
                 // ヒットストップは、当てた敵だけを止める(ほかの敵・弾は動き続ける)
-                float aTargetHitstop = aFeel.Hitstop(aStep.Hitstop, aOutcome == HitOutcome.ArmorBroken);
+                float aTargetHitstop = aFeel.Hitstop(aStep.Hitstop * aComboScale * aFinaleScale, aOutcome == HitOutcome.ArmorBroken);
+                if (aDirection.sqrMagnitude > 1e-4f) aKickDirection = aDirection;
                 aHitstop = Mathf.Max(aHitstop, aTargetHitstop);
                 var aEnemy = aTarget.GetComponent<EnemyController>();
                 if (aEnemy != null) aEnemy.Freeze(aTargetHitstop);
@@ -884,17 +893,19 @@ namespace BattleFight
                         : aWeak ? mWeakColor
                         : aOutcome == HitOutcome.Armored ? new Color(0.7f, 0.7f, 0.7f)
                         : Color.white;
-                    CombatFeedback.Instance.SpawnDamageNumber(aTarget.transform.position + Vector3.up * 2.2f, aTarget.LastDamage, aColor);
-
                     // 火花(弱点・アーマー破壊・重い一撃は多く)。重い一撃は画面も大きく揺らす
                     bool aHeavy = aTarget.LastDamage >= 25f || aOutcome == HitOutcome.ArmorBroken;
                     aAnyHeavy |= aHeavy;
+                    float aNumberScale = HitEmphasis.DamageNumberScale(aWeak, aSwapStrike, aOutcome == HitOutcome.ArmorBroken, aHeavy, aFinale);
+                    CombatFeedback.Instance.SpawnDamageNumber(aTarget.transform.position + Vector3.up * 2.2f, aTarget.LastDamage, aColor, aNumberScale);
                     var aSparkColor = aWeak || aSwapStrike ? aColor : aWeaponData != null ? Color.Lerp(aWeaponData.Color, Color.white, 0.4f) : Color.white;
                     var aHitPoint = Vector3.Lerp(aTarget.transform.position + Vector3.up * 1.1f, iSourcePosition + Vector3.up * 1.1f, 0.25f);
-                    CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, (aHeavy || aWeak ? 9 : 5) + aFeel.ExtraSparks,
-                        aFeel.SparkSpeed * (aHeavy ? 1.25f : 1f));
-                    CombatFeedback.Instance.SpawnImpact(aFeel.Style, aHitPoint, aTarget.transform.position, aDirection, aSparkColor, aHeavy);
+                    int aSparks = Mathf.RoundToInt(((aHeavy || aWeak ? 9 : 5) + aFeel.ExtraSparks) * aComboScale * aFinaleScale);
+                    CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, aSparks, aFeel.SparkSpeed * (aHeavy ? 1.25f : 1f));
+                    CombatFeedback.Instance.SpawnImpact(aFeel.Style, aHitPoint, aTarget.transform.position, aDirection, aSparkColor, aHeavy || aFinale);
                     if (aHeavy) CombatFeedback.Instance.Shake(0.22f * aFeel.ShakeScale);
+                    // アーマーが砕けた: 灰色の大きな欠片が飛び散る
+                    if (aOutcome == HitOutcome.ArmorBroken) CombatFeedback.Instance.SpawnShards(aHitPoint, new Color(0.55f, 0.56f, 0.62f), 10, 0.28f);
                 }
             }
 
@@ -911,9 +922,37 @@ namespace BattleFight
             {
                 mStyle.AddBonus(mChainStyleBonusPerStep * SwapChain.Chain, $"CHAIN ×{SwapChain.Chain}", new Color(0.55f, 1f, 0.9f));
             }
-            // 近接で当てたときは、プレイヤーも一緒に止まる(飛び道具は撃った本人は止まらない)
-            if (IsMelee(aSkill) && aSkill == mCurrent) mFrozenUntil = Mathf.Max(mFrozenUntil, Time.unscaledTime + aHitstop);
-            if (CombatFeedback.Instance != null) CombatFeedback.Instance.Shake((0.05f + aHitstop) * aFeel.ShakeScale);
+            // 近接で当てたときは、プレイヤーも一緒に止まる(飛び道具は撃った本人は止まらない)。止まり終わったら少し踏み込む
+            bool aMelee = IsMelee(aSkill) && aSkill == mCurrent;
+            if (aMelee) mFrozenUntil = Mathf.Max(mFrozenUntil, Time.unscaledTime + aHitstop);
+            if (aMelee && !mLungedThisStep && aFeel.Lunge > 0f)
+            {
+                mLungedThisStep = true;
+                mMotor.AddImpulse(transform.forward * aFeel.Lunge);
+            }
+
+            // いちばん強い当たり(アーマー破壊・技の締め・大槌の重い一撃)は、画面を光らせてズームする
+            bool aStrong = aAnyArmorBroken || aFinale || (aAnyHeavy && aSkill.Weapon == WeaponType.Hammer);
+            var aWeaponColor = aWeaponData != null ? aWeaponData.Color : Color.white;
+            if (CombatFeedback.Instance != null)
+            {
+                CombatFeedback.Instance.Shake((0.05f + aHitstop) * aFeel.ShakeScale * aComboScale);
+                CombatFeedback.Instance.Kick(aKickDirection, 0.08f * aFeel.ShakeScale * (aAnyHeavy ? 2f : 1f) * aFinaleScale);
+                if (aStrong)
+                {
+                    CombatFeedback.Instance.Flash(aAnyArmorBroken ? 0.6f : 0.45f);
+                    CombatFeedback.Instance.Punch(5f);
+                    CombatFeedback.Instance.Vignette(aWeaponColor, 0.7f);
+                }
+                else if (aAnyHeavy)
+                {
+                    CombatFeedback.Instance.Punch(2f);
+                    CombatFeedback.Instance.Vignette(aWeaponColor, 0.35f);
+                }
+            }
+            if (aStrong) Rumble.Play(0.8f, 0.6f, 0.25f);
+            else if (aAnyHeavy) Rumble.Play(0.5f, 0.4f, 0.15f);
+            else Rumble.Play(0.15f, 0.35f, 0.07f);
 
             SoundPlayer.Play(SfxSynth.HitFor(aSkill.Weapon), aAnyHeavy ? 1f : 0.8f, aAnyHeavy ? 0.9f : 1f);
             if (aAnyWeak) SoundPlayer.Play(Sfx.Weak, 0.5f);
@@ -1286,6 +1325,9 @@ namespace BattleFight
 
         void UpdateWeaponPose()
         {
+            // 近接の攻撃判定が出ている間(と振り抜きの少しあと)は、武器の軌跡を描く
+            mWeapons.SetTrail(mCurrent != null && IsMelee(mCurrent)
+                              && (mPhase == Phase.Active || (mPhase == Phase.Recovery && Progress(mStep.RecoveryFrames) < 0.25f)));
             if (mCurrent == null)
             {
                 mWeapons.SetIdle();
