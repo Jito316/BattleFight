@@ -2,45 +2,45 @@ using System;
 
 namespace BattleFight
 {
-    /// <summary>効果音の種類</summary>
+    /// <summary>効果音の種類。番号はデータ(SoundLibrary)に保存されるので、足すときは最後に足す(途中に入れない・消さない)</summary>
     public enum Sfx
     {
-        Swing,
-        HitSword,
-        HitHammer,
-        HitChain,
-        HitStaff,
-        HitGun,
-        HitGauntlet,
+        Swing = 0,
+        HitSword = 1,
+        HitHammer = 2,
+        HitChain = 3,
+        HitStaff = 4,
+        HitGun = 5,
+        HitGauntlet = 6,
         /// <summary>弱点に当てたときに重ねる高い音</summary>
-        Weak,
-        ArmorBreak,
-        Defeat,
-        Hurt,
-        Dodge,
-        Swap,
+        Weak = 7,
+        ArmorBreak = 8,
+        Defeat = 9,
+        Hurt = 10,
+        Dodge = 11,
+        Swap = 12,
         /// <summary>銃を撃った音</summary>
-        Shot,
+        Shot = 13,
         /// <summary>敵の攻撃の予備動作(だんだん高くなる音で、攻撃が来ることを知らせる)</summary>
-        EnemyWindup,
+        EnemyWindup = 14,
         /// <summary>ガードで受け止めた音(金属がぶつかる重い音)</summary>
-        Guard,
+        Guard = 15,
         /// <summary>パリィ・カウンター(高く澄んで長く響く音)</summary>
-        Parry,
+        Parry = 16,
         /// <summary>ジャンプの踏み切り(短く上がる風切り)</summary>
-        Jump,
+        Jump = 17,
         /// <summary>着地(低いドッという音と土の擦れ)</summary>
-        Land,
+        Land = 18,
         /// <summary>剣の振り: 短く鋭い「ヒュッ」</summary>
-        SwingSword,
+        SwingSword = 19,
         /// <summary>大槌の振り: 低く重い「ブォン」</summary>
-        SwingHeavy,
+        SwingHeavy = 20,
         /// <summary>鎖の振り: 風切りに金属のこすれ「ジャラッ」</summary>
-        SwingChain,
+        SwingChain = 21,
         /// <summary>杖の振り: 風切りに、きらめく高い音</summary>
-        SwingStaff,
+        SwingStaff = 22,
         /// <summary>籠手の振り: 短く詰まった「シュッ」</summary>
-        SwingFist,
+        SwingFist = 23,
     }
 
     /// <summary>

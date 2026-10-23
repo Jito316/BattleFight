@@ -29,6 +29,7 @@ namespace BattleFight
         [SerializeField, FormerlySerializedAs("hitStopTimeScale")] float mHitStopTimeScale = 0.05f;
         [SerializeField, FormerlySerializedAs("maxHitStop")] float mMaxHitStop = 0.15f;
         [SerializeField, Tooltip("演出の差し替え表(場面ごとのプレハブ)。空ならいつもの演出だけ")] EffectLibrary mEffects;
+        [SerializeField, Tooltip("音の差し替え表(音の種類ごとの音のファイル)。空ならコードで作った音だけ")] SoundLibrary mSounds;
 
         float mHitStopEnd;
         float mSlowMotionEnd;
@@ -54,6 +55,7 @@ namespace BattleFight
         {
             Instance = this;
             Time.timeScale = 1f;
+            SoundPlayer.Library = mSounds;
         }
 
         void OnDestroy()

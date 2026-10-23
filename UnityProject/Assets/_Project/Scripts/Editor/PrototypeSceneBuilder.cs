@@ -155,6 +155,7 @@ namespace BattleFight.EditorTools
 
             var aStyleConfig = Asset<StyleRankConfig>("StyleRankConfig", iResetData, _ => { });
             var aEffects = EnsureEffectLibrary();
+            var aSounds = EnsureSoundLibrary();
 
             var aGrunt = Asset<EnemyProfile>("Enemies/Enemy_Grunt", iResetData, PrototypeDefaults.Grunt);
             var aArmored = Asset<EnemyProfile>("Enemies/Enemy_Armored", iResetData, PrototypeDefaults.Armored);
@@ -239,6 +240,9 @@ namespace BattleFight.EditorTools
                 aGrunt, aArmored, aBoss, aShooter, aDasher, aFlyer, aBomber, aDummy, aArmoredDummy, aFlyingDummy,
                 aMagus, aShadow, aMirrorBlade, aMirrorCaster, aMirrorBrawler,
             });
+
+            // あとから足した参照を、今あるプレハブにも入れる(空のときだけ)
+            FillEmptyReferences(DirectorPrefabPath, iDirector => FillIfEmpty(iDirector.GetComponent<CombatFeedback>(), "mSounds", aSounds));
 
             AssetDatabase.SaveAssets();
             if (!aBuildScene)
@@ -403,6 +407,7 @@ namespace BattleFight.EditorTools
                 {
                     iSerialized.FindProperty("mEffectMaterial").objectReferenceValue = aSurface;
                     iSerialized.FindProperty("mEffects").objectReferenceValue = aEffects;
+                    iSerialized.FindProperty("mSounds").objectReferenceValue = aSounds;
                 });
                 Configure(aNewArena, iSerialized =>
                 {

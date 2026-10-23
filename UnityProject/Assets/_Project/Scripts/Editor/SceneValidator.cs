@@ -28,6 +28,7 @@ namespace BattleFight.EditorTools
             (typeof(CombatFeedback), "mCameraRig"),
             (typeof(CombatFeedback), "mEffectMaterial"),
             (typeof(CombatFeedback), "mEffects"),
+            (typeof(CombatFeedback), "mSounds"),
             (typeof(ThirdPersonCamera), "mTarget"),
             (typeof(ThirdPersonCamera), "mInput"),
             (typeof(ThirdPersonCamera), "mLockOn"),
