@@ -72,7 +72,7 @@ namespace BattleFight
             for (int aIndex = 1; aIndex <= SaveProfiles.SlotCount; aIndex++)
             {
                 var aSlot = Classed(new VisualElement(), "profile-slot");
-                aSlot.Add(Classed(new Label($"スロット{aIndex}"), "profile-slot__title"));
+                aSlot.Add(Classed(new Label(GameText.Format("select.slot", aIndex)), "profile-slot__title"));
                 var aInfo = Classed(new Label(), "profile-slot__info");
                 aSlot.Add(aInfo);
                 int aNumber = aIndex;
@@ -103,7 +103,7 @@ namespace BattleFight
                 Button aReset = null;
                 if (aStage != null && aStage.Kind == StageKind.Exploration)
                 {
-                    aReset = Classed(new Button { text = "はじめから" }, "stage-row__reset");
+                    aReset = Classed(new Button { text = GameText.Get("select.start_over") }, "stage-row__reset");
                     // 行のクリック(ステージ開始)まで届かないようにする
                     aReset.RegisterCallback<ClickEvent>(iEvent =>
                     {
@@ -221,22 +221,21 @@ namespace BattleFight
             mFooter.EnableInClassList("select__footer--notice", aNotice);
             mFooter.text = aNotice
                 ? mNotice
-                : "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   Q・E(LB・RB)でスロット   [P] スキル編成   [O] 設定"
-                  + (aExploration && ExplorationSave.HasStarted ? "   [Backspace] 探索をはじめから" : "");
+                : GameText.Get("select.footer") + (aExploration && ExplorationSave.HasStarted ? GameText.Get("select.footer.start_over") : "");
         }
 
         static string SlotText(int iSlot)
         {
-            if (!SaveProfiles.IsUsed(iSlot)) return "空き";
+            if (!SaveProfiles.IsUsed(iSlot)) return GameText.Get("select.slot.empty");
             var aLast = SaveProfiles.LastPlayed(iSlot);
-            return aLast.HasValue ? $"最後に遊んだ日 {aLast.Value:M/d HH:mm}" : "データあり";
+            return aLast.HasValue ? GameText.Format("select.slot.last_played", aLast.Value) : GameText.Get("select.slot.has_data");
         }
 
         void SelectSlot(int iSlot)
         {
             if (iSlot == SaveProfiles.Current) return;
             SaveProfiles.Select(iSlot);
-            ShowNotice($"スロット{iSlot} に切り替えました");
+            ShowNotice(GameText.Format("select.slot.switched", iSlot));
         }
 
         void ShowNotice(string iText)
@@ -249,12 +248,12 @@ namespace BattleFight
 
         void AskStartOver(StageData iStage)
         {
-            OpenConfirm("探索をはじめからにしますか?",
-                $"スロット{SaveProfiles.Current} の探索の記録(集めたスキル・開けた道・祭壇・探索の編成)を消します。元には戻せません。",
+            OpenConfirm(GameText.Get("select.start_over.title"),
+                GameText.Format("select.start_over.text", SaveProfiles.Current),
                 () =>
                 {
                     ExplorationSave.StartOver(iStage.name);
-                    ShowNotice("探索の記録を消しました。はじめから遊べます");
+                    ShowNotice(GameText.Get("select.start_over.done"));
                 });
         }
 
@@ -264,15 +263,15 @@ namespace BattleFight
             int aSlot = SaveProfiles.Current;
             if (!SaveProfiles.IsUsed(aSlot))
             {
-                ShowNotice($"スロット{aSlot} は空きです");
+                ShowNotice(GameText.Format("select.slot.is_empty", aSlot));
                 return;
             }
-            OpenConfirm($"スロット{aSlot} を消しますか?",
-                "探索の記録・スキル編成・ステージの記録をすべて消します。元には戻せません。",
+            OpenConfirm(GameText.Format("select.slot.delete.title", aSlot),
+                GameText.Get("select.slot.delete.text"),
                 () =>
                 {
                     SaveProfiles.Delete(aSlot);
-                    ShowNotice($"スロット{aSlot} を消しました");
+                    ShowNotice(GameText.Format("select.slot.deleted", aSlot));
                 });
         }
 
@@ -325,19 +324,20 @@ namespace BattleFight
             switch (iStage.Kind)
             {
                 case StageKind.Training:
-                    return "練習用";
+                    return GameText.Get("select.record.training");
                 case StageKind.Exploration:
-                    if (!ExplorationSave.HasStarted) return "はじめから";
-                    string aCleared = StageRecords.IsCleared(iStage.name) ? "クリア済み  " : "";
-                    return $"{aCleared}スキル {ExplorationSave.UnlockedCount} / {Mathf.Max(ExplorationSave.TotalSkills, ExplorationSave.UnlockedCount)}";
+                    if (!ExplorationSave.HasStarted) return GameText.Get("select.start_over");
+                    string aCleared = StageRecords.IsCleared(iStage.name) ? GameText.Get("select.record.cleared_mark") : "";
+                    return GameText.Format("select.record.exploration", aCleared, ExplorationSave.UnlockedCount,
+                        Mathf.Max(ExplorationSave.TotalSkills, ExplorationSave.UnlockedCount));
                 case StageKind.Endless:
                     int aWave = StageRecords.BestWave(iStage.name);
-                    return aWave > 0 ? $"最高 WAVE {aWave}" : "記録なし";
+                    return aWave > 0 ? GameText.Format("select.record.endless", aWave) : GameText.Get("select.record.none");
                 default:
-                    if (!StageRecords.IsCleared(iStage.name)) return "未クリア";
+                    if (!StageRecords.IsCleared(iStage.name)) return GameText.Get("select.record.not_cleared");
                     int aRank = StageRecords.BestRank(iStage.name);
                     string aRankName = mRankConfig != null && aRank >= 0 ? mRankConfig.RankNames[Mathf.Min(aRank, mRankConfig.RankNames.Length - 1)] : "-";
-                    return $"クリア済み  {StageRecords.BestTime(iStage.name):0.0}秒 / {aRankName}";
+                    return GameText.Format("select.record.cleared", StageRecords.BestTime(iStage.name), aRankName);
             }
         }
 

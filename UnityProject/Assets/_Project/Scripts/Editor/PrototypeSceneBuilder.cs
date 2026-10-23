@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -37,10 +38,47 @@ namespace BattleFight.EditorTools
             Build(iResetData: false, iRebuildScene: true);
         }
 
-        [MenuItem("BattleFight/Reset Data To Defaults")]
+        /// <summary>たたき台の値に戻すデータ(アセットの場所)。null ならすべて(Reset All Data To Defaults)</summary>
+        static HashSet<string> mResetOnly;
+
+        /// <summary>選んだデータ(スキル・武器・敵・ステージ)だけを、たたき台の値に戻す。ほかのデータには手を付けない</summary>
+        [MenuItem("BattleFight/Reset Selected Data To Defaults")]
+        [MenuItem("Assets/BattleFight/Reset To Defaults")]
+        public static void ResetSelectedDataFromMenu()
+        {
+            var aPaths = new HashSet<string>(Selection.objects.Select(AssetDatabase.GetAssetPath)
+                .Where(iPath => iPath.StartsWith(mDataRoot + "/") && iPath.EndsWith(".asset")));
+            if (aPaths.Count == 0)
+            {
+                EditorUtility.DisplayDialog("BattleFight", "戻したいデータ(Data の中のスキル・武器・敵・ステージ)を Project ウィンドウで選んでから実行してください。", "OK");
+                return;
+            }
+            string aList = string.Join("\n", aPaths.Select(System.IO.Path.GetFileNameWithoutExtension).Take(12)) + (aPaths.Count > 12 ? $"\n…ほか {aPaths.Count - 12} 個" : "");
+            if (!EditorUtility.DisplayDialog("BattleFight", $"次の {aPaths.Count} 個のデータを、たたき台の値で上書きします。手で直した値は消えます。\n\n{aList}", "上書き", "キャンセル"))
+                return;
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            mResetOnly = aPaths;
+            try
+            {
+                Build(iResetData: true, iRebuildScene: false);
+            }
+            finally
+            {
+                mResetOnly = null;
+            }
+        }
+
+        [MenuItem("BattleFight/Reset Selected Data To Defaults", true)]
+        [MenuItem("Assets/BattleFight/Reset To Defaults", true)]
+        static bool CanResetSelectedData() => Selection.objects.Any(iObject => AssetDatabase.GetAssetPath(iObject).StartsWith(mDataRoot + "/"));
+
+        /// <summary>すべてのデータを、たたき台の値に戻す(2 回確かめる)</summary>
+        [MenuItem("BattleFight/Reset All Data To Defaults")]
         public static void ResetDataFromMenu()
         {
-            if (!EditorUtility.DisplayDialog("BattleFight", "スキル・武器・敵のアセットをたたき台の数値で上書きします。よろしいですか?", "上書き", "キャンセル"))
+            if (!EditorUtility.DisplayDialog("BattleFight", "すべてのスキル・武器・敵・ステージのデータを、たたき台の値で上書きします。\nプランナーが手で直した値はすべて消えます。", "続ける", "キャンセル"))
+                return;
+            if (!EditorUtility.DisplayDialog("BattleFight", "本当に上書きしますか?(戻すには Git で戻すしかありません)\n一部だけ戻したいときは、Reset Selected Data To Defaults を使ってください。", "上書き", "キャンセル"))
                 return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             Build(iResetData: true, iRebuildScene: false);
@@ -157,6 +195,7 @@ namespace BattleFight.EditorTools
             var aEffects = EnsureEffectLibrary();
             var aSounds = EnsureSoundLibrary();
             var aInputActions = EnsureInputActions();
+            EnsureGameText();
 
             var aGrunt = Asset<EnemyProfile>("Enemies/Enemy_Grunt", iResetData, PrototypeDefaults.Grunt);
             var aArmored = Asset<EnemyProfile>("Enemies/Enemy_Armored", iResetData, PrototypeDefaults.Armored);
@@ -547,7 +586,7 @@ namespace BattleFight.EditorTools
                 iInitialize(aAsset);
                 AssetDatabase.CreateAsset(aAsset, aPath);
             }
-            else if (iReset)
+            else if (iReset && (mResetOnly == null || mResetOnly.Contains(aPath)))
             {
                 iInitialize(aAsset);
                 EditorUtility.SetDirty(aAsset);

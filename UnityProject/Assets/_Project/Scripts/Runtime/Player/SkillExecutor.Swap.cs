@@ -117,7 +117,7 @@ namespace BattleFight
 
             if (!aAnyLanded) return;
             mStyle.RegisterHit($"change#{iWeapon}", iWeapon, mChangeAttackStylePoints, mSlots.Bonus.Kind == WeaponBonusKind.Arsenal);
-            mStyle.Announce("CHANGE ATTACK", aColor);
+            mStyle.Announce(GameText.Get("announce.change_attack"), aColor);
             if (aAnyWeak) AnnounceWeak();
             if (CombatFeedback.Instance != null)
             {
@@ -135,7 +135,7 @@ namespace BattleFight
             mLastSwapCancelSlot = iSlot;
             mLastSwapCancelTime = Time.time;
             EndSkill();
-            mStyle.AddBonus(mStyle.Config.SwapCancelBonus, "SWAP CANCEL", new Color(0.4f, 0.9f, 1f));
+            mStyle.AddBonus(mStyle.Config.SwapCancelBonus, GameText.Get("announce.swap_cancel"), new Color(0.4f, 0.9f, 1f));
         }
 
         /// <summary>このプリセットに切り替えると、実行中の技のスロットの中身が変わってスワップキャンセルになるか</summary>

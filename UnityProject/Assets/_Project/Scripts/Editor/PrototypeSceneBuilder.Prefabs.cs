@@ -123,6 +123,24 @@ namespace BattleFight.EditorTools
             return AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputActionsPath);
         }
 
+        public const string GameTextPath = mRoot + "/Resources/" + GameText.ResourceName + ".asset";
+
+        /// <summary>文言の表。なければ作り、表にないキーだけを足す(表で直した文言には手を付けない)</summary>
+        static TextTable EnsureGameText()
+        {
+            var aTable = AssetDatabase.LoadAssetAtPath<TextTable>(GameTextPath);
+            if (aTable == null)
+            {
+                EnsureFolder(mRoot, "Resources");
+                aTable = ScriptableObject.CreateInstance<TextTable>();
+                AssetDatabase.CreateAsset(aTable, GameTextPath);
+            }
+            bool aAdded = false;
+            foreach (var (aKey, aText) in GameTextDefaults.Entries) aAdded |= aTable.EnsureEntry(aKey, aText);
+            if (aAdded) EditorUtility.SetDirty(aTable);
+            return aTable;
+        }
+
         /// <summary>音の差し替え表。すべての音の種類(Sfx)の行を用意する(ファイルは空のまま。入っている行には手を付けない)</summary>
         static SoundLibrary EnsureSoundLibrary()
         {

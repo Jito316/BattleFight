@@ -822,7 +822,7 @@ namespace BattleFight
             mTargetInDangerAtStart = false;
             var aStyle = mTarget != null ? mTarget.GetComponent<StyleRankSystem>() : null;
             if (aStyle == null) return;
-            aStyle.AddBonus(aStyle.Config.JustDodgeBonus * 0.8f, "ESCAPE!", new Color(1f, 0.55f, 0.5f));
+            aStyle.AddBonus(aStyle.Config.JustDodgeBonus * 0.8f, GameText.Get("announce.escape"), new Color(1f, 0.55f, 0.5f));
             SoundPlayer.Play(Sfx.Dodge, 0.7f, 1.2f);
             Rumble.Play(0.1f, 0.4f, 0.1f);
         }

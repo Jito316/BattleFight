@@ -16,10 +16,12 @@ namespace BattleFight
     [RequireComponent(typeof(UIDocument))]
     public class BattleHud : MonoBehaviour
     {
-        static readonly string[] mSlotLabels = { "攻撃A", "攻撃B", "移動" };
+        static readonly string[] mSlotLabelKeys = { "common.slot.attack_a", "common.slot.attack_b", "common.slot.movement" };
         static readonly string[] mSlotNames = { "slot-a", "slot-b", "slot-m" };
-        static readonly string[] mKeyboardSlotKeys = { "1", "2", "3", "4" };
-        static readonly string[] mGamepadSlotKeys = { "←", "→", "↓", "↑" };
+        static readonly string[] mSwapActions =
+        {
+            nameof(PlayerAction.Swap1), nameof(PlayerAction.Swap2), nameof(PlayerAction.Swap3), nameof(PlayerAction.Swap4),
+        };
         static readonly Color[] mRankColors =
         {
             new Color(0.6f, 0.6f, 0.6f),
@@ -31,32 +33,25 @@ namespace BattleFight
             new Color(1f, 0.3f, 1f),
         };
 
-        // 操作説明: (操作, キー)。キーは「・」で区切ると複数の枠になる。2列に並べ、補足のある「切り替え」は最後に1行で出す
-        static readonly (string action, string keys)[] mKeyboardGuide =
+        // 操作説明: (文言のキー, アクション)。キーは操作の割り当て(.inputactions)から作るので、割り当てを変えると表示も変わる。
+        // 2 列に並べ、補足のある「切り替え」は最後に 1 行で出す
+        const string mSwapRowKey = "guide.swap";
+        static readonly (string Label, string[] Actions)[] mGuideLines =
         {
-            ("移動", "W・A・S・D"), ("カメラ", "マウス"), ("攻撃A", "左クリック・J"), ("攻撃B", "右クリック・E・K"),
-            ("移動スキル", "Shift・L"), ("ジャンプ", "Space"), ("ロックオン", "Tab・中クリック"), ("フィニッシャー", "F"),
-            ("スキル編成", "P"), ("もう一度 / 選択へ", "R・T"), ("チェンジドライブ", "V"), ("ガード", "Q"), ("標的の切り替え", "Z・C"), ("切り替え", "1・2・3・4"),
-        };
-        static readonly (string action, string keys)[] mGamepadGuide =
-        {
-            ("移動", "左スティック"), ("カメラ", "右スティック"), ("攻撃A", "□"), ("攻撃B", "△"),
-            ("移動スキル", "○"), ("ジャンプ", "×"), ("ロックオン", "L1"), ("フィニッシャー", "R1"),
-            ("スキル編成", "Select"), ("もう一度", "Start"), ("チェンジドライブ", "L2"), ("ガード", "R2"), ("標的の切り替え", "右スティック左右"), ("切り替え", "十字キー"),
-        };
-        static readonly string[] mTips =
-        {
-            "技の硬直中にそのスロットを切り替えると、硬直をキャンセル",
-            "切り替えた直後の一撃は強化(SWAP STRIKE)",
-            "同じ技の連発はスタイルが伸びない",
-            "敵の頭上の「弱」の武器で攻撃すると 1.5倍",
-            "切り替え → ヒットで CHAIN(最大×5、ダメージ +50%)",
-            "切り替えた瞬間、新しい武器で周りを攻撃(3秒ごと)",
-            "居合は長押しで溜め。ワイヤーは視界内で一番近い ◎ へ飛ぶ",
-            "移動スキルで攻撃をギリギリに避けると、敵だけが遅くなる(見切り)",
-            "切り替えて当てると DRIVE がたまる。満タンで全プリセットの武器で連続攻撃",
-            "スタイルランクが高いほど攻撃力が上がる(SSS で +30%)",
-            "ガードは前からの攻撃を受け止める。押した直後に受けるとパリィ(弾き返して敵がよろける)",
+            ("guide.move", new[] { PlayerInputBindings.MoveAction }),
+            ("guide.camera", new[] { PlayerInputBindings.MouseLookAction, PlayerInputBindings.StickLookAction }),
+            ("guide.attack_a", new[] { nameof(PlayerAction.AttackA) }),
+            ("guide.attack_b", new[] { nameof(PlayerAction.AttackB) }),
+            ("guide.movement", new[] { nameof(PlayerAction.Movement) }),
+            ("guide.jump", new[] { nameof(PlayerAction.Jump) }),
+            ("guide.lock_on", new[] { nameof(PlayerAction.LockOn) }),
+            ("guide.finisher", new[] { nameof(PlayerAction.Finisher) }),
+            ("guide.loadout", new[] { nameof(PlayerAction.OpenLoadout) }),
+            ("guide.restart", new[] { nameof(PlayerAction.Restart) }),
+            ("guide.drive", new[] { nameof(PlayerAction.Drive) }),
+            ("guide.guard", new[] { nameof(PlayerAction.Guard) }),
+            ("guide.lock_switch", new[] { nameof(PlayerAction.LockOnLeft), nameof(PlayerAction.LockOnRight) }),
+            (mSwapRowKey, mSwapActions),
         };
 
         [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
@@ -72,6 +67,9 @@ namespace BattleFight
         VisualElement mHud;
         bool mShowHelp = true;
         bool mGuideForGamepad;
+        /// <summary>操作説明を作ったときの操作の割り当て(割り当てが替わったら作り直す)</summary>
+        InputActionAsset mGuideBindings;
+        PlayerInputReader mInputReader;
         int mLastRank;
         readonly SkillData[] mShownSkills = new SkillData[3];
         readonly StringBuilder mBuilder = new StringBuilder();
@@ -312,7 +310,7 @@ namespace BattleFight
                     Weapon = aInstance.Q<Label>("weapon"),
                     Desc = aInstance.Q<Label>("desc"),
                 };
-                mSlotViews[aIndex].Label.text = mSlotLabels[aIndex];
+                mSlotViews[aIndex].Label.text = GameText.Get(mSlotLabelKeys[aIndex]);
             }
             for (int aPresetViewIndex = 0; aPresetViewIndex < mPresetViews.Length; aPresetViewIndex++)
             {
@@ -378,7 +376,20 @@ namespace BattleFight
             return aGamepad != null && aGamepad.rightStickButton.wasPressedThisFrame;
         }
 
-        string SlotKey(int iIndex) => (UsingGamepad ? mGamepadSlotKeys : mKeyboardSlotKeys)[iIndex];
+        /// <summary>今の操作の割り当て(プレイヤーの PlayerInputReader から)</summary>
+        InputActionAsset Bindings
+        {
+            get
+            {
+                if (mInputReader == null && mExecutor != null) mInputReader = mExecutor.GetComponent<PlayerInputReader>();
+                return mInputReader != null ? mInputReader.Actions : null;
+            }
+        }
+
+        /// <summary>今の機器(キーボード・マウス / ゲームパッド)で、iAction に割り当てた最初のキーの名前</summary>
+        string KeyFor(string iAction) => InputLabels.First(Bindings, UsingGamepad, iAction);
+
+        string SlotKey(int iIndex) => KeyFor(mSwapActions[iIndex]);
 
         void OnPhaseChanged(EnemyController iEnemy)
         {
@@ -444,43 +455,50 @@ namespace BattleFight
             SetText(mHpValue, $"{Mathf.CeilToInt(mPlayer.Health)} <color=#8A93A3>/ {Mathf.CeilToInt(mPlayer.MaxHealth)}</color>");
             SetFill(mHpFill, aRatio);
             mHpBar.EnableInClassList("low", aRatio < 0.3f);
-            SetText(mShards, $"刻片 {mDirector.Shards}");
-            string aModeName = mSlots.Mode == SwapMode.Preset ? "プリセット方式" : "ラック方式";
-            SetText(mMode, $"{aModeName}  <color=#FFFFFF>[{(UsingGamepad ? "Select" : "P")}]</color> 編成");
+            SetText(mShards, GameText.Format("hud.shards", mDirector.Shards));
+            string aModeName = GameText.Get(mSlots.Mode == SwapMode.Preset ? "hud.mode.preset" : "hud.mode.rack");
+            SetText(mMode, GameText.Format("hud.mode", aModeName, KeyFor(nameof(PlayerAction.OpenLoadout))));
         }
 
         void RefreshGuide()
         {
-            if (mGuideForGamepad != UsingGamepad) BuildGuide(UsingGamepad);
+            if (mGuideForGamepad != UsingGamepad || mGuideBindings != Bindings) BuildGuide(UsingGamepad);
             Show(mGuide, mShowHelp);
             Show(mGuideHint, !mShowHelp);
-            SetText(mGuideHint, UsingGamepad ? "[R3] 操作説明" : "[0] 操作説明");
+            SetText(mGuideHint, GameText.Get(UsingGamepad ? "guide.hint.gamepad" : "guide.hint.keyboard"));
         }
 
         void BuildGuide(bool iGamepad)
         {
             mGuideForGamepad = iGamepad;
-            mGuideTitle.text = iGamepad ? "操作(ゲームパッド)" : "操作(キーボード・マウス)";
+            mGuideBindings = Bindings;
+            string aDevice = iGamepad ? "gamepad" : "keyboard";
+            mGuideTitle.text = GameText.Get($"guide.title.{aDevice}");
             mGuideRows.Clear();
-            foreach (var (aAction, aKeys) in iGamepad ? mGamepadGuide : mKeyboardGuide)
+            foreach (var (aLabel, aActions) in mGuideLines)
             {
+                string aKeys = InputLabels.For(mGuideBindings, iGamepad, aActions);
+                // 割り当てのない操作(ゲームパッドの標的の切り替えは右スティックを倒す、など)は、文言の表の「〜.gamepad_keys」で書く
+                if (aKeys.Length == 0 && GameText.Has($"{aLabel}.{aDevice}_keys")) aKeys = GameText.Get($"{aLabel}.{aDevice}_keys");
+                if (aKeys.Length == 0) continue;
                 var aRow = new VisualElement { pickingMode = PickingMode.Ignore };
                 aRow.AddToClassList("guide__row");
-                aRow.Add(Classed(new Label(aAction), "guide__action"));
+                aRow.Add(Classed(new Label(GameText.Get(aLabel)), "guide__action"));
                 var aKeyRow = Classed(new VisualElement(), "guide__keys");
-                foreach (var aKey in aKeys.Split('・')) aKeyRow.Add(Classed(new Label(aKey), "key"));
+                foreach (var aKey in aKeys.Split(new[] { InputLabels.Separator }, System.StringSplitOptions.RemoveEmptyEntries)) aKeyRow.Add(Classed(new Label(aKey), "key"));
                 aRow.Add(aKeyRow);
-                if (aAction == "切り替え")
+                if (aLabel == mSwapRowKey)
                 {
                     // 補足があるので1行まるごと使う
                     aRow.AddToClassList("guide__row--wide");
-                    aRow.Add(Classed(new Label(iGamepad ? "ラック: ←/→/↓ で各スロット  プリセット: 十字キーで一括" : "ラック: 1/2/3 で各スロット  プリセット: 1〜4 で一括"), "guide__note"));
+                    aRow.Add(Classed(new Label(GameText.Get($"guide.swap.note.{aDevice}")), "guide__note"));
                 }
                 mGuideRows.Add(aRow);
             }
             mGuideTips.Clear();
-            foreach (var aTip in mTips) mGuideTips.Add(Classed(new Label("・" + aTip), "guide__tip"));
-            mGuideClose.text = iGamepad ? "[R3] で閉じる" : "[0] で閉じる";
+            string aMark = GameText.Get("guide.tip_mark");
+            foreach (var aTip in GameText.Lines("guide.tip")) mGuideTips.Add(Classed(new Label(aMark + aTip), "guide__tip"));
+            mGuideClose.text = GameText.Get($"guide.close.{aDevice}");
         }
 
         void RefreshHeader()
@@ -499,7 +517,7 @@ namespace BattleFight
                 // 探索: 今いる部屋と、集めたスキルの数(ボス戦中は体力と重なるので出さない)
                 string aRoom = aRegion.CurrentRoomName();
                 SetText(mTitle, aRoom.Length > 0 ? $"{aRegion.RegionName}  <color=#8A93A3>-</color>  {aRoom}" : aRegion.RegionName);
-                SetText(mSubtitle, $"集めたスキル  {ExplorationSave.UnlockedCount} / {aRegion.TotalSkills}");
+                SetText(mSubtitle, GameText.Format("hud.exploration.progress", ExplorationSave.UnlockedCount, aRegion.TotalSkills));
                 Show(mSubtitle, mDirector.Boss == null);
                 return;
             }
@@ -527,7 +545,7 @@ namespace BattleFight
                 // 型を切り替えるボスは、今の型も出す
                 aWeakness = $"<color=#{ColorUtility.ToHtmlStringRGB(aSet.Color)}>{aSet.Name}</color>   " + aWeakness;
             }
-            SetText(mBossWeak, aWeakness.Length > 0 ? $"<color=#8A93A3>弱点</color> {aWeakness}" : "");
+            SetText(mBossWeak, aWeakness.Length > 0 ? GameText.Format("hud.boss.weakness", aWeakness) : "");
             SetFill(mBossFill, aDamageable.Health / aDamageable.MaxHealth);
             Show(mBossArmor, aDamageable.MaxArmor > 0f);
             if (aDamageable.MaxArmor > 0f) SetFill(mBossArmorFill, aDamageable.Armor / aDamageable.MaxArmor);
@@ -551,7 +569,7 @@ namespace BattleFight
             // ランクによる攻撃力の強化
             int aPower = Mathf.RoundToInt((mStyle.Config.DamageMultiplier(aMeter.RankIndex) - 1f) * 100f);
             Show(mRankPower, aPower > 0);
-            SetText(mRankPower, $"攻撃力 +{aPower}%");
+            SetText(mRankPower, GameText.Format("hud.rank_power", aPower));
 
             // コンボ(2ヒットから出す)。途切れたら評価を少し出す
             var aCounter = mExecutor.Combo;
@@ -603,8 +621,8 @@ namespace BattleFight
             if (aChaining)
             {
                 int aBonusPercent = Mathf.RoundToInt((aChainMeter.DamageMultiplier - 1f) * 100f);
-                SetText(mChainCount, $"CHAIN ×{aChainMeter.Chain}{(aChainMeter.Chain >= aChainMeter.MaxChain ? "  MAX" : "")}");
-                SetText(mChainBonus, $"ダメージ +{aBonusPercent}%");
+                SetText(mChainCount, GameText.Format(aChainMeter.Chain >= aChainMeter.MaxChain ? "hud.chain.count_max" : "hud.chain.count", aChainMeter.Chain));
+                SetText(mChainBonus, GameText.Format("hud.chain.bonus", aBonusPercent));
                 SetFill(mChainFill, aChainMeter.Remaining(Time.time));
             }
             SetText(mDebugLabel, mExecutor.DebugLabel);
@@ -633,7 +651,7 @@ namespace BattleFight
                 Show(aView.Key, aRackMode);
                 SetText(aView.Key, SlotKey(aIndex));
 
-                SetText(aView.Name, aCurrent != null ? aCurrent.DisplayName : "(なし)");
+                SetText(aView.Name, aCurrent != null ? aCurrent.DisplayName : GameText.Get("common.none"));
                 aView.Name.style.color = aCurrent != null ? aWeaponColor : new Color(1f, 1f, 1f, 0.35f);
                 SetText(aView.Weapon, aWeaponData != null ? aWeaponData.DisplayName : "");
                 SetText(aView.Desc, aRackMode ? RackLine(mSlots.GetRack(aSlot)) : DescribeShort(aCurrent));
@@ -672,15 +690,15 @@ namespace BattleFight
             {
                 case WeaponBonusKind.Mastery:
                     var aFinisher = mSlots.MasteryFinisher;
-                    aText = $"マスタリー({aWeaponName})   <color=#FFFFFF>[{(UsingGamepad ? "R1" : "F")}]</color> フィニッシャー「{(aFinisher != null ? aFinisher.DisplayName : "-")}」";
+                    aText = GameText.Format("hud.bonus.mastery", aWeaponName, KeyFor(nameof(PlayerAction.Finisher)), aFinisher != null ? aFinisher.DisplayName : "-");
                     aColor = aData != null ? aData.Color : Color.white;
                     break;
                 case WeaponBonusKind.Synergy:
-                    aText = $"シナジー({aWeaponName})   ひるみ +{Mathf.RoundToInt((aData != null ? aData.SynergyStaggerBonus : 0f) * 100f)}%";
+                    aText = GameText.Format("hud.bonus.synergy", aWeaponName, Mathf.RoundToInt((aData != null ? aData.SynergyStaggerBonus : 0f) * 100f));
                     aColor = aData != null ? Color.Lerp(aData.Color, Color.white, 0.3f) : Color.white;
                     break;
                 case WeaponBonusKind.Arsenal:
-                    aText = $"アーセナル   スタイル獲得 x{mStyle.Config.ArsenalMultiplier:0.##}";
+                    aText = GameText.Format("hud.bonus.arsenal", mStyle.Config.ArsenalMultiplier);
                     aColor = new Color(0.9f, 0.9f, 1f);
                     break;
             }
@@ -715,12 +733,13 @@ namespace BattleFight
             bool aFull = mExecutor.Drive.IsFull;
             mDrive.EnableInClassList("full", aFull && Mathf.PingPong(Time.unscaledTime * 3f, 1f) > 0.3f);
             SetFill(mDriveFill, mExecutor.Drive.Value);
-            SetText(mDriveLabel, aFull ? $"[{(UsingGamepad ? "L2" : "V")}] CHANGE DRIVE" : mExecutor.IsDriving ? "CHANGE DRIVE!" : "DRIVE");
+            SetText(mDriveLabel, aFull ? GameText.Format("hud.drive.ready", KeyFor(nameof(PlayerAction.Drive)))
+                : GameText.Get(mExecutor.IsDriving ? "hud.drive.active" : "hud.drive.idle"));
 
             // チェンジアタック
             bool aReadyNow = mExecutor.ChangeAttackReady;
             mChangeAttack.EnableInClassList("ready", aReadyNow);
-            SetText(mChangeAttackLabel, aReadyNow ? "CHANGE ATTACK 準備OK" : "CHANGE ATTACK");
+            SetText(mChangeAttackLabel, GameText.Get(aReadyNow ? "hud.change_attack.ready" : "hud.change_attack"));
             SetFill(mChangeAttackFill, mExecutor.ChangeAttackCharge);
         }
 
@@ -741,7 +760,7 @@ namespace BattleFight
             {
                 var aColor = mPhaseEnemy.Profile.TelegraphColor;
                 aColor.a = Mathf.Clamp01((2f - aSincePhase) / 0.5f);
-                SetText(mPhaseTitle, $"{mPhaseEnemy.Profile.DisplayName}  第二形態");
+                SetText(mPhaseTitle, GameText.Format("hud.phase2", mPhaseEnemy.Profile.DisplayName));
                 SetText(mPhaseSub, mPhaseEnemy.Profile.Phase2Message);
                 mPhaseTitle.style.color = aColor;
                 mPhaseSub.style.color = aColor;
@@ -771,31 +790,33 @@ namespace BattleFight
 
             if (aCleared && mDirector.IsExploring && ExplorationRegion.Active != null)
             {
-                SetText(mResultTitle, "探索クリア");
-                SetText(mResultBody, $"集めたスキル {ExplorationSave.UnlockedCount} / {ExplorationRegion.Active.TotalSkills}   タイム {mDirector.ElapsedTime:0.0}秒\n続きからは、マップを自由に回れます");
+                SetText(mResultTitle, GameText.Get("result.exploration.title"));
+                SetText(mResultBody, GameText.Format("result.exploration.body", ExplorationSave.UnlockedCount, ExplorationRegion.Active.TotalSkills, mDirector.ElapsedTime));
                 mResultTitle.style.color = new Color(1f, 0.9f, 0.4f);
             }
             else if (aCleared)
             {
                 string aBest = mStyle.Config.RankNames[Mathf.Min(mStyle.HighestRank, mStyle.Config.RankNames.Length - 1)];
-                string aRecord = mDirector.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "";
-                SetText(mResultTitle, "STAGE CLEAR");
-                SetText(mResultBody, $"タイム {mDirector.ElapsedTime:0.0}秒   最高ランク {aBest}   刻片 {mDirector.Shards}{aRecord}");
+                string aRecord = mDirector.NewRecord ? GameText.Get("result.new_record") : "";
+                SetText(mResultTitle, GameText.Get("result.clear.title"));
+                SetText(mResultBody, GameText.Format("result.clear.body", mDirector.ElapsedTime, aBest, mDirector.Shards, aRecord));
                 mResultTitle.style.color = new Color(1f, 0.9f, 0.4f);
             }
             else
             {
                 bool aEndless = mDirector.CurrentStage != null && mDirector.CurrentStage.Kind == StageKind.Endless;
-                SetText(mResultTitle, "GAME OVER");
-                SetText(mResultBody, aEndless ? $"到達 WAVE {mDirector.WaveNumber}{(mDirector.NewRecord ? "   <color=#FFE066>NEW RECORD!</color>" : "")}" : "");
+                SetText(mResultTitle, GameText.Get("result.over.title"));
+                SetText(mResultBody, aEndless
+                    ? GameText.Format("result.over.endless", mDirector.WaveNumber, mDirector.NewRecord ? GameText.Get("result.new_record") : "")
+                    : "");
                 mResultTitle.style.color = new Color(1f, 0.35f, 0.35f);
             }
             Show(mResultBody, mResultBody.text.Length > 0);
 
             Show(mResultNext, aCleared && mDirector.HasNextStage);
-            SetText(mResultNext, "次のステージ [N]");
-            SetText(mResultRetry, !mDirector.IsExploring ? "もう一度 [R]" : aOver ? "祭壇から再開 [R]" : "続きから [R]");
-            SetText(mResultSelect, "ステージ選択 [T]");
+            SetText(mResultNext, GameText.Get("result.next"));
+            SetText(mResultRetry, GameText.Get(!mDirector.IsExploring ? "result.retry" : aOver ? "result.retry.altar" : "result.retry.continue"));
+            SetText(mResultSelect, GameText.Get("result.select"));
         }
 
         // ---------- 3D の位置に出すもの ----------
@@ -821,10 +842,10 @@ namespace BattleFight
                 string aWeakness = WeaknessText(aEnemy);
                 bool aWeakNow = aAttackA != null && aEnemy.IsWeakTo(aAttackA.Weapon);
                 Show(aTag.Weak, aWeakness.Length > 0);
-                SetText(aTag.Weak, (aWeakNow ? "弱点 " : "弱 ") + aWeakness);
+                SetText(aTag.Weak, GameText.Format(aWeakNow ? "hud.tag.weak_now" : "hud.tag.weak", aWeakness));
                 aTag.Weak.EnableInClassList("now", aWeakNow);
                 Show(aTag.Elite, aEnemy.Profile.Elite != EliteAffix.None);
-                if (aEnemy.Profile.Elite != EliteAffix.None) SetText(aTag.Elite, $"精鋭・{EliteMaker.Label(aEnemy.Profile.Elite)}");
+                if (aEnemy.Profile.Elite != EliteAffix.None) SetText(aTag.Elite, GameText.Format("hud.tag.elite", EliteMaker.Label(aEnemy.Profile.Elite)));
                 Show(aTag.Alert, aEnemy.IsTelegraphing);
                 aTag.Alert.style.color = aEnemy.Profile.TelegraphColor;
 

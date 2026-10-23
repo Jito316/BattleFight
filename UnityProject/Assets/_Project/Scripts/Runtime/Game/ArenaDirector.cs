@@ -391,7 +391,7 @@ namespace BattleFight
 
             if (iProfile.Elite != EliteAffix.None)
             {
-                if (mStyle != null) mStyle.AddBonus(80f, "ELITE DOWN", new Color(1f, 0.82f, 0.3f));
+                if (mStyle != null) mStyle.AddBonus(80f, GameText.Get("announce.elite_down"), new Color(1f, 0.82f, 0.3f));
                 // 分裂: 小さな分身が2体出る
                 if (iProfile.Elite == EliteAffix.Splitter && State != GameState.GameOver && iEnemy != null)
                 {

@@ -15,22 +15,8 @@ namespace BattleFight
     [RequireComponent(typeof(UIDocument))]
     public class LoadoutEditorUI : MonoBehaviour
     {
-        static readonly string[] mSlotLabels = { "攻撃A", "攻撃B", "移動" };
+        static readonly string[] mSlotLabelKeys = { "common.slot.attack_a", "common.slot.attack_b", "common.slot.movement" };
         static readonly string[] mListNames = { "list-a", "list-b", "list-m" };
-        static readonly Dictionary<SkillBehavior, string> mBehaviorLabels = new Dictionary<SkillBehavior, string>
-        {
-            { SkillBehavior.Standard, "近接" },
-            { SkillBehavior.DashStrike, "突進" },
-            { SkillBehavior.ChargeCounter, "溜め・カウンター" },
-            { SkillBehavior.HammerJump, "跳躍" },
-            { SkillBehavior.Grapple, "ワイヤー" },
-            { SkillBehavior.Pull, "引き寄せ" },
-            { SkillBehavior.Projectile, "射撃" },
-            { SkillBehavior.Beam, "ビーム" },
-            { SkillBehavior.TargetedStrike, "遠隔の範囲攻撃" },
-            { SkillBehavior.Blink, "瞬間移動" },
-            { SkillBehavior.Boost, "ブースト" },
-        };
 
         [SerializeField, FormerlySerializedAs("slots")] SkillSlotController mSlots;
         [SerializeField, FormerlySerializedAs("input")] PlayerInputReader mInput;
@@ -191,14 +177,15 @@ namespace BattleFight
             {
                 // 探索: 切り替え方式はプリセットだけ。代わりに集めたスキルの数を出す
                 int aTotal = ExplorationRegion.Active != null ? ExplorationRegion.Active.TotalSkills : ExplorationSave.TotalSkills;
-                mCollectInfo.text = $"探索中: 集めたスキルだけで組めます   <color=#FFE08A>{ExplorationSave.UnlockedCount} / {aTotal}</color>";
+                mCollectInfo.text = GameText.Format("loadout.collecting", ExplorationSave.UnlockedCount, aTotal);
             }
             bool aPreset = mSlots.Mode == SwapMode.Preset;
             mModePreset.EnableInClassList("bf-button--selected", aPreset);
             mModeRack.EnableInClassList("bf-button--selected", !aPreset);
             mNotice.style.display = !aPreset && !aCollecting ? DisplayStyle.Flex : DisplayStyle.None;
-            mClose.text = "閉じる [P]";
-            mFooter.text = "クリックでスキルを入れる  /  戦闘中は 1〜4キー(十字キー)でプリセットを一括切り替え  /  閉じると自動で保存";
+            var aReader = mInput != null ? mInput.Actions : null;
+            mClose.text = GameText.Format("loadout.close", InputLabels.First(aReader, false, nameof(PlayerAction.OpenLoadout)));
+            mFooter.text = GameText.Get("loadout.footer");
         }
 
         void RefreshPresets()
@@ -216,12 +203,12 @@ namespace BattleFight
                 for (int aSlot = 0; aSlot < 3; aSlot++)
                 {
                     var aSkill = aPreset.Get((SlotType)aSlot);
-                    string aName = aSkill != null ? $"<color=#{Hex(WeaponColor(aSkill))}>{aSkill.DisplayName}</color>" : "<color=#666666>(なし)</color>";
-                    aSkills[aSlot].text = $"<color=#8A93A3>{mSlotLabels[aSlot]}</color>  {aName}";
+                    string aName = aSkill != null ? $"<color=#{Hex(WeaponColor(aSkill))}>{aSkill.DisplayName}</color>" : GameText.Get("loadout.empty");
+                    aSkills[aSlot].text = $"<color=#8A93A3>{GameText.Get(mSlotLabelKeys[aSlot])}</color>  {aName}";
                 }
                 aBonus.text = BonusText(aPreset.Bonus);
             }
-            mNameCaption.text = $"プリセット{mEditIndex + 1} の名前";
+            mNameCaption.text = GameText.Format("loadout.preset_name", mEditIndex + 1);
             mPresetName.SetValueWithoutNotify(mSlots.Presets[mEditIndex].Name);
         }
 
@@ -259,8 +246,8 @@ namespace BattleFight
                         var aRow = Classed(new VisualElement(), "skill-row");
                         bool aAvailable = mSlots.IsAvailable(aSkill);
                         aRow.EnableInClassList("skill-row--locked", !aAvailable);
-                        aRow.Add(Classed(new Label(aAvailable ? aSkill.DisplayName : "？？？"), "skill-row__name"));
-                        aRow.Add(Classed(new Label("使用中"), "skill-row__check"));
+                        aRow.Add(Classed(new Label(aAvailable ? aSkill.DisplayName : GameText.Get("loadout.locked")), "skill-row__name"));
+                        aRow.Add(Classed(new Label(GameText.Get("loadout.in_use")), "skill-row__check"));
                         if (aAvailable)
                         {
                             var aCaptured = aSkill;
@@ -308,8 +295,9 @@ namespace BattleFight
             var aWeaponData = mSlots.GetWeaponData(aSkill.Weapon);
             mDetailName.text = aSkill.DisplayName;
             mDetailName.style.color = aWeaponData != null ? aWeaponData.Color : Color.white;
-            string aBehavior = mBehaviorLabels.TryGetValue(aSkill.Behavior, out var aText) ? aText : aSkill.Behavior.ToString();
-            mDetailMeta.text = $"{(aWeaponData != null ? aWeaponData.DisplayName : "")}  /  {mSlotLabels[(int)aSkill.Slot]}  /  {aBehavior}";
+            string aBehaviorKey = $"loadout.behavior.{aSkill.Behavior}";
+            string aBehavior = GameText.Has(aBehaviorKey) ? GameText.Get(aBehaviorKey) : aSkill.Behavior.ToString();
+            mDetailMeta.text = $"{(aWeaponData != null ? aWeaponData.DisplayName : "")}  /  {GameText.Get(mSlotLabelKeys[(int)aSkill.Slot])}  /  {aBehavior}";
             mDetailDesc.text = aSkill.Description;
             foreach (var aLine in StatLines(aSkill)) mDetailStats.Add(Classed(new Label(aLine), "detail__stat"));
         }
@@ -324,13 +312,13 @@ namespace BattleFight
                 aTotalFrames += aStep.StartupFrames + aStep.ActiveFrames + aStep.RecoveryFrames;
                 aTotalDamage += aStep.Damage * (iSkill.Behavior == SkillBehavior.Projectile ? Mathf.Max(1, iSkill.ProjectileCount) : 1);
             }
-            yield return $"段数 {iSkill.StepCount}   発生 {aFirst.StartupFrames}F   全体 {aTotalFrames}F";
-            yield return $"威力(合計) {aTotalDamage:0}   ひるみ {aFirst.Stagger:0}   アーマー削り {aFirst.ArmorBreak:0}";
-            if (iSkill.InvulnerableFrames > 0) yield return $"無敵 {iSkill.InvulnerableFrames}F";
-            if (!iSkill.UsableInAir) yield return "地上でのみ使える";
-            if (iSkill.Behavior == SkillBehavior.ChargeCounter) yield return "長押しで溜め。溜め中に攻撃を受けるとカウンター";
-            if (iSkill.ExplosionRadius > 0f) yield return $"爆発半径 {iSkill.ExplosionRadius:0.#}m";
-            if (iSkill.ProjectileCount > 1 && iSkill.Behavior == SkillBehavior.Projectile) yield return $"弾数 {iSkill.ProjectileCount}";
+            yield return GameText.Format("loadout.detail.frames", iSkill.StepCount, aFirst.StartupFrames, aTotalFrames);
+            yield return GameText.Format("loadout.detail.power", aTotalDamage, aFirst.Stagger, aFirst.ArmorBreak);
+            if (iSkill.InvulnerableFrames > 0) yield return GameText.Format("loadout.detail.invulnerable", iSkill.InvulnerableFrames);
+            if (!iSkill.UsableInAir) yield return GameText.Get("loadout.detail.ground_only");
+            if (iSkill.Behavior == SkillBehavior.ChargeCounter) yield return GameText.Get("loadout.detail.charge");
+            if (iSkill.ExplosionRadius > 0f) yield return GameText.Format("loadout.detail.explosion", iSkill.ExplosionRadius);
+            if (iSkill.ProjectileCount > 1 && iSkill.Behavior == SkillBehavior.Projectile) yield return GameText.Format("loadout.detail.projectiles", iSkill.ProjectileCount);
         }
 
         string BonusText(WeaponBonus iBonus)
@@ -340,13 +328,13 @@ namespace BattleFight
             switch (iBonus.Kind)
             {
                 case WeaponBonusKind.Mastery:
-                    return $"マスタリー({aWeaponName})  フィニッシャー「{(aData != null && aData.MasteryFinisher != null ? aData.MasteryFinisher.DisplayName : "-")}」";
+                    return GameText.Format("loadout.bonus.mastery", aWeaponName, aData != null && aData.MasteryFinisher != null ? aData.MasteryFinisher.DisplayName : "-");
                 case WeaponBonusKind.Synergy:
-                    return $"シナジー({aWeaponName})  ひるみ +{Mathf.RoundToInt((aData != null ? aData.SynergyStaggerBonus : 0f) * 100f)}%";
+                    return GameText.Format("loadout.bonus.synergy", aWeaponName, Mathf.RoundToInt((aData != null ? aData.SynergyStaggerBonus : 0f) * 100f));
                 case WeaponBonusKind.Arsenal:
-                    return "アーセナル  スタイル獲得アップ";
+                    return GameText.Get("loadout.bonus.arsenal");
                 default:
-                    return "(スロットが空いています)";
+                    return GameText.Get("loadout.bonus.none");
             }
         }
 

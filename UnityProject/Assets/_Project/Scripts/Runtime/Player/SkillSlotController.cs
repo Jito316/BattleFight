@@ -113,7 +113,7 @@ namespace BattleFight
             for (int aIndex = 0; aIndex < PresetCount; aIndex++)
             {
                 var aSource = aSources != null && aIndex < aSources.Length ? aSources[aIndex] : null;
-                mPresets.Add(aSource != null ? aSource.Clone() : new SkillPreset { Name = $"プリセット{aIndex + 1}" });
+                mPresets.Add(aSource != null ? aSource.Clone() : new SkillPreset { Name = GameText.Format("loadout.default_preset", aIndex + 1) });
             }
             mPresetIndex = 0;
         }

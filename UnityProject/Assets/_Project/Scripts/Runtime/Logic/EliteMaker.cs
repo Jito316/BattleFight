@@ -25,10 +25,10 @@ namespace BattleFight
 
         public static string Label(EliteAffix iAffix) => iAffix switch
         {
-            EliteAffix.Giant => "巨大",
-            EliteAffix.Swift => "俊足",
-            EliteAffix.Splitter => "分裂",
-            EliteAffix.Barrier => "障壁",
+            EliteAffix.Giant => GameText.Get("elite.giant"),
+            EliteAffix.Swift => GameText.Get("elite.swift"),
+            EliteAffix.Splitter => GameText.Get("elite.splitter"),
+            EliteAffix.Barrier => GameText.Get("elite.barrier"),
             _ => "",
         };
 
@@ -88,7 +88,7 @@ namespace BattleFight
         {
             var aSplit = Object.Instantiate(iSource);
             aSplit.name = iSource.name + "_Split";
-            aSplit.DisplayName = iSource.DisplayName + "の分身";
+            aSplit.DisplayName = GameText.Format("elite.split_name", iSource.DisplayName);
             aSplit.Elite = EliteAffix.None;
             aSplit.EliteSource = null;
             aSplit.Scale = iSource.Scale * 0.65f;

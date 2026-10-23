@@ -43,7 +43,7 @@ namespace BattleFight
                     string aWeaponName = aRegion.Slots != null && aRegion.Slots.GetWeaponData(mBreaker) != null
                         ? aRegion.Slots.GetWeaponData(mBreaker).DisplayName
                         : mBreaker.ToString();
-                    aRegion.Notify($"びくともしない…\n<size=26>{aWeaponName}の技なら壊せそうだ</size>", new Color(1f, 0.8f, 0.6f));
+                    aRegion.Notify(GameText.Format("explore.wall.locked", aWeaponName), new Color(1f, 0.8f, 0.6f));
                 }
                 return false;
             }
@@ -58,7 +58,7 @@ namespace BattleFight
                 if (!CombatFeedback.Instance.PlayCue(EffectCue.WallBreak, aGround, transform.rotation, aSize, aDustColor))
                     CombatFeedback.Instance.SpawnShockwave(aGround, aSize, aDustColor);
             }
-            if (aRegion != null) aRegion.Notify("壁が崩れた", new Color(1f, 0.85f, 0.6f));
+            if (aRegion != null) aRegion.Notify(GameText.Get("explore.wall.broken"), new Color(1f, 0.85f, 0.6f));
             gameObject.SetActive(false);
             return true;
         }
