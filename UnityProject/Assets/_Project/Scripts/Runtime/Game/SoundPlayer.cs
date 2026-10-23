@@ -75,14 +75,17 @@ namespace BattleFight
             if (mLastPlayed.TryGetValue(iSfx, out float aLast) && aNow - aLast < mMinInterval) return;
             mLastPlayed[iSfx] = aNow;
 
+            PlayCount++;
+            LastPlayed = iSfx;
+            // 設定の音量(ミュートなら鳴らさない)
+            float aVolume = Mathf.Clamp01(iVolume) * mMasterVolume * GameSettings.EffectiveVolume;
+            if (aVolume <= 0f) return;
             var aSource = mVoices[mNextVoice];
             mNextVoice = (mNextVoice + 1) % mVoices.Count;
             aSource.clip = Clip(iSfx);
-            aSource.volume = Mathf.Clamp01(iVolume) * mMasterVolume;
+            aSource.volume = aVolume;
             aSource.pitch = iPitch * Random.Range(0.95f, 1.05f);
             aSource.Play();
-            PlayCount++;
-            LastPlayed = iSfx;
         }
 
         static AudioClip Clip(Sfx iSfx)

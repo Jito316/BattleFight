@@ -296,6 +296,7 @@ namespace BattleFight.EditorTools
             var aHud = UiDocument<BattleHud>("UI_Hud", "Hud", aPanel, 0);
             var aStageSelect = UiDocument<StageSelectUI>("UI_StageSelect", "StageSelect", aPanel, 10);
             var aLoadoutEditor = UiDocument<LoadoutEditorUI>("UI_LoadoutEditor", "LoadoutEditor", aPanel, 20);
+            UiDocument<SettingsUI>("UI_Settings", "Settings", aPanel, 30);
 
             // ---------- 参照の設定 ----------
             Configure(aDamageable, iSerialized =>

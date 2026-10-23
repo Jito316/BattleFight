@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <!-- 設定画面(O キー・ステージ選択の「設定」で開く)。行は SettingsUI.cs が作る -->
+    <Style src="Common.uss" />
+    <Style src="Settings.uss" />
+
+    <ui:VisualElement name="settings" class="settings">
+        <ui:VisualElement class="settings__window panel panel--strong">
+            <ui:Label text="設定" class="settings__title" />
+            <ui:VisualElement name="settings-rows" class="settings__rows" />
+            <ui:VisualElement class="settings__buttons">
+                <ui:Button name="settings-reset" text="初期値に戻す" class="settings__button" />
+                <ui:Button name="settings-close" text="閉じる" class="settings__button settings__button--primary" />
+            </ui:VisualElement>
+            <ui:Label name="settings-hint" class="settings__hint" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

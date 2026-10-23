@@ -30,7 +30,18 @@ namespace BattleFight
             mArcDegrees = iArcDegrees;
             mThickness = iThickness;
             mDirection = iDirection >= 0f ? 1f : -1f;
+            mElapsed = 0f;
+            var aRenderer = GetComponent<MeshRenderer>();
+            aRenderer.material.color = iColor;
+            aRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            aRenderer.receiveShadows = false;
 
+            // 使い回すときは、形(頂点)だけ作り直す
+            if (mMesh != null)
+            {
+                Rebuild(0f);
+                return;
+            }
             mMesh = new Mesh { name = "SwingArc" };
             mMesh.MarkDynamic();
             mVertices = new Vector3[(mSegments + 1) * 2];
@@ -50,10 +61,6 @@ namespace BattleFight
             Rebuild(0f);
             mMesh.triangles = DoubleSided(aTriangles);
             GetComponent<MeshFilter>().sharedMesh = mMesh;
-            var aRenderer = GetComponent<MeshRenderer>();
-            aRenderer.material.color = iColor;
-            aRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            aRenderer.receiveShadows = false;
         }
 
         static int[] DoubleSided(int[] iTriangles)
@@ -74,7 +81,7 @@ namespace BattleFight
             mElapsed += Time.unscaledDeltaTime;
             if (mElapsed >= Lifetime)
             {
-                Destroy(gameObject);
+                EffectPool.Release(gameObject);
                 return;
             }
             Rebuild(mElapsed);

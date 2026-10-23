@@ -125,7 +125,7 @@ namespace BattleFight
         {
             // 名前を入力している間は、P や Esc を文字として扱う(閉じない)
             bool aTyping = IsOpen && mRoot.focusController?.focusedElement is TextField;
-            bool aToggle = mInput.Consume(PlayerAction.OpenLoadout) && !aTyping;
+            bool aToggle = mInput.Consume(PlayerAction.OpenLoadout) && !aTyping && !SettingsUI.IsOpen;
             bool aEscape = IsOpen && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
             if (aEscape && aTyping)
             {

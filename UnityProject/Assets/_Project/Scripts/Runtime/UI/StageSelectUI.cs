@@ -38,6 +38,8 @@ namespace BattleFight
         bool mConfirmOnOk;
 
         bool mVisible => mDirector != null && mDirector.State == ArenaDirector.GameState.StageSelect && !LoadoutEditorUI.IsOpen;
+        /// <summary>操作を受け付けるか(設定画面を開いている間は受け付けない)</summary>
+        bool mInteractive => mVisible && !SettingsUI.IsOpen;
 
         public int Highlighted => mHighlighted;
         /// <summary>消す前の確認を出しているか</summary>
@@ -58,6 +60,7 @@ namespace BattleFight
             mConfirmOk.clicked += () => CloseConfirm(true);
             mConfirmCancel.clicked += () => CloseConfirm(false);
             mRoot.Q<Button>("profile-delete").clicked += AskDeleteSlot;
+            mRoot.Q<Button>("open-settings").clicked += () => { if (mInteractive && SettingsUI.Instance != null) SettingsUI.Instance.Open(); };
             BuildSlots();
             BuildRows();
         }
@@ -73,7 +76,7 @@ namespace BattleFight
                 var aInfo = Classed(new Label(), "profile-slot__info");
                 aSlot.Add(aInfo);
                 int aNumber = aIndex;
-                aSlot.RegisterCallback<ClickEvent>(_ => { if (mVisible && !IsConfirming) SelectSlot(aNumber); });
+                aSlot.RegisterCallback<ClickEvent>(_ => { if (mInteractive && !IsConfirming) SelectSlot(aNumber); });
                 mProfileList.Add(aSlot);
                 mSlots.Add((aSlot, aInfo));
             }
@@ -105,7 +108,7 @@ namespace BattleFight
                     aReset.RegisterCallback<ClickEvent>(iEvent =>
                     {
                         iEvent.StopPropagation();
-                        if (mVisible && !IsConfirming) AskStartOver(aStage);
+                        if (mInteractive && !IsConfirming) AskStartOver(aStage);
                     });
                     aSide.Add(aReset);
                 }
@@ -117,7 +120,7 @@ namespace BattleFight
                 int aIndex = aStageIndex;
                 // マウスを動かしたときだけ選択を変える(止まったマウスがキー操作の選択を上書きしないように)
                 aRow.RegisterCallback<PointerMoveEvent>(_ => { if (!IsConfirming) mHighlighted = aIndex; });
-                aRow.RegisterCallback<ClickEvent>(_ => { if (mVisible && !IsConfirming) mDirector.StartStage(aIndex); });
+                aRow.RegisterCallback<ClickEvent>(_ => { if (mInteractive && !IsConfirming) mDirector.StartStage(aIndex); });
                 mList.Add(aRow);
                 mRows.Add((aRow, aRecord, aReset));
             }
@@ -137,7 +140,11 @@ namespace BattleFight
 
             var aKeyboard = Keyboard.current;
             var aGamepad = Gamepad.current;
-            if (IsConfirming)
+            if (SettingsUI.IsOpen)
+            {
+                // 設定画面を開いている間は、ステージ選択の操作をしない
+            }
+            else if (IsConfirming)
             {
                 UpdateConfirm(aKeyboard, aGamepad);
             }
@@ -181,6 +188,12 @@ namespace BattleFight
                 AskDeleteSlot();
                 return;
             }
+            // □ボタン: 設定画面(キーボードは O。どの画面からでも開ける)
+            if (iGamepad != null && iGamepad.buttonWest.wasPressedThisFrame && SettingsUI.Instance != null)
+            {
+                SettingsUI.Instance.Open();
+                return;
+            }
             if (aConfirm) mDirector.StartStage(mHighlighted);
         }
 
@@ -208,7 +221,7 @@ namespace BattleFight
             mFooter.EnableInClassList("select__footer--notice", aNotice);
             mFooter.text = aNotice
                 ? mNotice
-                : "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   Q・E(LB・RB)でスロット   [P] スキル編成"
+                : "クリック / Enter(Aボタン)で開始   W・S / 十字キーで選択   Q・E(LB・RB)でスロット   [P] スキル編成   [O] 設定"
                   + (aExploration && ExplorationSave.HasStarted ? "   [Backspace] 探索をはじめから" : "");
         }
 
@@ -247,7 +260,7 @@ namespace BattleFight
 
         void AskDeleteSlot()
         {
-            if (!mVisible || IsConfirming) return;
+            if (!mInteractive || IsConfirming) return;
             int aSlot = SaveProfiles.Current;
             if (!SaveProfiles.IsUsed(aSlot))
             {

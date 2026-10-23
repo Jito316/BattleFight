@@ -917,11 +917,11 @@ namespace BattleFight
             bool aDanger = aInBattle && mPlayer != null && !mPlayer.IsDead && aHealthRatio < DangerHealthRatio;
             float aBeat = Mathf.Pow(Mathf.Abs(Mathf.Sin(Time.unscaledTime * 3.2f)), 6f);
             DangerAmount = aDanger ? (0.25f + 0.35f * (1f - aHealthRatio / DangerHealthRatio)) * (0.55f + 0.45f * aBeat) : 0f;
-            if (mDangerVignette != null) mDangerVignette.style.opacity = DangerAmount;
+            if (mDangerVignette != null) mDangerVignette.style.opacity = DangerAmount * GameSettings.Flash;
 
             // 見切り(敵だけが遅い)の間: 画面の縁がうっすら紫に光り、終わりに向けて薄くなる
             SlowAmount = aInBattle && EnemyTime.IsSlowed ? 0.15f + 0.3f * EnemyTime.Remaining : 0f;
-            if (mSlowVignette != null) mSlowVignette.style.opacity = SlowAmount;
+            if (mSlowVignette != null) mSlowVignette.style.opacity = SlowAmount * GameSettings.Flash;
         }
 
         EnemyTag EnemyTagAt(int iIndex)
