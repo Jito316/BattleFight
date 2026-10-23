@@ -54,6 +54,27 @@ namespace BattleFight
         /// <summary>壁や大きな敵で縮めている、今のカメラの距離(戻るときだけゆっくり)</summary>
         float mObstructedDistance = -1f;
 
+        /// <summary>壁・大きな敵で縮めるときの、カメラの距離の下限</summary>
+        const float MinWallDistance = 1.6f;
+        const float MinBigEnemyDistance = 2.5f;
+        /// <summary>カメラがプレイヤーの体にここまで近づいたら、体を隠す(影は残す)</summary>
+        const float HideBodyDistance = 1.3f;
+        /// <summary>プレイヤーの体を隠しているか</summary>
+        public bool IsBodyHidden { get; private set; }
+
+        /// <summary>カメラが近すぎるときに、プレイヤーの体(と持っている武器)を影だけにする</summary>
+        void SetBodyHidden(bool iHidden)
+        {
+            if (IsBodyHidden == iHidden) return;
+            IsBodyHidden = iHidden;
+            var aFrom = iHidden ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+            var aTo = iHidden ? UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly : UnityEngine.Rendering.ShadowCastingMode.On;
+            foreach (var aRenderer in mTarget.GetComponentsInChildren<Renderer>())
+            {
+                if (aRenderer.shadowCastingMode == aFrom) aRenderer.shadowCastingMode = aTo;
+            }
+        }
+
         /// <summary>この高さ以上の敵は、壁と同じようにカメラが前へ回り込む(体でプレイヤーが隠れないように)</summary>
         const float BigEnemyHeight = 2.5f;
 
@@ -147,21 +168,27 @@ namespace BattleFight
         {
             const float aRadius = 0.3f;
             int aCount = Physics.SphereCastNonAlloc(iFrom, aRadius, iDirection, mCameraHits, iMaxDistance, ~0, QueryTriggerInteraction.Ignore);
-            float aNearest = iMaxDistance;
+            float aNearestWall = iMaxDistance;
+            float aNearestEnemy = iMaxDistance;
             for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
                 var aHit = mCameraHits[aIndex];
                 if (aHit.distance <= 0f) continue;
+                if (mTarget != null && aHit.collider.transform.IsChildOf(mTarget)) continue;
                 // 敵の体はふつうは通り抜けるが、大きな敵は壁と同じに扱う
                 if (aHit.collider.GetComponentInParent<Damageable>() != null)
                 {
                     var aEnemy = aHit.collider.GetComponentInParent<EnemyController>();
                     if (aEnemy == null || aEnemy.IsDead || aEnemy.Height < BigEnemyHeight) continue;
+                    aNearestEnemy = Mathf.Min(aNearestEnemy, aHit.distance);
+                    continue;
                 }
-                if (mTarget != null && aHit.collider.transform.IsChildOf(mTarget)) continue;
-                aNearest = Mathf.Min(aNearest, aHit.distance);
+                aNearestWall = Mathf.Min(aNearestWall, aHit.distance);
             }
-            return Mathf.Max(1.2f, aNearest - 0.1f);
+            // 大きな敵の手前には、近づきすぎない(それより近い敵なら、カメラが敵の体の中に入る。中からは敵の面が見えないので隠れない)
+            float aWall = Mathf.Max(MinWallDistance, aNearestWall - 0.1f);
+            float aEnemyLimit = Mathf.Max(MinBigEnemyDistance, aNearestEnemy - 0.1f);
+            return Mathf.Min(aWall, aEnemyLimit);
         }
 
         void LateUpdate()
@@ -237,6 +264,7 @@ namespace BattleFight
             if (mCamera != null && mBaseFieldOfView > 0f) mCamera.fieldOfView = mBaseFieldOfView - mZoom;
 
             transform.SetPositionAndRotation(aPosition, Quaternion.LookRotation(aViewFocus - aPosition));
+            SetBodyHidden(Vector3.Distance(aPosition, mTarget.position + Vector3.up * 1.2f) < HideBodyDistance);
         }
     }
 }
