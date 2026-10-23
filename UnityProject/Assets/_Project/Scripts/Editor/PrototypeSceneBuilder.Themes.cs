@@ -31,9 +31,10 @@ namespace BattleFight.EditorTools
                 Hex("#D9925A"), Hex("#C98A5C"), 35f, 130f, Hex("#FFC48A"), 1.4f, new Vector2(28f, -60f),
                 Hex("#D9A27A"), Hex("#7A5A45"), Hex("#3A2A22"), iReflection: 0.4f),
             // 第2幕 空と銃火: 砂色の床と、高い青空
-            ["Stage_2_Skyfire"] = Theme(Hex("#B9A27E"), Hex("#8C7756"), Hex("#C9B28C"), Hex("#A58E6A"), Hex("#4FB6FF"), Hex("#7F93AE"),
-                Hex("#6FB2F0"), Hex("#A9CDEE"), 50f, 170f, Hex("#FFF6E2"), 1.55f, new Vector2(65f, -20f),
-                Hex("#9FC8F2"), Hex("#B8A586"), Hex("#5C4E3B")),
+            // (白っぽく眠い見た目だったので、光と霧を弱めて色を出す)
+            ["Stage_2_Skyfire"] = Theme(Hex("#A88E68"), Hex("#7A6446"), Hex("#B89E76"), Hex("#937A58"), Hex("#3FA8FF"), Hex("#6A7F9C"),
+                Hex("#4F9BE6"), Hex("#8DBBE6"), 70f, 210f, Hex("#FFF0D6"), 1.3f, new Vector2(55f, -20f),
+                Hex("#86B2E2"), Hex("#9C8A6C"), Hex("#4A3E2E"), iReflection: 0.45f),
             // 第3幕 爆炎の回廊: 炭色の床、赤い光と赤い霧
             ["Stage_3_Inferno"] = Theme(Hex("#2E2624"), Hex("#231B1A"), Hex("#3D2C28"), Hex("#4A2C24"), Hex("#FF4A1F"), Hex("#3A1612"),
                 Hex("#4A1610"), Hex("#6E2216"), 22f, 100f, Hex("#FF8A5C"), 1.2f, new Vector2(35f, 40f),

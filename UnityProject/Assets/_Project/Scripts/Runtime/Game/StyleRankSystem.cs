@@ -56,10 +56,16 @@ namespace BattleFight
             Announce(iLabel, iColor);
         }
 
+        /// <summary>一度に出す文字の数</summary>
+        public const int MaxAnnouncements = 3;
+
         public void Announce(string iText, Color iColor)
         {
+            // 同じ文字がまだ出ていたら、新しく足さずに出し直す(WEAK! が何度も並ばないように)
+            int aSame = Announcements.FindIndex(iExisting => iExisting.Text == iText);
+            if (aSame >= 0) Announcements.RemoveAt(aSame);
             Announcements.Add(new Announcement { Text = iText, Color = iColor, Time = Time.unscaledTime });
-            if (Announcements.Count > 5) Announcements.RemoveAt(0);
+            while (Announcements.Count > MaxAnnouncements) Announcements.RemoveAt(0);
         }
 
         public void OnDamaged() => Meter.OnDamaged();
