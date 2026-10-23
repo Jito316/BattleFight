@@ -148,7 +148,6 @@ namespace BattleFight.EditorTools
             var aShadow = Asset<EnemyProfile>("Enemies/Enemy_Shadow", iResetData, PrototypeDefaults.Shadow);
 
             // 弱点(切り替えるメリット)。まだ設定されていない敵にだけ入れる
-            EnsureSkillMotions();
             EnsureWeaknesses(aGrunt, WeaponType.Sword, WeaponType.Gauntlet);
             EnsureWeaknesses(aArmored, WeaponType.Hammer, WeaponType.Gauntlet);
             EnsureWeaknesses(aShooter, WeaponType.Chain, WeaponType.Sword);
@@ -245,15 +244,10 @@ namespace BattleFight.EditorTools
             aController.stepOffset = 0.3f;
             aController.skinWidth = 0.05f;
 
-            // 人型モデル(Quaternius)。見つからないときは仮の形にする
-            var aCharacter = BuildPlayerModel(aPlayer);
-            if (aCharacter == null)
-            {
-                var aBody = Part(PrimitiveType.Capsule, "Body", aPlayer.transform, new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f),
-                    Mat("Player", new Color(0.9f, 0.9f, 0.95f)));
-                Part(PrimitiveType.Cube, "Visor", aBody, new Vector3(0f, 0.5f, 0.4f), new Vector3(0.7f, 0.15f, 0.3f),
-                    Mat("Visor", new Color(0.1f, 0.6f, 1f)));
-            }
+            var aBody = Part(PrimitiveType.Capsule, "Body", aPlayer.transform, new Vector3(0f, 1f, 0f), new Vector3(0.8f, 1f, 0.8f),
+                Mat("Player", new Color(0.9f, 0.9f, 0.95f)));
+            Part(PrimitiveType.Cube, "Visor", aBody, new Vector3(0f, 0.5f, 0.4f), new Vector3(0.7f, 0.15f, 0.3f),
+                Mat("Visor", new Color(0.1f, 0.6f, 1f)));
             var aHand = new GameObject("HandAnchor").transform;
             aHand.SetParent(aPlayer.transform, false);
             aHand.localPosition = new Vector3(0.45f, 1.15f, 0.25f);
@@ -308,17 +302,6 @@ namespace BattleFight.EditorTools
                 SetPreset(aPresets, 2, "ガンナー", aGunRapid, aGunGrenade, aGunJet);
                 SetPreset(aPresets, 3, "混成", aGauntletRush, aHammerQuake, aChainWire);
             });
-            if (aCharacter != null)
-            {
-                Configure(aCharacter, iSerialized =>
-                {
-                    iSerialized.FindProperty("mAnimator").objectReferenceValue = aPlayer.GetComponentInChildren<Animator>();
-                    iSerialized.FindProperty("mExecutor").objectReferenceValue = aExecutor;
-                    iSerialized.FindProperty("mMotor").objectReferenceValue = aMotor;
-                    iSerialized.FindProperty("mSelf").objectReferenceValue = aDamageable;
-                    iSerialized.FindProperty("mHandAnchor").objectReferenceValue = aHand;
-                });
-            }
             Configure(aWeaponHolder, iSerialized =>
             {
                 iSerialized.FindProperty("mHandAnchor").objectReferenceValue = aHand;

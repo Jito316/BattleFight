@@ -93,18 +93,7 @@ namespace BattleFight
 
         [FormerlySerializedAs("steps")] public List<SkillStep> Steps = new List<SkillStep> { new SkillStep() };
 
-        [Header("モーション(人型モデル)")]
-        [Tooltip("溜め・投げてから届くまで・最初の段の構えに流すモーション。空なら使わない")]
-        public string ChargeMotion;
-        [Tooltip("段ごとのモーション。段の数より少ないときは最後のものを使う。空なら武器と挙動から自動で選ぶ")]
-        public string[] Motions;
-
         public int StepCount => Steps.Count;
-
-        /// <summary>その段のモーション。決めていなければ null</summary>
-        public string MotionFor(int iStep) => Motions == null || Motions.Length == 0 ? null : Motions[Mathf.Clamp(iStep, 0, Motions.Length - 1)];
-
-        public bool HasChargeMotion => !string.IsNullOrEmpty(ChargeMotion);
 
         public SkillStep GetStep(int iIndex) => Steps[Mathf.Clamp(iIndex, 0, Steps.Count - 1)];
     }
