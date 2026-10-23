@@ -1,0 +1,91 @@
+# BattleFight の Git の設定(改行・Unity のマージ・大きなファイル)
+# 初めて使う人は Tools/setup-git.ps1 を一度実行する(Unity のマージツールと Git LFS を有効にする)
+
+# ---------- 改行 ----------
+# テキストはリポジトリの中ではすべて LF にそろえる(手元では OS に合わせてよい)
+* text=auto
+
+# Unity が書き出すファイル(YAML)は手元でも LF のまま。Unity は LF で書くので、CRLF にすると保存のたびに全行が変わる
+*.unity text eol=lf merge=unityyamlmerge
+*.prefab text eol=lf merge=unityyamlmerge
+*.asset text eol=lf merge=unityyamlmerge
+*.meta text eol=lf merge=unityyamlmerge
+*.mat text eol=lf merge=unityyamlmerge
+*.anim text eol=lf merge=unityyamlmerge
+*.controller text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.mask text eol=lf merge=unityyamlmerge
+*.playable text eol=lf merge=unityyamlmerge
+*.physicMaterial text eol=lf merge=unityyamlmerge
+*.physicsMaterial2D text eol=lf merge=unityyamlmerge
+*.renderTexture text eol=lf merge=unityyamlmerge
+*.lighting text eol=lf merge=unityyamlmerge
+*.mixer text eol=lf merge=unityyamlmerge
+*.preset text eol=lf merge=unityyamlmerge
+*.spriteatlas text eol=lf merge=unityyamlmerge
+*.terrainlayer text eol=lf merge=unityyamlmerge
+*.shadervariants text eol=lf merge=unityyamlmerge
+*.signal text eol=lf merge=unityyamlmerge
+*.fontsettings text eol=lf merge=unityyamlmerge
+*.guiskin text eol=lf merge=unityyamlmerge
+*.giparams text eol=lf merge=unityyamlmerge
+*.cubemap text eol=lf merge=unityyamlmerge
+*.flare text eol=lf merge=unityyamlmerge
+*.brush text eol=lf merge=unityyamlmerge
+
+# Unity が書き出すそのほかのテキスト
+*.asmdef text eol=lf
+*.asmref text eol=lf
+*.inputactions text eol=lf
+*.uss text eol=lf
+*.uxml text eol=lf
+*.tss text eol=lf
+*.shader text eol=lf
+*.hlsl text eol=lf
+*.json text eol=lf
+
+# コード
+*.cs text diff=csharp
+*.py text
+*.md text
+*.ps1 text eol=crlf
+*.sh text eol=lf
+
+# ---------- 大きなファイル(Git LFS) ----------
+# 画像
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.tga filter=lfs diff=lfs merge=lfs -text
+*.tif filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.exr filter=lfs diff=lfs merge=lfs -text
+*.hdr filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+# 3D モデル
+*.fbx filter=lfs diff=lfs merge=lfs -text
+*.obj filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.max filter=lfs diff=lfs merge=lfs -text
+*.ma filter=lfs diff=lfs merge=lfs -text
+*.mb filter=lfs diff=lfs merge=lfs -text
+*.glb filter=lfs diff=lfs merge=lfs -text
+# 音
+*.wav filter=lfs diff=lfs merge=lfs -text
+*.mp3 filter=lfs diff=lfs merge=lfs -text
+*.ogg filter=lfs diff=lfs merge=lfs -text
+*.aif filter=lfs diff=lfs merge=lfs -text
+*.aiff filter=lfs diff=lfs merge=lfs -text
+*.flac filter=lfs diff=lfs merge=lfs -text
+# フォント
+*.ttf filter=lfs diff=lfs merge=lfs -text
+*.otf filter=lfs diff=lfs merge=lfs -text
+*.ttc filter=lfs diff=lfs merge=lfs -text
+# 動画・まとめたファイル
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.7z filter=lfs diff=lfs merge=lfs -text
+*.unitypackage filter=lfs diff=lfs merge=lfs -text
