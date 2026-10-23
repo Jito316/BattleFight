@@ -26,6 +26,11 @@ namespace BattleFight
         const int mMaxAttackTokens = 2;
         const float mFlashDuration = 0.08f;
         const float mDeathDuration = 0.5f;
+        /// <summary>のけぞり・つぶれが元に戻るまでの時間</summary>
+        const float mReactionDuration = 0.5f;
+
+        /// <summary>見た目の部品をまとめる子の名前(EnemyFactory が作る)</summary>
+        public const string VisualName = "Visual";
 
         public static readonly List<EnemyController> Active = new List<EnemyController>();
         static int mAttackTokensInUse;
@@ -56,6 +61,11 @@ namespace BattleFight
         readonly List<EnemyAttack> mAvailableAttacks = new List<EnemyAttack>();
         bool mAttackLanded;
         float mFlashTimer;
+        float mFrozenUntil = -1f;
+        Transform mVisual;
+        Vector3 mReactionDirection;
+        float mReactionStrength;
+        float mReactionTime;
         float mStrafeSign = 1f;
         Vector3 mSlamDestination;
         Vector3 mAttackDirection;
@@ -80,6 +90,10 @@ namespace BattleFight
         public EnemyProfile Profile => mProfile;
         public Damageable Damageable => mDamageable;
         public bool IsDead => mDamageable == null || mDamageable.IsDead;
+        /// <summary>ヒットストップで止まっている(当てられた敵だけが止まる)</summary>
+        public bool IsFrozen => Time.unscaledTime < mFrozenUntil;
+        /// <summary>のけぞり・つぶれの途中か(テスト用)</summary>
+        public bool IsReacting => mReactionStrength > 0f;
         public bool IsHeavy => mProfile != null && mProfile.Heavy;
         public bool IsBeingPulled => mState == State.Pulled;
         public bool IsTelegraphing => mState == State.Windup;
@@ -148,6 +162,7 @@ namespace BattleFight
         {
             mProfile = iNewProfile;
             mTarget = iPlayer;
+            mVisual = transform.Find(VisualName);
             mRenderers = GetComponentsInChildren<Renderer>();
             mBaseColors = new Color[mRenderers.Length];
             for (int aRendererIndex = 0; aRendererIndex < mRenderers.Length; aRendererIndex++) mBaseColors[aRendererIndex] = mRenderers[aRendererIndex].material.color;
@@ -166,7 +181,7 @@ namespace BattleFight
             mSkillSetIndex = 0;
             mSwapTimer = mProfile.SkillSwapInterval;
             // 手に持つ武器(EnemyFactory が付ける)は、型の色で塗る
-            var aWeapon = transform.Find("Weapon");
+            var aWeapon = mVisual != null ? mVisual.Find("Weapon") : transform.Find("Weapon");
             mWeaponRenderer = aWeapon != null ? aWeapon.GetComponent<Renderer>() : null;
             mWeaponRendererIndex = mWeaponRenderer != null ? System.Array.IndexOf(mRenderers, mWeaponRenderer) : -1;
             ApplySkillSetColor();
@@ -196,8 +211,10 @@ namespace BattleFight
         void Update()
         {
             if (mProfile == null) return;
-            // 「見切り」(ジャスト回避)の間は敵だけ遅くなる
-            float aDeltaTime = EnemyTime.DeltaTime;
+            // 「見切り」(ジャスト回避)の間は敵だけ遅くなる。ヒットストップ中は止まる
+            bool aFrozen = IsFrozen;
+            float aDeltaTime = aFrozen ? 0f : EnemyTime.DeltaTime;
+            UpdateReaction(aFrozen);
 
             if (mState == State.Dead)
             {
@@ -534,6 +551,10 @@ namespace BattleFight
         {
             if (mState == State.Dead) return;
             mFlashTimer = mFlashDuration;
+            float aReaction = iHit.Reaction > 0f ? iHit.Reaction : 1f;
+            if (iOutcome == HitOutcome.Armored) aReaction *= 0.35f;
+            if (mProfile.IsBoss) aReaction *= 0.5f;
+            React(iHit.Direction, aReaction);
 
             float aKnockScale = iOutcome == HitOutcome.Armored ? 0.15f : 1f;
             if (mProfile.IsBoss) aKnockScale *= 0.3f;
@@ -575,6 +596,7 @@ namespace BattleFight
             mStateTime = 0f;
             mController.enabled = false;
             Active.Remove(this);
+            SoundPlayer.Play(Sfx.Defeat, mProfile.IsBoss ? 1f : 0.7f, mProfile.IsBoss ? 0.8f : 1f);
             // 砕け散って、刻片がプレイヤーへ飛んでいく
             if (CombatFeedback.Instance != null)
             {
@@ -686,6 +708,49 @@ namespace BattleFight
             if (iDirection.sqrMagnitude < 1e-4f) return;
             var aRotation = Quaternion.LookRotation(iDirection);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, aRotation, mProfile.TurnSpeed * iDeltaTime);
+        }
+
+        /// <summary>ヒットストップ: しばらくこの敵だけ止める(ほかの敵・弾は動き続ける)</summary>
+        public void Freeze(float iDuration)
+        {
+            if (iDuration <= 0f) return;
+            mFrozenUntil = Mathf.Max(mFrozenUntil, Time.unscaledTime + iDuration);
+        }
+
+        /// <summary>被弾の向きにのけぞり、つぶれる。iStrength は 1 がふつう</summary>
+        public void React(Vector3 iDirection, float iStrength)
+        {
+            Vector3 aLocal = transform.InverseTransformDirection(iDirection);
+            aLocal.y = 0f;
+            mReactionDirection = aLocal.sqrMagnitude > 1e-4f ? aLocal.normalized : Vector3.back;
+            mReactionStrength = Mathf.Clamp(Mathf.Max(mReactionStrength * 0.5f, iStrength), 0f, 2f);
+            mReactionTime = 0f;
+        }
+
+        /// <summary>
+        /// のけぞり・つぶれ。当たった瞬間の形でヒットストップの間は止まって小刻みに震え、
+        /// 止まり終わったら、はねるように元へ戻る。
+        /// </summary>
+        void UpdateReaction(bool iFrozen)
+        {
+            if (mVisual == null || mReactionStrength <= 0f) return;
+            if (!iFrozen) mReactionTime += Time.deltaTime;
+            if (mReactionTime >= mReactionDuration)
+            {
+                mReactionStrength = 0f;
+                mVisual.localScale = Vector3.one;
+                mVisual.localRotation = Quaternion.identity;
+                mVisual.localPosition = Vector3.zero;
+                return;
+            }
+
+            float aCurve = Mathf.Exp(-mReactionTime * 12f) * Mathf.Cos(mReactionTime * 28f);
+            float aAmount = mReactionStrength * aCurve;
+            mVisual.localScale = new Vector3(1f + 0.16f * aAmount, 1f - 0.2f * aAmount, 1f + 0.16f * aAmount);
+            Vector3 aAxis = Vector3.Cross(Vector3.up, mReactionDirection);
+            mVisual.localRotation = Quaternion.AngleAxis(18f * aAmount, aAxis);
+            Vector3 aShake = iFrozen ? mReactionDirection * (Random.Range(-1f, 1f) * 0.06f * mReactionStrength) : Vector3.zero;
+            mVisual.localPosition = mReactionDirection * (0.12f * aAmount) + aShake;
         }
 
         void UpdateColor(float iDeltaTime)

@@ -28,6 +28,8 @@ namespace BattleFight
         /// <summary>カメラ基準の入力方向(長さ0〜1)</summary>
         public Vector3 DesiredDirection { get; set; }
         public bool LocomotionEnabled { get; set; } = true;
+        /// <summary>ヒットストップ中: 動きを止める(速さは覚えておき、止まり終わったら続きから動く)</summary>
+        public bool Frozen { get; set; }
         public float GravityScale { get; set; } = 1f;
         public bool IsGrounded { get; private set; }
         public float VerticalVelocity => mVerticalVelocity;
@@ -63,6 +65,7 @@ namespace BattleFight
 
         void Update()
         {
+            if (Frozen) return;
             float aDeltaTime = Time.deltaTime;
 
             Vector3 aDesired = DesiredDirection;

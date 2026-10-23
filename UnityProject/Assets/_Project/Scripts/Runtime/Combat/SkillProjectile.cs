@@ -22,9 +22,11 @@ namespace BattleFight
     public class SkillProjectile : MonoBehaviour
     {
         static readonly Collider[] mOverlapBuffer = new Collider[32];
+        static readonly RaycastHit[] mCastBuffer = new RaycastHit[32];
 
         readonly HashSet<Damageable> mAlreadyHit = new HashSet<Damageable>();
         readonly List<Damageable> mHits = new List<Damageable>();
+        readonly List<float> mHitDistances = new List<float>();
 
         SkillExecutor mOwner;
         SkillHitContext mContext;
@@ -121,20 +123,23 @@ namespace BattleFight
 
             Vector3 aStart = transform.position;
             Vector3 aStep = mVelocity * aDeltaTime;
+            float aDistance = aStep.magnitude;
+            Vector3 aDirection = aDistance > 1e-5f ? aStep / aDistance : transform.forward;
+
+            // 速い弾は 1 フレームで敵の幅より長く進むので、進んだ道の上をまとめて調べる(弾抜けしないように)
+            float aWallDistance = WallDistance(aStart, aDirection, aDistance);
+            if (TryHitEnemies(aStart, aDirection, Mathf.Min(aDistance, aWallDistance))) return;
 
             // 壁や床に当たったら止まる(爆発する弾は爆発)
-            if (aStep.sqrMagnitude > 0f
-                && Physics.SphereCast(aStart, mRadius * 0.5f, aStep.normalized, out var aWall, aStep.magnitude, ~0, QueryTriggerInteraction.Ignore)
-                && aWall.collider.GetComponentInParent<Damageable>() == null)
+            if (aWallDistance < aDistance)
             {
-                transform.position = aStart + aStep.normalized * aWall.distance;
+                transform.position = aStart + aDirection * aWallDistance;
                 if (mExplosionRadius > 0f) Explode(transform.position);
                 else Destroy(gameObject);
                 return;
             }
 
             transform.position = aStart + aStep;
-            if (TryHitEnemies()) return;
 
             if (mAge >= mLifetime)
             {
@@ -143,29 +148,75 @@ namespace BattleFight
             }
         }
 
-        bool TryHitEnemies()
+        /// <summary>この先 iDistance までにある壁・床までの距離。なければ float.MaxValue(敵は壁として扱わない)</summary>
+        float WallDistance(Vector3 iStart, Vector3 iDirection, float iDistance)
         {
-            mHits.Clear();
-            int aCount = Physics.OverlapSphereNonAlloc(transform.position, mRadius, mOverlapBuffer, ~0, QueryTriggerInteraction.Ignore);
+            if (iDistance <= 0f) return float.MaxValue;
+            int aCount = Physics.SphereCastNonAlloc(iStart, mRadius * 0.5f, iDirection, mCastBuffer, iDistance, ~0, QueryTriggerInteraction.Ignore);
+            float aNearest = float.MaxValue;
             for (int aIndex = 0; aIndex < aCount; aIndex++)
             {
-                var aTarget = mOverlapBuffer[aIndex].GetComponentInParent<Damageable>();
+                var aHit = mCastBuffer[aIndex];
+                // 撃った瞬間に重なっているもの(距離 0)は壁としない
+                if (aHit.distance <= 0f || aHit.collider.GetComponentInParent<Damageable>() != null) continue;
+                aNearest = Mathf.Min(aNearest, aHit.distance);
+            }
+            return aNearest;
+        }
+
+        /// <summary>
+        /// iStart から iDistance 進む間に触れた敵に当てる。貫通しない弾は、いちばん手前の敵に当たってそこで消える。
+        /// 当たって消えた(または爆発した)ら true
+        /// </summary>
+        bool TryHitEnemies(Vector3 iStart, Vector3 iDirection, float iDistance)
+        {
+            mHits.Clear();
+            mHitDistances.Clear();
+            int aCount = Physics.SphereCastNonAlloc(iStart, mRadius, iDirection, mCastBuffer, Mathf.Max(iDistance, 1e-4f), ~0, QueryTriggerInteraction.Ignore);
+            for (int aIndex = 0; aIndex < aCount; aIndex++)
+            {
+                var aHit = mCastBuffer[aIndex];
+                var aTarget = aHit.collider.GetComponentInParent<Damageable>();
                 if (aTarget == null || aTarget.IsDead || aTarget.Team == Team.Player || mAlreadyHit.Contains(aTarget)) continue;
                 if (mOwnerRoot != null && aTarget.transform.IsChildOf(mOwnerRoot)) continue;
+                int aExisting = mHits.IndexOf(aTarget);
+                if (aExisting >= 0)
+                {
+                    mHitDistances[aExisting] = Mathf.Min(mHitDistances[aExisting], aHit.distance);
+                    continue;
+                }
                 mHits.Add(aTarget);
+                mHitDistances.Add(aHit.distance);
             }
             if (mHits.Count == 0) return false;
 
+            // いちばん手前の敵
+            int aFirst = 0;
+            for (int aIndex = 1; aIndex < mHits.Count; aIndex++)
+            {
+                if (mHitDistances[aIndex] < mHitDistances[aFirst]) aFirst = aIndex;
+            }
+            Vector3 aImpact = iStart + iDirection * mHitDistances[aFirst];
+
             if (mExplosionRadius > 0f)
             {
-                Explode(transform.position);
+                transform.position = aImpact;
+                Explode(aImpact);
                 return true;
             }
 
-            foreach (var aTarget in mHits) mAlreadyHit.Add(aTarget);
-            if (mOwner != null) mOwner.ResolveHits(mContext, mHits, transform.position - mVelocity.normalized);
             if (!mPierce)
             {
+                // 貫通しない弾は、手前の 1 体だけに当たる
+                var aTarget = mHits[aFirst];
+                mHits.Clear();
+                mHits.Add(aTarget);
+            }
+            foreach (var aTarget in mHits) mAlreadyHit.Add(aTarget);
+            if (mOwner != null) mOwner.ResolveHits(mContext, mHits, aImpact - iDirection);
+            if (!mPierce)
+            {
+                transform.position = aImpact;
                 Destroy(gameObject);
                 return true;
             }

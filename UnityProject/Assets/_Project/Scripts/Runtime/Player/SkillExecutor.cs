@@ -121,11 +121,14 @@ namespace BattleFight
         SlotType mLastSwapCancelSlot;
         int mSwapCancelStreak;
         float mLastSwapCancelTime = -99f;
+        float mFrozenUntil = -1f;
 
         public SkillData Current => mCurrent;
         public bool IsBusy => mCurrent != null;
         public bool IsFinisherActive => mCurrent != null && mIsFinisher;
         public bool IsStunned => Time.time < mStunnedUntil;
+        /// <summary>ヒットストップで止まっている(近接で当てたプレイヤーと、当てられた敵だけが止まる)</summary>
+        public bool IsHitFrozen => Time.unscaledTime < mFrozenUntil;
         public bool SwapStrikeReady => Time.time <= mSwapStrikeUntil;
         /// <summary>スワップストライクの残り時間(1 → 0)</summary>
         public float SwapStrikeRemaining => mSwapStrikeWindow <= 0f ? 0f : Mathf.Clamp01((mSwapStrikeUntil - Time.time) / mSwapStrikeWindow);
@@ -180,11 +183,14 @@ namespace BattleFight
 
             HandleSwaps();
 
+            // ヒットストップ中は技を進めない(切り替えは受け付ける: 当てた瞬間のスワップキャンセル)
+            bool aFrozen = IsHitFrozen && mCurrent != null;
+            mMotor.Frozen = aFrozen;
             if (IsStunned)
             {
                 mMotor.LocomotionEnabled = false;
             }
-            else
+            else if (!aFrozen)
             {
                 if (mCurrent == null) TryStartFromInput();
                 else TickSkill(Time.deltaTime);
@@ -245,6 +251,7 @@ namespace BattleFight
             mSwapStrikeUntil = Time.time + mSwapStrikeWindow;
             mSwapStrikeId++;
             SwapChain.OnSwap(Time.time);
+            SoundPlayer.Play(Sfx.Swap, 0.35f);
             if (iShown == null) return;
             if (iUpdateMainWeapon) mWeapons.SetMainWeapon(iShown.Weapon);
 
@@ -294,6 +301,7 @@ namespace BattleFight
                     Knockback = mChangeAttackKnockback,
                     Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
                     Source = gameObject,
+                    Reaction = 1.3f,
                 });
                 if (!aOutcome.Landed()) continue;
                 aAnyLanded = true;
@@ -711,6 +719,7 @@ namespace BattleFight
             var aStep = mStep;
             var aData = mSlots.GetWeaponData(mCurrent.Weapon);
             var aColor = aData != null ? aData.Color : Color.white;
+            PlayAttackSound();
 
             switch (mCurrent.Behavior)
             {
@@ -800,6 +809,9 @@ namespace BattleFight
             float aHitstop = 0f;
             var aBonus = mSlots.Bonus;
             var aWeaponData = mSlots.GetWeaponData(aSkill.Weapon);
+            var aFeel = WeaponFeel.For(aSkill.Weapon);
+            bool aAnyHeavy = false;
+            bool aAnyArmorBroken = false;
 
             bool aAnyWeak = false;
             int aLanded = 0;
@@ -835,6 +847,7 @@ namespace BattleFight
                     Launch = aStep.Launch,
                     Direction = aDirection.sqrMagnitude > 1e-4f ? aDirection.normalized : transform.forward,
                     Source = gameObject,
+                    Reaction = aFeel.ReactionScale,
                 });
                 if (!aOutcome.Landed()) continue;
 
@@ -842,7 +855,12 @@ namespace BattleFight
                 aAnyWeak |= aWeak;
                 aLanded++;
                 if (aWeak) aWeakLanded++;
-                aHitstop = Mathf.Max(aHitstop, aStep.Hitstop * (aOutcome == HitOutcome.ArmorBroken ? 2f : 1f));
+                // ヒットストップは、当てた敵だけを止める(ほかの敵・弾は動き続ける)
+                float aTargetHitstop = aFeel.Hitstop(aStep.Hitstop, aOutcome == HitOutcome.ArmorBroken);
+                aHitstop = Mathf.Max(aHitstop, aTargetHitstop);
+                var aEnemy = aTarget.GetComponent<EnemyController>();
+                if (aEnemy != null) aEnemy.Freeze(aTargetHitstop);
+                aAnyArmorBroken |= aOutcome == HitOutcome.ArmorBroken;
 
                 // 近接の1段は1回だけ登録する。同じ段で複数の敵に当てた分は少しだけ加点
                 bool aFirstForStep = iContext.Skill == mCurrent && iContext.StepIndex == mStepIndex ? !mStyleRegisteredThisStep : !aStyleRegistered;
@@ -870,10 +888,13 @@ namespace BattleFight
 
                     // 火花(弱点・アーマー破壊・重い一撃は多く)。重い一撃は画面も大きく揺らす
                     bool aHeavy = aTarget.LastDamage >= 25f || aOutcome == HitOutcome.ArmorBroken;
+                    aAnyHeavy |= aHeavy;
                     var aSparkColor = aWeak || aSwapStrike ? aColor : aWeaponData != null ? Color.Lerp(aWeaponData.Color, Color.white, 0.4f) : Color.white;
                     var aHitPoint = Vector3.Lerp(aTarget.transform.position + Vector3.up * 1.1f, iSourcePosition + Vector3.up * 1.1f, 0.25f);
-                    CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, aHeavy || aWeak ? 9 : 5, aHeavy ? 9f : 7f);
-                    if (aHeavy) CombatFeedback.Instance.Shake(0.22f);
+                    CombatFeedback.Instance.SpawnSparks(aHitPoint, aSparkColor, (aHeavy || aWeak ? 9 : 5) + aFeel.ExtraSparks,
+                        aFeel.SparkSpeed * (aHeavy ? 1.25f : 1f));
+                    CombatFeedback.Instance.SpawnImpact(aFeel.Style, aHitPoint, aTarget.transform.position, aDirection, aSparkColor, aHeavy);
+                    if (aHeavy) CombatFeedback.Instance.Shake(0.22f * aFeel.ShakeScale);
                 }
             }
 
@@ -890,11 +911,37 @@ namespace BattleFight
             {
                 mStyle.AddBonus(mChainStyleBonusPerStep * SwapChain.Chain, $"CHAIN ×{SwapChain.Chain}", new Color(0.55f, 1f, 0.9f));
             }
-            if (CombatFeedback.Instance != null)
+            // 近接で当てたときは、プレイヤーも一緒に止まる(飛び道具は撃った本人は止まらない)
+            if (IsMelee(aSkill) && aSkill == mCurrent) mFrozenUntil = Mathf.Max(mFrozenUntil, Time.unscaledTime + aHitstop);
+            if (CombatFeedback.Instance != null) CombatFeedback.Instance.Shake((0.05f + aHitstop) * aFeel.ShakeScale);
+
+            SoundPlayer.Play(SfxSynth.HitFor(aSkill.Weapon), aAnyHeavy ? 1f : 0.8f, aAnyHeavy ? 0.9f : 1f);
+            if (aAnyWeak) SoundPlayer.Play(Sfx.Weak, 0.5f);
+            if (aAnyArmorBroken) SoundPlayer.Play(Sfx.ArmorBreak, 0.9f);
+        }
+
+        static bool IsMelee(SkillData iSkill) =>
+            iSkill.Behavior is not (SkillBehavior.Projectile or SkillBehavior.Beam or SkillBehavior.TargetedStrike);
+
+        /// <summary>技を出した瞬間の音。近接は風切り音(重い武器ほど低く)、銃は発砲音と反動</summary>
+        void PlayAttackSound()
+        {
+            var aFeel = WeaponFeel.For(mCurrent.Weapon);
+            if (mCurrent.Weapon == WeaponType.Gun)
             {
-                CombatFeedback.Instance.HitStop(aHitstop);
-                CombatFeedback.Instance.Shake(0.05f + aHitstop);
+                SoundPlayer.Play(Sfx.Shot, 0.7f);
+                if (aFeel.Recoil > 0f) mMotor.AddImpulse(-transform.forward * aFeel.Recoil);
+                return;
             }
+            float aPitch = mCurrent.Weapon switch
+            {
+                WeaponType.Hammer => 0.65f,
+                WeaponType.Gauntlet => 1.3f,
+                WeaponType.Staff => 1.15f,
+                WeaponType.Chain => 0.9f,
+                _ => 1.05f,
+            };
+            SoundPlayer.Play(Sfx.Swing, 0.45f, aPitch);
         }
 
         // ---------- 飛び道具・ビーム ----------

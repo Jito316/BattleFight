@@ -14,6 +14,8 @@ namespace BattleFight
         /// <summary>水平方向の、攻撃者から被弾者への向き</summary>
         public Vector3 Direction;
         public GameObject Source;
+        /// <summary>被弾ののけぞり・つぶれの大きさ(1 = ふつう。0 のときは 1 として扱う)</summary>
+        public float Reaction;
     }
 
     public enum HitOutcome
