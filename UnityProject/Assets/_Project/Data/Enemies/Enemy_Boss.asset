@@ -158,5 +158,5 @@ MonoBehaviour:
   BodyShape: 1
   Scale: 2.2
   Color: {r: 0.55, g: 0.15, b: 0.15, a: 1}
-  TelegraphColor: {r: 1, g: 0.3, b: 0.1, a: 1}
+  TelegraphColor: {r: 1, g: 0.62, b: 0.1, a: 1}
   ShardValue: 20

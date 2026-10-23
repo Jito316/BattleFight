@@ -141,7 +141,7 @@ namespace BattleFight
         [FormerlySerializedAs("bodyShape")] public PrimitiveType BodyShape = PrimitiveType.Capsule;
         [FormerlySerializedAs("scale")] public float Scale = 1f;
         [FormerlySerializedAs("color")] public Color Color = new Color(0.45f, 0.5f, 0.6f);
-        [FormerlySerializedAs("telegraphColor")] public Color TelegraphColor = new Color(1f, 0.3f, 0.1f);
+        [FormerlySerializedAs("telegraphColor")] public Color TelegraphColor = new Color(1f, 0.62f, 0.1f);
         [Tooltip("倒したときの刻片(基本値に対する倍率)")]
         [FormerlySerializedAs("shardValue")] public float ShardValue = 1f;
     }
