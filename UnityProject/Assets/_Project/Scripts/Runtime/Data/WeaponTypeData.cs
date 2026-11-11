@@ -22,6 +22,8 @@ namespace BattleFight
         [FormerlySerializedAs("headRotation")] public Vector3 HeadRotation;
         [Tooltip("0より大きいと柄を描く")]
         [FormerlySerializedAs("handleLength")] public float HandleLength;
+        [Tooltip("0 以外なら、この分ずらした所にも同じ柄と頭を付ける(双剣の左手の刃など)")]
+        public Vector3 SecondHeadOffset;
 
         [Header("ボーナス")]
         [Tooltip("3スロットがすべてこの武器種のとき使えるフィニッシャー")]

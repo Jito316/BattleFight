@@ -65,6 +65,8 @@ namespace BattleFight
         [FormerlySerializedAs("range")] public float Range;
         [Tooltip("HammerJump: 跳んでいる間の前進距離 / Grapple: 対象がないときの空中ダッシュ距離")]
         [FormerlySerializedAs("dashDistance")] public float DashDistance;
+        [Tooltip("Blink: ロックオン中は、標的をすり抜けて背後へ回り込み、標的の方を向く(双剣の交差ステップ)")]
+        public bool BlinkBehindTarget;
         [Tooltip("HammerJump: 跳ぶ速度")]
         [FormerlySerializedAs("jumpVelocity")] public float JumpVelocity;
         [Tooltip("ChargeCounter: 最大溜めフレーム")]

@@ -59,7 +59,7 @@ Player(または Enemy_*)        ← 当たり(CharacterController)と、動か�
 | `Speed` | float | いつも(水平の移動の速さ、m/秒) |
 | `Grounded` | bool | いつも(地面に立っているか) |
 | `Guard` | bool | ガードを構えている間 |
-| `Weapon` | int | 技の武器種(0 剣・1 大槌・2 鎖・3 杖・4 銃・5 籠手) |
+| `Weapon` | int | 技の武器種(0 剣・1 大槌・2 鎖・3 杖・4 銃・5 籠手・6 双剣) |
 | `Step` | int | コンボの段(0 から) |
 | `Slot` | int | 技のスロット(0 攻撃A・1 攻撃B・2 移動) |
 | `Attack` | trigger | 技の段が始まった(敵は予備動作が始まった) |

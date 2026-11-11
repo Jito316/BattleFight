@@ -108,6 +108,21 @@ namespace BattleFight
             aHead.localRotation = Quaternion.Euler(iData.HeadRotation);
             aHead.localScale = iData.HeadScale;
 
+            // 2 本目(双剣の左手の刃など)。同じ柄と頭を、ずらした所に付ける
+            if (iData.SecondHeadOffset != Vector3.zero)
+            {
+                if (iData.HandleLength > 0f)
+                {
+                    var aSecondHandle = Part(PrimitiveType.Cube, "Handle2", aRoot, iMaterial("Handle", new Color(0.25f, 0.2f, 0.15f)));
+                    aSecondHandle.localScale = new Vector3(0.05f, 0.05f, iData.HandleLength);
+                    aSecondHandle.localPosition = iData.SecondHeadOffset + new Vector3(0f, 0f, iData.HandleLength * 0.5f);
+                }
+                var aSecondHead = Part(iData.HeadShape, "Head2", aRoot, iMaterial("Head", iData.Color));
+                aSecondHead.localPosition = iData.SecondHeadOffset + iData.HeadOffset;
+                aSecondHead.localRotation = Quaternion.Euler(iData.HeadRotation);
+                aSecondHead.localScale = iData.HeadScale;
+            }
+
             var aTip = Anchor(TipName, aRoot, iData.HeadOffset);
             float aWidth = Mathf.Clamp(Mathf.Max(iData.HeadScale.x, iData.HeadScale.y, iData.HeadScale.z) * 0.5f, 0.12f, 0.45f);
             var aTrail = AddTrail(aTip, aWidth, iMaterial("Trail", Color.Lerp(iData.Color, Color.white, 0.5f)));

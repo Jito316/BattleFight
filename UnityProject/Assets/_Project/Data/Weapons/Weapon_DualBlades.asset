@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98abc8104acedb24f96ca276fb71eca3, type: 3}
+  m_Name: Weapon_DualBlades
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.WeaponTypeData
+  Weapon: 6
+  DisplayName: "\u53CC\u5263"
+  Color: {r: 0.75, g: 1, b: 0.3, a: 1}
+  Prefab: {fileID: 5733259298174626213, guid: df54423bfc2ac1b4e922e7ffcbbd7d6c, type: 3}
+  HeadShape: 3
+  HeadScale: {x: 0.06, y: 0.06, z: 0.75}
+  HeadOffset: {x: 0, y: 0, z: 0.45}
+  HeadRotation: {x: 0, y: 0, z: 0}
+  HandleLength: 0.1
+  SecondHeadOffset: {x: -0.9, y: 0, z: 0}
+  MasteryFinisher: {fileID: 11400000, guid: 4674175ed90bd3d4cb87b75249da09b8, type: 2}
+  SynergyStaggerBonus: 0.15

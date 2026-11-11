@@ -70,6 +70,14 @@ namespace BattleFight
         /// <summary>その場で移動する(ブリンク用)。壁などの当たり判定は効く。</summary>
         public void Teleport(Vector3 iDelta) => mController.Move(iDelta);
 
+        /// <summary>当たりを一度外して、iDelta だけ位置を移す(敵の体をすり抜ける。壁は呼ぶ側で避けておく)</summary>
+        public void Warp(Vector3 iDelta)
+        {
+            mController.enabled = false;
+            transform.position += iDelta;
+            mController.enabled = true;
+        }
+
         public void FaceDirection(Vector3 iDirection)
         {
             iDirection.y = 0f;
