@@ -116,6 +116,32 @@ namespace BattleFight.Tests
             Assert.Greater(Vector3.Dot(mPlayer.forward, aToEnemy), 0.8f, "回り込んだあと、敵の方を向いていない");
         }
 
+        static Vector3 Flat(Vector3 iVector) => new Vector3(iVector.x, 0f, iVector.z).normalized;
+
+        [UnityTest]
+        public IEnumerator CrossStep_DoesNotWhipTheCameraAround()
+        {
+            yield return LoadEmptyArena();
+            Equip(SlotType.Movement, "Skill_Dual_Cross");
+            var aEnemy = SpawnStill(mPlayer.position + mPlayer.forward * 5f);
+            yield return null;
+            yield return Tap(mKeyboard.tabKey);
+            // ロックオンして、カメラが敵の方を向くまで待つ
+            yield return new WaitForSeconds(1f);
+            var aCamera = Camera.main.transform;
+            Vector3 aBefore = Flat(aCamera.forward);
+
+            yield return Tap(mKeyboard.leftShiftKey);
+            yield return new WaitForSeconds(0.25f);
+            // 回り込んだ直後は、カメラを振り回さない(敵の向きは 180° 反対になっている)
+            Assert.Less(Vector3.Angle(aBefore, Flat(aCamera.forward)), 30f, "回り込んだ直後に、カメラが大きく振り回された");
+
+            // しばらくすると、敵の方へなめらかに向き直す
+            yield return new WaitForSeconds(1.5f);
+            Vector3 aToEnemy = Flat(aEnemy.transform.position - mPlayer.position);
+            Assert.Greater(Vector3.Dot(Flat(aCamera.forward), aToEnemy), 0.8f, "回り込んだあと、カメラが敵の方へ向き直らない");
+        }
+
         [UnityTest]
         public IEnumerator Spin_HitsAnEnemyBehindThePlayer()
         {

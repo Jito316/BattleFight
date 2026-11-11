@@ -21,6 +21,8 @@ namespace BattleFight
         [SerializeField, FormerlySerializedAs("minPitch")] float mMinPitch = -15f;
         [SerializeField, FormerlySerializedAs("maxPitch")] float mMaxPitch = 65f;
         [SerializeField, FormerlySerializedAs("lockOnTurnSpeed")] float mLockOnTurnSpeed = 8f;
+        [SerializeField, Tooltip("ロックオン中にカメラが回る速さの上限(度/秒)。敵の背後へ回り込んだときなど、大きく回るときに振り回されないように")]
+        float mMaxLockOnTurnRate = 240f;
         [SerializeField, FormerlySerializedAs("lockOnPitch")] float mLockOnPitch = 15f;
         [SerializeField, FormerlySerializedAs("followSharpness")] float mFollowSharpness = 20f;
         [SerializeField, Tooltip("ロックオン中に、カメラを右へずらす量(プレイヤーが標的を隠さないように)")] float mShoulderOffset = 1.1f;
@@ -37,6 +39,11 @@ namespace BattleFight
         Camera mCamera;
         /// <summary>右肩へのずれ(0 〜 1)。ロックオンの付け外しで、なめらかに変える</summary>
         float mShoulder;
+        /// <summary>この時刻までは、ロックオン中でもカメラを回さない(回り込んだ直後に、少し待ってから向き直す)</summary>
+        float mHoldTurnUntil = -1f;
+
+        /// <summary>iSeconds の間、ロックオンの向き直しを止める(交差ステップで敵の背後へ回り込んだときなど)</summary>
+        public void HoldLockOnTurn(float iSeconds) => mHoldTurnUntil = Mathf.Max(mHoldTurnUntil, Time.unscaledTime + iSeconds);
         /// <summary>大きな相手を見るために、いつもより引いている距離</summary>
         float mExtraDistance;
 
@@ -211,7 +218,13 @@ namespace BattleFight
                 if (aOffset.sqrMagnitude > 0.01f)
                 {
                     float aDesiredYaw = Mathf.Atan2(aOffset.x, aOffset.z) * Mathf.Rad2Deg;
-                    mYaw = Mathf.LerpAngle(mYaw, aDesiredYaw, 1f - Mathf.Exp(-mLockOnTurnSpeed * aDeltaTime));
+                    // ふだんの小さな追いかけは速く、大きく回るときは上限の速さでなめらかに。回り込んだ直後は少し待つ
+                    if (Time.unscaledTime >= mHoldTurnUntil)
+                    {
+                        float aStep = Mathf.DeltaAngle(mYaw, aDesiredYaw) * (1f - Mathf.Exp(-mLockOnTurnSpeed * aDeltaTime));
+                        float aMaxStep = mMaxLockOnTurnRate * aDeltaTime;
+                        mYaw += Mathf.Clamp(aStep, -aMaxStep, aMaxStep);
+                    }
                 }
                 mPitch = Mathf.Lerp(mPitch, mLockOnPitch, 1f - Mathf.Exp(-4f * aDeltaTime));
             }
