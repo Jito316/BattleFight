@@ -7,6 +7,8 @@ namespace BattleFight
     {
         /// <summary>交差ステップで、標的の背後のどこまで回り込むか(標的の体の表面から)</summary>
         const float mBehindGap = 1.2f;
+        /// <summary>回り込んだ直後に、カメラが向き直さずに待つ時間(回り込んだことを見せてから、ゆっくり向き直す)</summary>
+        const float mBehindCameraHold = 0.3f;
 
         void Blink()
         {
@@ -30,8 +32,16 @@ namespace BattleFight
             var aFeedback = CombatFeedback.Instance;
             if (aFeedback != null && !aFeedback.PlayCue(EffectCue.BlinkOut, transform.position, transform.rotation, 1.2f, aColor))
                 aFeedback.SpawnShockwave(transform.position, 1.2f, aColor);
-            if (aTarget != null) mMotor.Warp(aDirection * aDistance);
-            else mMotor.Teleport(aDirection * aDistance);
+            if (aTarget != null)
+            {
+                mMotor.Warp(aDirection * aDistance);
+                var aCamera = mView != null ? mView.GetComponent<ThirdPersonCamera>() : null;
+                if (aCamera != null) aCamera.HoldLockOnTurn(mBehindCameraHold);
+            }
+            else
+            {
+                mMotor.Teleport(aDirection * aDistance);
+            }
             if (aFeedback != null && !aFeedback.PlayCue(EffectCue.BlinkIn, transform.position + aDirection * aDistance, transform.rotation, 1.6f, aColor))
                 aFeedback.SpawnShockwave(transform.position + aDirection * aDistance, 1.6f, aColor);
             // 回り込んだら、標的の方を向く(すぐ斬れるように)
