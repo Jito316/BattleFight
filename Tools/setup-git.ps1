@@ -25,6 +25,9 @@ Write-Host "Unity $version"
 git lfs install --local | Out-Null
 Write-Host "Git LFS: 有効にしました"
 
+# 改行は .gitattributes でそろえるので、コミットのたびに出る「LF will be replaced by CRLF」の警告は止める
+git config --local core.safecrlf false
+
 if ($merge) {
     $mergePath = $merge -replace "\\", "/"
     git config --local merge.unityyamlmerge.name "Unity SmartMerge (UnityYAMLMerge)"
