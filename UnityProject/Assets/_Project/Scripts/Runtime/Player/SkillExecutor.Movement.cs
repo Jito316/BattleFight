@@ -5,26 +5,56 @@ namespace BattleFight
     /// <summary>SkillExecutor: ブリンク・ワイヤー・引き寄せ</summary>
     public partial class SkillExecutor
     {
+        /// <summary>交差ステップで、標的の背後のどこまで回り込むか(標的の体の表面から)</summary>
+        const float mBehindGap = 1.2f;
+
         void Blink()
         {
             Vector3 aDirection = mMoveDirection;
             float aDistance = mCurrent.DashDistance;
-            Vector3 aBottom = transform.position + Vector3.up * 0.5f;
-            Vector3 aTop = transform.position + Vector3.up * 1.5f;
-            if (Physics.CapsuleCast(aBottom, aTop, 0.35f, aDirection, out var aHit, aDistance, ~0, QueryTriggerInteraction.Ignore)
-                && !aHit.collider.transform.IsChildOf(transform))
+            // 交差ステップ: ロックオン中は、標的をすり抜けて背後へ(標的の体は通り抜ける。壁では止まる)
+            var aTarget = mCurrent.BlinkBehindTarget ? mLockOn.Target : null;
+            if (aTarget != null)
             {
-                aDistance = Mathf.Max(0f, aHit.distance - 0.2f);
+                Vector3 aToTarget = Flat(aTarget.transform.position - transform.position);
+                if (aToTarget.sqrMagnitude > 0.01f)
+                {
+                    aDirection = aToTarget.normalized;
+                    aDistance = aToTarget.magnitude + aTarget.Radius + mBehindGap;
+                }
             }
+            aDistance = BlinkClearance(aDirection, aDistance, aTarget != null);
 
             var aData = mSlots.GetWeaponData(mCurrent.Weapon);
             var aColor = aData != null ? aData.Color : Color.white;
             var aFeedback = CombatFeedback.Instance;
             if (aFeedback != null && !aFeedback.PlayCue(EffectCue.BlinkOut, transform.position, transform.rotation, 1.2f, aColor))
                 aFeedback.SpawnShockwave(transform.position, 1.2f, aColor);
-            mMotor.Teleport(aDirection * aDistance);
+            if (aTarget != null) mMotor.Warp(aDirection * aDistance);
+            else mMotor.Teleport(aDirection * aDistance);
             if (aFeedback != null && !aFeedback.PlayCue(EffectCue.BlinkIn, transform.position + aDirection * aDistance, transform.rotation, 1.6f, aColor))
                 aFeedback.SpawnShockwave(transform.position + aDirection * aDistance, 1.6f, aColor);
+            // 回り込んだら、標的の方を向く(すぐ斬れるように)
+            if (aTarget != null)
+            {
+                Vector3 aLook = Flat(aTarget.transform.position - transform.position);
+                if (aLook.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(aLook);
+            }
+        }
+
+        /// <summary>iDirection へ iDistance 動けるか調べ、ぶつかる手前までの距離を返す。iThroughEnemies なら敵の体は通り抜ける</summary>
+        float BlinkClearance(Vector3 iDirection, float iDistance, bool iThroughEnemies)
+        {
+            Vector3 aBottom = transform.position + Vector3.up * 0.5f;
+            Vector3 aTop = transform.position + Vector3.up * 1.5f;
+            float aClear = iDistance;
+            foreach (var aHit in Physics.CapsuleCastAll(aBottom, aTop, 0.35f, iDirection, iDistance, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (aHit.collider.transform.IsChildOf(transform)) continue;
+                if (iThroughEnemies && aHit.collider.GetComponentInParent<EnemyController>() != null) continue;
+                aClear = Mathf.Min(aClear, Mathf.Max(0f, aHit.distance - 0.2f));
+            }
+            return aClear;
         }
 
         void BeginGrapple()

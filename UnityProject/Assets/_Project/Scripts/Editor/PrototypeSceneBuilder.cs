@@ -171,6 +171,10 @@ namespace BattleFight.EditorTools
             var aGauntletRocket = Asset<SkillData>("Skills/Skill_Gauntlet_Rocket", iResetData, PrototypeDefaults.GauntletRocket);
             var aGauntletDash = Asset<SkillData>("Skills/Skill_Gauntlet_Dash", iResetData, PrototypeDefaults.GauntletDash);
             var aGauntletFinisher = Asset<SkillData>("Skills/Skill_Gauntlet_Finisher", iResetData, PrototypeDefaults.GauntletFinisher);
+            var aDualCombo = Asset<SkillData>("Skills/Skill_Dual_Combo", iResetData, PrototypeDefaults.DualCombo);
+            var aDualSpin = Asset<SkillData>("Skills/Skill_Dual_Spin", iResetData, PrototypeDefaults.DualSpin);
+            var aDualCross = Asset<SkillData>("Skills/Skill_Dual_Cross", iResetData, PrototypeDefaults.DualCross);
+            var aDualFinisher = Asset<SkillData>("Skills/Skill_Dual_Finisher", iResetData, PrototypeDefaults.DualFinisher);
 
             var aSword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", iResetData, iWeapon => PrototypeDefaults.Sword(iWeapon, aSwordFinisher));
             var aHammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", iResetData, iWeapon => PrototypeDefaults.Hammer(iWeapon, aHammerFinisher));
@@ -178,7 +182,8 @@ namespace BattleFight.EditorTools
             var aStaff = Asset<WeaponTypeData>("Weapons/Weapon_Staff", iResetData, iWeapon => PrototypeDefaults.Staff(iWeapon, aStaffFinisher));
             var aGun = Asset<WeaponTypeData>("Weapons/Weapon_Gun", iResetData, iWeapon => PrototypeDefaults.Gun(iWeapon, aGunFinisher));
             var aGauntlet = Asset<WeaponTypeData>("Weapons/Weapon_Gauntlet", iResetData, iWeapon => PrototypeDefaults.Gauntlet(iWeapon, aGauntletFinisher));
-            var aWeapons = new Object[] { aSword, aHammer, aChain, aStaff, aGun, aGauntlet };
+            var aDualBlades = Asset<WeaponTypeData>("Weapons/Weapon_DualBlades", iResetData, iWeapon => PrototypeDefaults.DualBlades(iWeapon, aDualFinisher));
+            var aWeapons = new Object[] { aSword, aHammer, aChain, aStaff, aGun, aGauntlet, aDualBlades };
 
             // 編成画面で選べるスキル(フィニッシャーは除く)。常に最新の一覧で作り直す
             var aDatabase = Asset<SkillDatabase>("SkillDatabase", true, iDatabase => iDatabase.Skills = new System.Collections.Generic.List<SkillData>
@@ -189,6 +194,7 @@ namespace BattleFight.EditorTools
                 aStaffBolt, aStaffMelee, aStaffFireball, aStaffThunder, aStaffFrost, aStaffBlink, aStaffLevitate,
                 aGunRapid, aGunShotgun, aGunLaser, aGunGrenade, aGunJet, aGunSlide,
                 aGauntletRush, aGauntletUppercut, aGauntletRocket, aGauntletDash,
+                aDualCombo, aDualSpin, aDualCross,
             });
 
             var aStyleConfig = Asset<StyleRankConfig>("StyleRankConfig", iResetData, _ => { });
@@ -281,6 +287,10 @@ namespace BattleFight.EditorTools
                 aMagus, aShadow, aMirrorBlade, aMirrorCaster, aMirrorBrawler,
             });
 
+            // あとから足した武器を、今あるプレイヤーのプレハブの武器の一覧にも足す(足りない物だけ。並びと中身には手を付けない)
+            FillEmptyReferences(PlayerPrefabPath, iPlayer =>
+                AppendMissing(iPlayer.GetComponent<SkillSlotController>(), "mWeaponDatabase", aWeapons)
+                | AppendMissing(iPlayer.GetComponent<WeaponHolder>(), "mWeaponDatabase", aWeapons));
             // あとから足した参照を、今あるプレハブにも入れる(空のときだけ)
             FillEmptyReferences(DirectorPrefabPath, iDirector => FillIfEmpty(iDirector.GetComponent<CombatFeedback>(), "mSounds", aSounds));
             FillEmptyReferences(PlayerPrefabPath, iPlayer => FillIfEmpty(iPlayer.GetComponent<PlayerInputReader>(), "mActions", aInputActions));

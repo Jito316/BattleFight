@@ -1,0 +1,210 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Dual_Finisher
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u7121\u5C3D"
+  Description: "\u53CC\u5263\u30DE\u30B9\u30BF\u30EA\u30FC\u306E\u30D5\u30A3\u30CB\u30C3\u30B7\u30E3\u30FC\u300210
+    \u9023\u6483\u306E\u3042\u3068\u3001\u4EA4\u5DEE\u65AC\u308A\u3067\u3068\u3069\u3081\u3092\u523A\u3059\u3002"
+  Slot: 0
+  Weapon: 6
+  Behavior: 0
+  AnimationState: 
+  UsableInAir: 1
+  AutoChain: 1
+  SwapCancelFrame: 0
+  InvulnerableFrames: 60
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  BlinkBehindTarget: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 6
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 1
+    ActiveFrames: 2
+    RecoveryFrames: 1
+    ChainFrame: 0
+    CancelFrame: 1
+    Damage: 5
+    Stagger: 10
+    ArmorBreak: 4
+    StylePoints: 9
+    Knockback: 0.5
+    Launch: 0
+    Hitstop: 0.015
+    HitboxOffset: {x: 0, y: 1, z: 1.2}
+    HitboxRadius: 1.8
+    ForwardMove: 0.05
+  - StartupFrames: 8
+    ActiveFrames: 5
+    RecoveryFrames: 30
+    ChainFrame: 0
+    CancelFrame: 18
+    Damage: 28
+    Stagger: 90
+    ArmorBreak: 30
+    StylePoints: 50
+    Knockback: 10
+    Launch: 0
+    Hitstop: 0.13
+    HitboxOffset: {x: 0, y: 1, z: 1.4}
+    HitboxRadius: 2.2
+    ForwardMove: 1.2

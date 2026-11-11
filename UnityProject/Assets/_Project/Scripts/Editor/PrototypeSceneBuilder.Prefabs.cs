@@ -169,6 +169,30 @@ namespace BattleFight.EditorTools
             }
         }
 
+        /// <summary>iComponent の配列 iField に、iValues のうちまだない物を後ろに足す。足したら true</summary>
+        static bool AppendMissing(Component iComponent, string iField, Object[] iValues)
+        {
+            if (iComponent == null) return false;
+            var aSerialized = new SerializedObject(iComponent);
+            var aArray = aSerialized.FindProperty(iField);
+            if (aArray == null || !aArray.isArray) return false;
+            bool aAdded = false;
+            foreach (var aValue in iValues)
+            {
+                bool aFound = false;
+                for (int aIndex = 0; aIndex < aArray.arraySize; aIndex++)
+                {
+                    if (aArray.GetArrayElementAtIndex(aIndex).objectReferenceValue == aValue) aFound = true;
+                }
+                if (aFound || aValue == null) continue;
+                aArray.arraySize++;
+                aArray.GetArrayElementAtIndex(aArray.arraySize - 1).objectReferenceValue = aValue;
+                aAdded = true;
+            }
+            if (aAdded) aSerialized.ApplyModifiedPropertiesWithoutUndo();
+            return aAdded;
+        }
+
         /// <summary>iComponent の iField が空なら iValue を入れる。入れたら true</summary>
         static bool FillIfEmpty(Component iComponent, string iField, Object iValue)
         {

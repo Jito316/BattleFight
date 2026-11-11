@@ -73,7 +73,7 @@ namespace BattleFight.Tests
         public void EveryWeapon_HasAPrefab_WithATip()
         {
             var aWeapons = LoadAll<WeaponTypeData>("Assets/_Project/Data/Weapons");
-            Assert.AreEqual(6, aWeapons.Length);
+            Assert.AreEqual(System.Enum.GetValues(typeof(WeaponType)).Length, aWeapons.Length, "武器種の数だけ武器のデータがない");
             foreach (var aWeapon in aWeapons)
             {
                 Assert.NotNull(aWeapon.Prefab, $"{aWeapon.name} にプレハブがつながっていない");
