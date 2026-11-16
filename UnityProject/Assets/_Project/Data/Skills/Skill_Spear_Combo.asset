@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Spear_Combo
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u4E09\u6BB5\u7A81\u304D"
+  Description: "\u9060\u304F\u307E\u3067\u5C4A\u304F 3 \u56DE\u306E\u7A81\u304D\u3002\u6700\u5F8C\u306E\u7A81\u304D\u306F\u91CD\u304F\u3001\u6575\u3092\u62BC\u3057\u8FD4\u3059\u3002"
+  Slot: 0
+  Weapon: 7
+  Behavior: 0
+  AnimationState: 
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  BlinkBehindTarget: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 8
+    ActiveFrames: 4
+    RecoveryFrames: 14
+    ChainFrame: 0
+    CancelFrame: 8
+    Damage: 11
+    Stagger: 16
+    ArmorBreak: 6
+    StylePoints: 20
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 2.3}
+    HitboxRadius: 0.95
+    ForwardMove: 0.6
+  - StartupFrames: 8
+    ActiveFrames: 4
+    RecoveryFrames: 14
+    ChainFrame: 0
+    CancelFrame: 8
+    Damage: 11
+    Stagger: 16
+    ArmorBreak: 6
+    StylePoints: 20
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 1, z: 2.3}
+    HitboxRadius: 0.95
+    ForwardMove: 0.6
+  - StartupFrames: 12
+    ActiveFrames: 5
+    RecoveryFrames: 24
+    ChainFrame: 0
+    CancelFrame: 14
+    Damage: 22
+    Stagger: 38
+    ArmorBreak: 14
+    StylePoints: 32
+    Knockback: 7
+    Launch: 0
+    Hitstop: 0.08
+    HitboxOffset: {x: 0, y: 1, z: 2.6}
+    HitboxRadius: 1.1
+    ForwardMove: 1

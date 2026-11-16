@@ -58,6 +58,8 @@ namespace BattleFight
                 WeaponType.Gauntlet => (1.3f, 90f, 0.45f, false, 35f),
                 // 双剣: 細く短い弧を、段ごとに大きく傾けて左右から
                 WeaponType.DualBlades => (1.7f, 120f, 0.2f, false, 30f + 15f * (mStepIndex % 2)),
+                // 槍: 突きなので、遠くまで伸びる細く狭い弧
+                WeaponType.Spear => (2.8f, 40f, 0.15f, false, 5f),
                 _ => (2.2f, 150f, 0.35f, false, 15f + 10f * (mStepIndex % 3)),
             };
             // 広い範囲の技は、範囲に合わせて弧も大きく

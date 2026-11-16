@@ -63,6 +63,8 @@ namespace BattleFight
             WeaponType.Gauntlet => new WeaponFeel(0.7f, 1.3f, 1.1f, 1, 8f, 0f, 1.4f, 1.2f, ImpactStyle.Punch),
             // 双剣: 止まりは短く揺れも小さい。手数で押す
             WeaponType.DualBlades => new WeaponFeel(0.55f, 0.55f, 0.7f, 0, 10f, 0f, 0.9f, 0.6f, ImpactStyle.Slash),
+            // 槍: 1 発が重く、敵を押し返す(踏み込みは小さい。間合いを保つ)
+            WeaponType.Spear => new WeaponFeel(1.1f, 0.9f, 1.1f, 1, 8f, 0f, 0.4f, 1.4f, ImpactStyle.Slash),
             _ => new WeaponFeel(1f, 1f, 1f, 0, 7f, 0f, 0.5f, 1f, ImpactStyle.Slash),
         };
 
