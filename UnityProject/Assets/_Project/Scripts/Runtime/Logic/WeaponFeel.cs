@@ -65,6 +65,8 @@ namespace BattleFight
             WeaponType.DualBlades => new WeaponFeel(0.55f, 0.55f, 0.7f, 0, 10f, 0f, 0.9f, 0.6f, ImpactStyle.Slash),
             // 槍: 1 発が重く、敵を押し返す(踏み込みは小さい。間合いを保つ)
             WeaponType.Spear => new WeaponFeel(1.1f, 0.9f, 1.1f, 1, 8f, 0f, 0.4f, 1.4f, ImpactStyle.Slash),
+            // 大鎌: 重く、ひるみが大きい。当てた敵は引き寄せる(押し返しは技の負の値。倍率はふつう)
+            WeaponType.Scythe => new WeaponFeel(1.2f, 1.1f, 1.2f, 2, 7f, 0f, 0.2f, 1f, ImpactStyle.Slash),
             _ => new WeaponFeel(1f, 1f, 1f, 0, 7f, 0f, 0.5f, 1f, ImpactStyle.Slash),
         };
 

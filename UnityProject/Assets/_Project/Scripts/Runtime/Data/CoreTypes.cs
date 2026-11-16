@@ -17,6 +17,7 @@ namespace BattleFight
         Gauntlet = 5,
         DualBlades = 6,
         Spear = 7,
+        Scythe = 8,
     }
 
     /// <summary>戦闘中の切り替え方式</summary>
