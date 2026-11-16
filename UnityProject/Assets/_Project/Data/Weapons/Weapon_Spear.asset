@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98abc8104acedb24f96ca276fb71eca3, type: 3}
+  m_Name: Weapon_Spear
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.WeaponTypeData
+  Weapon: 7
+  DisplayName: "\u69CD"
+  Color: {r: 0.85, g: 0.88, b: 0.95, a: 1}
+  Prefab: {fileID: 7873591351773871534, guid: 3ebc0f69a31e4f144b9ca4414385c2a0, type: 3}
+  HeadShape: 3
+  HeadScale: {x: 0.12, y: 0.03, z: 0.4}
+  HeadOffset: {x: 0, y: 0, z: 2}
+  HeadRotation: {x: 0, y: 0, z: 45}
+  HandleLength: 1.8
+  SecondHeadOffset: {x: 0, y: 0, z: 0}
+  MasteryFinisher: {fileID: 11400000, guid: 63fc6d22ad9c9fb4ca088d9aa354c32b, type: 2}
+  SynergyStaggerBonus: 0.15

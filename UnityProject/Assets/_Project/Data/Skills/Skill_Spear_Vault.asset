@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Spear_Vault
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u68D2\u9AD8\u8DF3\u3073"
+  Description: "\u69CD\u3092\u5730\u9762\u306B\u7A81\u3044\u3066\u3001\u524D\u3078\u9AD8\u304F\u8DF3\u3076\u3002\u6575\u3084\u6BB5\u5DEE\u3092\u98DB\u3073\u8D8A\u3048\u3089\u308C\u308B(\u8DF3\u3073\u59CB\u3081\u306B\u7121\u6575\u3042\u308A)\u3002"
+  Slot: 2
+  Weapon: 7
+  Behavior: 3
+  AnimationState: 
+  UsableInAir: 0
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 12
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 7
+  BlinkBehindTarget: 0
+  JumpVelocity: 13
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 4
+    ActiveFrames: 1
+    RecoveryFrames: 0
+    ChainFrame: 0
+    CancelFrame: 0
+    Damage: 0
+    Stagger: 0
+    ArmorBreak: 0
+    StylePoints: 0
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
+  - StartupFrames: 0
+    ActiveFrames: 2
+    RecoveryFrames: 8
+    ChainFrame: 0
+    CancelFrame: 3
+    Damage: 0
+    Stagger: 0
+    ArmorBreak: 0
+    StylePoints: 0
+    Knockback: 2
+    Launch: 0
+    Hitstop: 0.04
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0
