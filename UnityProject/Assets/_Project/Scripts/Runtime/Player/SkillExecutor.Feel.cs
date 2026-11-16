@@ -60,6 +60,8 @@ namespace BattleFight
                 WeaponType.DualBlades => (1.7f, 120f, 0.2f, false, 30f + 15f * (mStepIndex % 2)),
                 // 槍: 突きなので、遠くまで伸びる細く狭い弧
                 WeaponType.Spear => (2.8f, 40f, 0.15f, false, 5f),
+                // 大鎌: 太く大きな弧で、前を広く刈る
+                WeaponType.Scythe => (2.6f, 220f, 0.3f, false, 10f),
                 _ => (2.2f, 150f, 0.35f, false, 15f + 10f * (mStepIndex % 3)),
             };
             // 広い範囲の技は、範囲に合わせて弧も大きく
