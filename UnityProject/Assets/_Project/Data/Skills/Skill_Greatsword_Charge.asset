@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Greatsword_Charge
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u525B\u65AD"
+  Description: "\u9577\u62BC\u3057\u3067\u5927\u304D\u304F\u6E9C\u3081\u3001\u96E2\u3059\u3068\u305D\u306E\u5834\u3067\u632F\u308A\u4E0B\u308D\u3059\u3002\u30A2\u30FC\u30DE\u30FC\u3092\u307E\u3068\u3081\u3066\u524A\u308B\u3002\u6E9C\u3081\u4E2D\u306B\u653B\u6483\u3092\u53D7\u3051\u308B\u3068\u30AB\u30A6\u30F3\u30BF\u30FC\u3002"
+  Slot: 1
+  Weapon: 9
+  Behavior: 2
+  AnimationState: 
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  BlinkBehindTarget: 0
+  JumpVelocity: 0
+  ChargeFrames: 75
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 6
+    ActiveFrames: 6
+    RecoveryFrames: 30
+    ChainFrame: 0
+    CancelFrame: 20
+    Damage: 40
+    Stagger: 90
+    ArmorBreak: 60
+    StylePoints: 60
+    Knockback: 10
+    Launch: 0
+    Hitstop: 0.14
+    HitboxOffset: {x: 0, y: 1, z: 1.8}
+    HitboxRadius: 2
+    ForwardMove: 1

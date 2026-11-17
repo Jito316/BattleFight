@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Greatsword_Rift
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u5730\u88C2\u304D"
+  Description: "\u5927\u5263\u3092\u5730\u9762\u306B\u53E9\u304D\u3064\u3051\u3001\u524D\u3078\u307E\u3063\u3059\u3050\u885D\u6483\u3092\u8D70\u3089\u305B\u308B\u3002\u4E26\u3093\u3060\u6575\u3092\u307E\u3068\u3081\u3066\u65AC\u308B\u3002"
+  Slot: 1
+  Weapon: 9
+  Behavior: 7
+  AnimationState: 
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  BlinkBehindTarget: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 9
+  BeamRadius: 0.9
+  Steps:
+  - StartupFrames: 18
+    ActiveFrames: 6
+    RecoveryFrames: 28
+    ChainFrame: 0
+    CancelFrame: 16
+    Damage: 24
+    Stagger: 40
+    ArmorBreak: 20
+    StylePoints: 34
+    Knockback: 6
+    Launch: 0
+    Hitstop: 0.08
+    HitboxOffset: {x: 0, y: 0, z: 0}
+    HitboxRadius: 0
+    ForwardMove: 0.3
