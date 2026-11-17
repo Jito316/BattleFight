@@ -34,7 +34,8 @@ namespace BattleFight
                 .With("Down", "<Keyboard>/s", KeyboardMouseScheme)
                 .With("Left", "<Keyboard>/a", KeyboardMouseScheme)
                 .With("Right", "<Keyboard>/d", KeyboardMouseScheme);
-            aMove.AddBinding("<Gamepad>/leftStick", groups: GamepadScheme);
+            // スティックが少しずれたままのゲームパッドでも、勝手に歩かないように(初期の 0.125 より広く)
+            aMove.AddBinding("<Gamepad>/leftStick", groups: GamepadScheme, processors: "StickDeadzone(min=0.2)");
 
             var aStickLook = aMap.AddAction(StickLookAction, InputActionType.Value);
             aStickLook.expectedControlType = "Vector2";

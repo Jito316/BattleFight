@@ -4,6 +4,7 @@
     "references": [
         "BattleFight.Runtime",
         "Unity.InputSystem",
+        "Unity.InputSystem.TestFramework",
         "BattleFight.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
