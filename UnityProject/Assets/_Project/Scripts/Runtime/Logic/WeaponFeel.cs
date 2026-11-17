@@ -67,6 +67,8 @@ namespace BattleFight
             WeaponType.Spear => new WeaponFeel(1.1f, 0.9f, 1.1f, 1, 8f, 0f, 0.4f, 1.4f, ImpactStyle.Slash),
             // 大鎌: 重く、ひるみが大きい。当てた敵は引き寄せる(押し返しは技の負の値。倍率はふつう)
             WeaponType.Scythe => new WeaponFeel(1.2f, 1.1f, 1.2f, 2, 7f, 0f, 0.2f, 1f, ImpactStyle.Slash),
+            // 大剣: 剣より止まり・揺れ・のけぞりがずっと大きい(大槌ほどではない)。踏み込みは少し
+            WeaponType.Greatsword => new WeaponFeel(1.5f, 1.5f, 1.4f, 3, 7f, 0f, 0.5f, 1.3f, ImpactStyle.Slash),
             _ => new WeaponFeel(1f, 1f, 1f, 0, 7f, 0f, 0.5f, 1f, ImpactStyle.Slash),
         };
 

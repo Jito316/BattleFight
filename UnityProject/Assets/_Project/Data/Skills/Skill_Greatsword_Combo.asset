@@ -1,0 +1,89 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Greatsword_Combo
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u8C6A\u5263"
+  Description: "\u91CD\u3044 3 \u56DE\u306E\u632F\u308A\u30021 \u56DE\u3054\u3068\u306B\u6575\u3092\u5927\u304D\u304F\u3072\u308B\u307E\u305B\u3001\u30A2\u30FC\u30DE\u30FC\u3092\u524A\u308B\u3002\u632F\u308A\u306F\u9045\u3044\u3002"
+  Slot: 0
+  Weapon: 9
+  Behavior: 0
+  AnimationState: 
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 0
+  AirGravityScale: 0.15
+  Range: 0
+  DashDistance: 0
+  BlinkBehindTarget: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 14
+    ActiveFrames: 6
+    RecoveryFrames: 22
+    ChainFrame: 0
+    CancelFrame: 13
+    Damage: 20
+    Stagger: 35
+    ArmorBreak: 15
+    StylePoints: 28
+    Knockback: 4
+    Launch: 0
+    Hitstop: 0.08
+    HitboxOffset: {x: 0, y: 1, z: 1.6}
+    HitboxRadius: 1.8
+    ForwardMove: 0.8
+  - StartupFrames: 14
+    ActiveFrames: 6
+    RecoveryFrames: 22
+    ChainFrame: 0
+    CancelFrame: 13
+    Damage: 20
+    Stagger: 35
+    ArmorBreak: 15
+    StylePoints: 28
+    Knockback: 4
+    Launch: 0
+    Hitstop: 0.08
+    HitboxOffset: {x: 0, y: 1, z: 1.6}
+    HitboxRadius: 1.8
+    ForwardMove: 0.8
+  - StartupFrames: 20
+    ActiveFrames: 7
+    RecoveryFrames: 32
+    ChainFrame: 0
+    CancelFrame: 18
+    Damage: 38
+    Stagger: 70
+    ArmorBreak: 35
+    StylePoints: 45
+    Knockback: 9
+    Launch: 0
+    Hitstop: 0.12
+    HitboxOffset: {x: 0, y: 1, z: 1.7}
+    HitboxRadius: 2.1
+    ForwardMove: 1

@@ -185,6 +185,11 @@ namespace BattleFight.EditorTools
             var aScytheHarvest = Asset<SkillData>("Skills/Skill_Scythe_Harvest", iResetData, PrototypeDefaults.ScytheHarvest);
             var aScytheShade = Asset<SkillData>("Skills/Skill_Scythe_Shade", iResetData, PrototypeDefaults.ScytheShade);
             var aScytheFinisher = Asset<SkillData>("Skills/Skill_Scythe_Finisher", iResetData, PrototypeDefaults.ScytheFinisher);
+            var aGreatswordCombo = Asset<SkillData>("Skills/Skill_Greatsword_Combo", iResetData, PrototypeDefaults.GreatswordCombo);
+            var aGreatswordCharge = Asset<SkillData>("Skills/Skill_Greatsword_Charge", iResetData, PrototypeDefaults.GreatswordCharge);
+            var aGreatswordRift = Asset<SkillData>("Skills/Skill_Greatsword_Rift", iResetData, PrototypeDefaults.GreatswordRift);
+            var aGreatswordTackle = Asset<SkillData>("Skills/Skill_Greatsword_Tackle", iResetData, PrototypeDefaults.GreatswordTackle);
+            var aGreatswordFinisher = Asset<SkillData>("Skills/Skill_Greatsword_Finisher", iResetData, PrototypeDefaults.GreatswordFinisher);
 
             var aSword = Asset<WeaponTypeData>("Weapons/Weapon_Sword", iResetData, iWeapon => PrototypeDefaults.Sword(iWeapon, aSwordFinisher));
             var aHammer = Asset<WeaponTypeData>("Weapons/Weapon_Hammer", iResetData, iWeapon => PrototypeDefaults.Hammer(iWeapon, aHammerFinisher));
@@ -195,7 +200,8 @@ namespace BattleFight.EditorTools
             var aDualBlades = Asset<WeaponTypeData>("Weapons/Weapon_DualBlades", iResetData, iWeapon => PrototypeDefaults.DualBlades(iWeapon, aDualFinisher));
             var aSpear = Asset<WeaponTypeData>("Weapons/Weapon_Spear", iResetData, iWeapon => PrototypeDefaults.Spear(iWeapon, aSpearFinisher));
             var aScythe = Asset<WeaponTypeData>("Weapons/Weapon_Scythe", iResetData, iWeapon => PrototypeDefaults.Scythe(iWeapon, aScytheFinisher));
-            var aWeapons = new Object[] { aSword, aHammer, aChain, aStaff, aGun, aGauntlet, aDualBlades, aSpear, aScythe };
+            var aGreatsword = Asset<WeaponTypeData>("Weapons/Weapon_Greatsword", iResetData, iWeapon => PrototypeDefaults.Greatsword(iWeapon, aGreatswordFinisher));
+            var aWeapons = new Object[] { aSword, aHammer, aChain, aStaff, aGun, aGauntlet, aDualBlades, aSpear, aScythe, aGreatsword };
 
             // 編成画面で選べるスキル(フィニッシャーは除く)。常に最新の一覧で作り直す
             var aDatabase = Asset<SkillDatabase>("SkillDatabase", true, iDatabase => iDatabase.Skills = new System.Collections.Generic.List<SkillData>
@@ -209,6 +215,7 @@ namespace BattleFight.EditorTools
                 aDualCombo, aDualSpin, aDualCross,
                 aSpearCombo, aSpearSweep, aSpearJavelin, aSpearVault,
                 aScytheReap, aScytheDoom, aScytheHarvest, aScytheShade,
+                aGreatswordCombo, aGreatswordCharge, aGreatswordRift, aGreatswordTackle,
             });
 
             var aStyleConfig = Asset<StyleRankConfig>("StyleRankConfig", iResetData, _ => { });

@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6183c5000be7d944b1e537c5266401d, type: 3}
+  m_Name: Skill_Greatsword_Tackle
+  m_EditorClassIdentifier: BattleFight.Runtime::BattleFight.SkillData
+  DisplayName: "\u80A9\u5F53\u3066"
+  Description: "\u524D\u3078\u8E0F\u307F\u8FBC\u3093\u3067\u80A9\u304B\u3089\u4F53\u5F53\u305F\u308A\u3059\u308B\u3002\u5F53\u3066\u305F\u6575\u3092\u5927\u304D\u304F\u3072\u308B\u307E\u305B\u308B(\u7121\u6575\u306F\u77ED\u3044)\u3002"
+  Slot: 2
+  Weapon: 9
+  Behavior: 1
+  AnimationState: 
+  UsableInAir: 1
+  AutoChain: 0
+  SwapCancelFrame: 0
+  InvulnerableFrames: 8
+  AirGravityScale: 0
+  Range: 0
+  DashDistance: 0
+  BlinkBehindTarget: 0
+  JumpVelocity: 0
+  ChargeFrames: 0
+  MoveSpeed: 0
+  ProjectileCount: 1
+  ProjectileSpread: 0
+  ProjectileSpeed: 25
+  ProjectileLifetime: 1.2
+  ProjectileRadius: 0.35
+  ProjectilePierce: 0
+  ExplosionRadius: 0
+  Homing: 0
+  StrikeDelay: 0.35
+  StrikeDistance: 8
+  BeamLength: 14
+  BeamRadius: 0.5
+  Steps:
+  - StartupFrames: 4
+    ActiveFrames: 10
+    RecoveryFrames: 14
+    ChainFrame: 0
+    CancelFrame: 6
+    Damage: 10
+    Stagger: 40
+    ArmorBreak: 25
+    StylePoints: 18
+    Knockback: 8
+    Launch: 0
+    Hitstop: 0.06
+    HitboxOffset: {x: 0, y: 1, z: 0.6}
+    HitboxRadius: 1.2
+    ForwardMove: 5
